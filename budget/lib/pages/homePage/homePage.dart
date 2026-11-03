@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'package:budget/colors.dart';
 import 'package:budget/database/generatePreviewData.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
+import 'package:budget/struct/databaseGlobal.dart';
+import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/widgets/accountProfileBottomSheet.dart';
+import 'package:budget/widgets/tappable.dart';
 import 'package:budget/pages/homePage/homePageHeatmap.dart';
 import 'package:budget/pages/homePage/homePageLineGraph.dart';
 import 'package:budget/pages/homePage/homePageNetWorth.dart';
@@ -116,6 +121,92 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     }
     return countAfter == 0;
+  }
+
+  Widget buildHomeProfileAvatar(BuildContext context, {double size = 42}) {
+    String name = (pocketBaseService.userName ??
+            appStateSettings["username"] ??
+            "")
+        .trim();
+    if (name.isEmpty && pocketBaseService.userEmail != null) {
+      name = pocketBaseService.userEmail!.split("@").first;
+    }
+    String userInitial = name.isNotEmpty ? name[0].toUpperCase() : "U";
+
+    String? localAvatar = sharedPreferences.getString("user_avatar_path");
+    String? pbAvatar = pocketBaseService.userAvatarUrl;
+    ImageProvider? avatarImg;
+    if (localAvatar != null &&
+        localAvatar.isNotEmpty &&
+        File(localAvatar).existsSync()) {
+      avatarImg = FileImage(File(localAvatar));
+    } else if (pbAvatar != null &&
+        pbAvatar.isNotEmpty &&
+        pbAvatar.startsWith("http")) {
+      avatarImg = NetworkImage(pbAvatar);
+    }
+
+    return Tappable(
+      color: Colors.transparent,
+      borderRadius: 100,
+      onTap: () {
+        openAccountProfileBottomSheet(context);
+      },
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(
+            end: 14, start: 8, top: 4, bottom: 4),
+        child: CircleAvatar(
+          radius: size / 2,
+          backgroundColor: dynamicPastel(
+            context,
+            Theme.of(context).colorScheme.primary,
+            amount: 0.2,
+          ),
+          backgroundImage: avatarImg,
+          child: avatarImg == null
+              ? TextFont(
+                  text: userInitial,
+                  fontSize: size * 0.44,
+                  fontWeight: FontWeight.bold,
+                  textColor: dynamicPastel(
+                    context,
+                    Theme.of(context).colorScheme.primary,
+                    amount: 0.85,
+                    inverse: false,
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
+  String getDynamicGreeting() {
+    int hour = DateTime.now().hour;
+    String timeGreeting;
+    if (hour >= 5 && hour < 12) {
+      timeGreeting = "Good morning";
+    } else if (hour >= 12 && hour < 17) {
+      timeGreeting = "Good afternoon";
+    } else {
+      timeGreeting = "Good evening";
+    }
+
+    String name = (pocketBaseService.userName ??
+            appStateSettings["username"] ??
+            "")
+        .trim();
+    if (name.isEmpty) {
+      final email = pocketBaseService.userEmail;
+      if (email != null && email.contains("@")) {
+        name = email.split("@").first;
+        if (name.isNotEmpty) {
+          name = name[0].toUpperCase() + name.substring(1);
+        }
+      }
+    }
+
+    return name.isNotEmpty ? "$timeGreeting, $name" : timeGreeting;
   }
 
   @override
@@ -258,75 +349,35 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   controller: _scrollController,
                   children: [
                     PreviewDemoWarning(),
-                    if (useSmallBanner) SizedBox(height: 13),
+                    const SizedBox(height: 10),
                     Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        useSmallBanner
-                            ? Expanded(
-                                child: HomePageWelcomeBannerSmall(
-                                  showUsername: showUsername,
-                                  showGreeting: showGreeting,
-                                  username: appStateSettings["username"] ?? "",
-                                ),
-                              )
-                            : SizedBox.shrink(),
-                        Tooltip(
-                          message: "edit-home".tr(),
-                          child: IconButton(
-                            padding: EdgeInsetsDirectional.all(15),
-                            onPressed: () {
-                              pushRoute(context, EditHomePage());
-                            },
-                            icon: Icon(appStateSettings["outlinedIcons"]
-                                ? Icons.more_vert_outlined
-                                : Icons.more_vert_rounded),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                                start: 17, end: 5),
+                            child: TextFont(
+                              text: getDynamicGreeting(),
+                              fontWeight: FontWeight.bold,
+                              fontSize: getIsFullScreen(context) ? 22 : 24,
+                              maxLines: 2,
+                              textColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
                           ),
                         ),
+                        buildHomeProfileAvatar(context),
                       ],
                     ),
                     // Wipe all remaining pixels off - sometimes graphics artifacts are left behind
                     Container(
                         height: 1,
                         color: Theme.of(context).colorScheme.background),
-
-                    showWelcomeBanner
-                        ? ConstrainedBox(
-                            constraints: BoxConstraints(
-                                minHeight: getExpandedHeaderHeight(
-                                        context, null,
-                                        isHomePageSpace: true) /
-                                    1.34),
-                            child: Container(
-                              // Subtract one (1) here because of the thickness of the wiper above
-                              alignment: AlignmentDirectional.bottomStart,
-                              padding: EdgeInsetsDirectional.only(
-                                  start: 9,
-                                  bottom: enableDoubleColumn(context) ? 10 : 17,
-                                  end: 9),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  HomePageUsername(
-                                    animationControllerHeader:
-                                        _animationControllerHeader,
-                                    animationControllerHeader2:
-                                        _animationControllerHeader2,
-                                    showUsername: showUsername,
-                                    showGreeting: showGreeting,
-                                    enterNameBottomSheet: enterNameBottomSheet,
-                                    username:
-                                        appStateSettings["username"] ?? "",
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     // Not full screen
                     if (enableDoubleColumn(context) != true) ...[
                       KeepAliveClientMixin(child: HomePageRatingBox()),

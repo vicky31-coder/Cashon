@@ -16,6 +16,7 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/struct/notificationsGlobal.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/globalLoadingProgress.dart';
@@ -115,7 +116,11 @@ class App extends StatelessWidget {
           children: [
             Row(
               children: [
-                NavigationSidebar(key: sidebarStateKey),
+                ListenableBuilder(
+                  listenable: pocketBaseService,
+                  builder: (context, _) =>
+                      NavigationSidebar(key: sidebarStateKey),
+                ),
                 Expanded(
                     child: Stack(
                   children: [
@@ -142,6 +147,10 @@ class App extends StatelessWidget {
           updateGlobalAppLifecycleState: true,
           onAppResume: () async {
             await setHighRefreshRate();
+            if (pocketBaseService.isLoggedIn) {
+              await pocketBaseService.refreshToken();
+              pocketBaseSyncEngine.syncAll();
+            }
           },
           child: InitializeBiometrics(
             child: InitializeNotificationService(

@@ -30,6 +30,7 @@ import 'package:budget/pages/editWalletsPage.dart';
 import 'package:budget/pages/notificationsPage.dart';
 import 'package:budget/pages/subscriptionsPage.dart';
 import 'package:budget/widgets/accountAndBackup.dart';
+import 'package:budget/widgets/accountProfileBottomSheet.dart';
 import 'package:budget/widgets/importDB.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/notificationsSettings.dart';
@@ -174,6 +175,44 @@ class MorePages extends StatelessWidget {
                 ),
               ],
             ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      vertical: 5, horizontal: 4),
+                  child: SettingsContainer(
+                    onTap: () {
+                      openAccountProfileBottomSheet(context);
+                    },
+                    title: "Account",
+                    icon: appStateSettings["outlinedIcons"]
+                        ? Icons.person_outline_rounded
+                        : Icons.person_rounded,
+                    isOutlined: true,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      vertical: 5, horizontal: 4),
+                  child: SettingsContainer(
+                    onTap: () {
+                      openBottomSheet(context, const EditHomePage(),
+                          fullSnap: true);
+                    },
+                    title: "edit-home".tr(),
+                    icon: appStateSettings["outlinedIcons"]
+                        ? Icons.dashboard_customize_outlined
+                        : Icons.dashboard_customize_rounded,
+                    isOutlined: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [

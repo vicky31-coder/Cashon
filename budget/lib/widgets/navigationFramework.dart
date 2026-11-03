@@ -18,6 +18,7 @@ import 'package:budget/pages/editBudgetPage.dart';
 import 'package:budget/pages/editObjectivesPage.dart';
 import 'package:budget/pages/editWalletsPage.dart';
 import 'package:budget/pages/homePage/homePage.dart';
+import 'package:budget/pages/loginPage.dart';
 import 'package:budget/pages/notificationsPage.dart';
 import 'package:budget/pages/objectivesListPage.dart';
 import 'package:budget/pages/onBoardingPage.dart';
@@ -32,6 +33,7 @@ import 'package:budget/struct/currencyFunctions.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/defaultPreferences.dart';
 import 'package:budget/struct/navBarIconsData.dart';
+import 'package:budget/struct/pocketbaseService.dart';
 import 'package:budget/struct/quickActions.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/shareBudget.dart';
@@ -76,7 +78,7 @@ import 'package:provider/provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// Handles onboarding too!
+// Handles auth, onboarding, and main app routing
 class InitialPageRouteNavigator extends StatelessWidget {
   const InitialPageRouteNavigator({super.key});
 
@@ -86,39 +88,56 @@ class InitialPageRouteNavigator extends StatelessWidget {
       key: navigatorKey,
       onGenerateRoute: (settings) => PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            AnimatedSwitcher(
-          duration: Duration(milliseconds: 1200),
-          switchInCurve: Curves.easeInOutCubic,
-          switchOutCurve: Curves.easeInOutCubic,
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            final inAnimation =
-                Tween<Offset>(begin: Offset(-1.0, 0.0), end: Offset(0.0, 0.0))
-                    .animate(animation);
-            final outAnimation =
-                Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset(0.0, 0.0))
-                    .animate(animation);
-
-            if (child.key == ValueKey("Onboarding")) {
-              return ClipRect(
-                child: SlideTransition(
-                  position: inAnimation,
-                  child: child,
-                ),
-              );
+            ListenableBuilder(
+          listenable: pocketBaseService,
+          builder: (context, _) {
+            Widget activePage;
+            if (!pocketBaseService.isLoggedIn) {
+              activePage = const LoginPage(key: ValueKey("LoginPage"));
+            } else if (appStateSettings["hasOnboarded"] != true) {
+              activePage = const OnBoardingPage(key: ValueKey("Onboarding"));
             } else {
-              return ClipRect(
-                child: SlideTransition(position: outAnimation, child: child),
+              activePage = PageNavigationFrameworkSafeArea(
+                key: const ValueKey("MainAppFramework"),
+                child: PageNavigationFramework(
+                  key: pageNavigationFrameworkKey,
+                  widthSideNavigationBar: getWidthNavigationSidebar(context),
+                ),
               );
             }
+
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 1200),
+              switchInCurve: Curves.easeInOutCubic,
+              switchOutCurve: Curves.easeInOutCubic,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                final inAnimation = Tween<Offset>(
+                        begin: const Offset(-1.0, 0.0),
+                        end: const Offset(0.0, 0.0))
+                    .animate(animation);
+                final outAnimation = Tween<Offset>(
+                        begin: const Offset(1.0, 0.0),
+                        end: const Offset(0.0, 0.0))
+                    .animate(animation);
+
+                if (child.key == const ValueKey("Onboarding") ||
+                    child.key == const ValueKey("LoginPage")) {
+                  return ClipRect(
+                    child: SlideTransition(
+                      position: inAnimation,
+                      child: child,
+                    ),
+                  );
+                } else {
+                  return ClipRect(
+                    child:
+                        SlideTransition(position: outAnimation, child: child),
+                  );
+                }
+              },
+              child: activePage,
+            );
           },
-          child: appStateSettings["hasOnboarded"] != true
-              ? OnBoardingPage(key: ValueKey("Onboarding"))
-              : PageNavigationFrameworkSafeArea(
-                  child: PageNavigationFramework(
-                    key: pageNavigationFrameworkKey,
-                    widthSideNavigationBar: getWidthNavigationSidebar(context),
-                  ),
-                ),
         ),
       ),
     );

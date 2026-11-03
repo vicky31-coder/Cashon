@@ -94,6 +94,8 @@ Future<bool> testIfHasGmailAccess() async {
 
 Future<bool> signOutGoogle() async {
   await pocketBaseService.logout();
+  await database.deleteEverything();
+  await updateSettings("hasOnboarded", false, updateGlobalState: false);
   refreshUIAfterLoginChange();
   return true;
 }
@@ -450,7 +452,7 @@ class GoogleAccountLoginButtonState extends State<GoogleAccountLoginButton> {
               )
             : NavigationSidebarButton(
                 key: ValueKey("user"),
-                label: userEmail,
+                label: "Cloud",
                 icon: Icons.cloud_done_rounded,
                 onTap: openPage,
                 isSelected: widget.isButtonSelected,
@@ -470,7 +472,7 @@ class GoogleAccountLoginButtonState extends State<GoogleAccountLoginButton> {
           )
         : SettingsContainerOpenPage(
             openPage: AccountsPage(),
-            title: widget.forceButtonName ?? userEmail,
+            title: widget.forceButtonName ?? "Cloud",
             icon: Icons.cloud_done_rounded,
             iconScale: 1,
             isOutlined: widget.isOutlinedButton,

@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
 import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/accountAndBackup.dart';
+import 'package:budget/widgets/accountProfileBottomSheet.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/dropdownSelect.dart';
@@ -45,33 +47,67 @@ class AccountsPageState extends State<AccountsPage> {
 
   @override
   Widget build(BuildContext context) {
-    String userInitial = (pocketBaseService.userEmail?.isNotEmpty ?? false)
-        ? pocketBaseService.userEmail![0].toUpperCase()
-        : "U";
-    Widget profileWidget = Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: dynamicPastel(context, Theme.of(context).colorScheme.primary,
-            amount: 0.2),
-      ),
-      child: Center(
-        child: TextFont(
-            text: userInitial,
-            fontSize: 60,
-            textAlign: TextAlign.center,
-            fontWeight: FontWeight.bold,
-            textColor: dynamicPastel(
-                context, Theme.of(context).colorScheme.primary,
-                amount: 0.85, inverse: false)),
+    String displayName = pocketBaseService.userName ??
+        (pocketBaseService.userEmail?.split("@").first ?? "User");
+    String userInitial =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : "U";
+
+    String? localAvatar = sharedPreferences.getString("user_avatar_path");
+    String? pbAvatar = pocketBaseService.userAvatarUrl;
+    ImageProvider? avatarImg;
+    if (localAvatar != null &&
+        localAvatar.isNotEmpty &&
+        File(localAvatar).existsSync()) {
+      avatarImg = FileImage(File(localAvatar));
+    } else if (pbAvatar != null &&
+        pbAvatar.isNotEmpty &&
+        pbAvatar.startsWith("http")) {
+      avatarImg = NetworkImage(pbAvatar);
+    }
+
+    Widget profileWidget = Tappable(
+      borderRadius: 100,
+      color: Colors.transparent,
+      onTap: () {
+        openAccountProfileBottomSheet(context);
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: dynamicPastel(context, Theme.of(context).colorScheme.primary,
+              amount: 0.2),
+          image: avatarImg != null
+              ? DecorationImage(image: avatarImg, fit: BoxFit.cover)
+              : null,
+        ),
+        child: avatarImg == null
+            ? Center(
+                child: TextFont(
+                  text: userInitial,
+                  fontSize: 55,
+                  textAlign: TextAlign.center,
+                  fontWeight: FontWeight.bold,
+                  textColor: dynamicPastel(
+                    context,
+                    Theme.of(context).colorScheme.primary,
+                    amount: 0.85,
+                    inverse: false,
+                  ),
+                ),
+              )
+            : null,
       ),
     );
+
+    List<SyncHistoryEntry> history = getSyncHistory();
+
     return PageFramework(
       horizontalPaddingConstrained: true,
       dragDownToDismiss: true,
       expandedHeight: 56,
-      title: "Backend Sync",
+      title: "Cloud",
       appBarBackgroundColor: getPlatform() == PlatformOS.isIOS
           ? null
           : Theme.of(context).colorScheme.secondaryContainer,
@@ -81,241 +117,229 @@ class AccountsPageState extends State<AccountsPage> {
       bottomPadding: false,
       actions: [],
       slivers: [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-            child: !pocketBaseService.isLoggedIn
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SettingsContainerOutlined(
-                        title: "Connect Backend & Sync",
-                        icon: Icons.cloud_outlined,
-                        isExpanded: false,
-                        onTap: () async {
-                          await openPocketBaseAuthPopup(context, onLoggedIn: () {
-                            setState(() {});
-                          });
-                        },
-                      )
-                    ],
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 35),
-                      profileWidget,
-                      SizedBox(height: 10),
+        SliverToBoxAdapter(
+          child: !pocketBaseService.isLoggedIn
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: SettingsContainerOutlined(
+                      title: "Connect Backend & Sync",
+                      icon: Icons.cloud_outlined,
+                      isExpanded: false,
+                      onTap: () async {
+                        await openPocketBaseAuthPopup(context, onLoggedIn: () {
+                          setState(() {});
+                        });
+                      },
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    const SizedBox(height: 35),
+                    profileWidget,
+                    const SizedBox(height: 12),
+                    TextFont(
+                      text: displayName,
+                      textAlign: TextAlign.center,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    if (pocketBaseService.userEmail != null) ...[
+                      const SizedBox(height: 2),
                       TextFont(
-                        text: (pocketBaseService.userEmail ?? "").toString(),
-                        textAlign: TextAlign.center,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      SizedBox(height: 2),
-                      TextFont(
-                        text: "PocketBase Backend Connected",
+                        text: pocketBaseService.userEmail!,
                         textAlign: TextAlign.center,
                         fontSize: 14,
                         textColor: getColor(context, "textLight"),
                       ),
-                      SizedBox(height: 15),
-                      IntrinsicWidth(
-                        child: Button(
-                          label: "logout".tr(),
-                          onTap: () async {
-                            await signOutGoogle();
-                            setState(() {});
-                          },
-                          padding: EdgeInsetsDirectional.symmetric(
-                              horizontal: 17, vertical: 12),
-                          fontSize: 15,
-                        ),
-                      ),
-                      SizedBox(height: 25),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                            horizontal: 18.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IgnorePointer(
-                                ignoring: currentlyExporting,
-                                child: AnimatedOpacity(
-                                  opacity: currentlyExporting ? 0.4 : 1,
-                                  duration: Duration(milliseconds: 200),
-                                  child: OutlinedButtonStacked(
-                                    text: "Sync Now",
-                                    iconData: appStateSettings["outlinedIcons"]
-                                        ? Icons.sync_outlined
-                                        : Icons.sync_rounded,
-                                    customIconBuilder: (icon) => BouncingWidget(
-                                      animate: currentlyExporting,
-                                      child: icon,
-                                    ),
-                                    onTap: () async {
-                                      setState(() {
-                                        currentlyExporting = true;
-                                      });
-                                      final res = await pocketBaseSyncEngine
-                                          .syncAll();
-                                      if (mounted) {
-                                        setState(() {
-                                          currentlyExporting = false;
-                                        });
-                                        openSnackbar(SnackbarMessage(
-                                          title: res.success
-                                              ? "Sync completed"
-                                              : "Sync failed",
-                                          description: res.message,
-                                          icon: res.success
-                                              ? Icons.cloud_done_rounded
-                                              : Icons.error_outline,
-                                        ));
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 15),
-                            Expanded(
-                              child: OutlinedButtonStacked(
-                                text: "Full Sync",
-                                iconData: appStateSettings["outlinedIcons"]
-                                    ? Icons.cloud_sync_outlined
-                                    : Icons.cloud_sync_rounded,
-                                onTap: () async {
-                                  setState(() {
-                                    currentlyExporting = true;
-                                  });
-                                  final res = await pocketBaseSyncEngine
-                                      .syncAll(forceFullSync: true);
-                                  if (mounted) {
-                                    setState(() {
-                                      currentlyExporting = false;
-                                    });
-                                    openSnackbar(SnackbarMessage(
-                                      title: res.success
-                                          ? "Full Sync completed"
-                                          : "Full Sync failed",
-                                      description: res.message,
-                                      icon: res.success
-                                          ? Icons.cloud_done_rounded
-                                          : Icons.error_outline,
-                                    ));
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 15),
-                      TextFont(
-                        text: "Last synced: " +
-                            (sharedPreferences.getString("pb_last_sync") == null
-                                ? "Never"
-                                : getWordedDateShortMore(
-                                    DateTime.parse(sharedPreferences
-                                        .getString("pb_last_sync")!),
-                                    includeTime: true,
-                                  )),
-                        fontSize: 13,
-                        textColor: getColor(context, "textLight"),
-                      ),
-                      SizedBox(height: 25),
-                      if (kIsWeb)
-                        TipBox(
-                          padding: const EdgeInsetsDirectional.symmetric(
-                              vertical: 20, horizontal: 7),
-                          settingsString: "autoLoginDisabledOnWebTip",
-                          onTap: () {
-                            openUrl(
-                                "https://pub.dev/packages/google_sign_in_web#differences-between-google-identity-services-sdk-and-google-sign-in-for-web-sdk");
-                          },
-                          text: "",
-                          richTextSpan: [
-                            TextSpan(
-                              text: "why-is-auto-login-disabled-on-web".tr() +
-                                  " ",
-                              style: TextStyle(
-                                color: getColor(context, "black"),
-                                fontFamily: appStateSettings["font"],
-                                fontFamilyFallback: ['Inter'],
-                              ),
-                            ),
-                            TextSpan(
-                              text: "read-more-here".tr() + ".",
-                              style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                decorationStyle: TextDecorationStyle.solid,
-                                decorationColor:
-                                    getColor(context, "unPaidOverdue")
-                                        .withOpacity(0.8),
-                                color: getColor(context, "unPaidOverdue")
-                                    .withOpacity(0.8),
-                                fontFamily: appStateSettings["font"],
-                                fontFamilyFallback: ['Inter'],
-                              ),
-                            ),
-                          ],
-                        ),
-                      // if (kIsWeb)
-                      //   Padding(
-                      //     padding: const EdgeInsetsDirectional.symmetric(
-                      //         horizontal: 18, vertical: 15),
-                      //     child: SettingsContainerSwitch(
-                      //       icon: appStateSettings["outlinedIcons"]
-                      //           ? Icons.key_outlined
-                      //           : Icons.key_rounded,
-                      //       isOutlined: true,
-                      //       horizontalPadding: 20,
-                      //       title: "automatic-google-login-popup-web".tr(),
-                      //       description:
-                      //           "automatic-google-login-popup-web-description"
-                      //               .tr(),
-                      //       initialValue: appStateSettings[
-                      //               "webForceLoginPopupOnLaunch"] ==
-                      //           true,
-                      //       onSwitched: (value) async {
-                      //         await updateSettings(
-                      //             "webForceLoginPopupOnLaunch", value,
-                      //             updateGlobalState: false);
-                      //       },
-                      //     ),
-                      //   ),
-                      getPlatform() == PlatformOS.isIOS &&
-                              appStateSettings["showExtraInfoText"] != false
-                          ? Padding(
-                              padding: const EdgeInsetsDirectional.symmetric(
-                                  vertical: 20, horizontal: 7),
-                              child: Tappable(
-                                borderRadius: 15,
-                                onTap: () {
-                                  openUrl(
-                                      "https://cashewapp.web.app/policy.html");
-                                },
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsetsDirectional.symmetric(
-                                          horizontal: 8, vertical: 10),
-                                  child: TextFont(
-                                    text:
-                                        "google-drive-backup-description".tr(),
-                                    textAlign: TextAlign.center,
-                                    fontSize: 14,
-                                    maxLines: 10,
-                                    textColor: getColor(context, "textLight"),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : SizedBox(height: 75),
                     ],
-                  ),
-          ),
+                    const SizedBox(height: 15),
+                    IntrinsicWidth(
+                      child: Button(
+                        label: "logout".tr(),
+                        onTap: () async {
+                          final confirm = await openPopup(
+                            context,
+                            title: "logout".tr(),
+                            description: "Are you sure you want to sign out?",
+                            icon: Icons.logout_rounded,
+                            onSubmit: () => popRoute(context, true),
+                            onCancel: () => popRoute(context, false),
+                            onSubmitLabel: "logout".tr(),
+                            onCancelLabel: "cancel".tr(),
+                          );
+                          if (confirm == true) {
+                            await signOutGoogle();
+                          }
+                        },
+                        padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: 17, vertical: 12),
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: 18.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: IgnorePointer(
+                              ignoring: currentlyExporting,
+                              child: AnimatedOpacity(
+                                opacity: currentlyExporting ? 0.4 : 1,
+                                duration: const Duration(milliseconds: 200),
+                                child: OutlinedButtonStacked(
+                                  text: "Sync Now",
+                                  iconData: appStateSettings["outlinedIcons"]
+                                      ? Icons.sync_outlined
+                                      : Icons.sync_rounded,
+                                  customIconBuilder: (icon) => BouncingWidget(
+                                    animate: currentlyExporting,
+                                    child: icon,
+                                  ),
+                                  onTap: () async {
+                                    setState(() {
+                                      currentlyExporting = true;
+                                    });
+                                    final res =
+                                        await pocketBaseSyncEngine.syncAll();
+                                    if (mounted) {
+                                      setState(() {
+                                        currentlyExporting = false;
+                                      });
+                                      openSnackbar(SnackbarMessage(
+                                        title: res.success
+                                            ? "Sync completed"
+                                            : "Sync failed",
+                                        description: res.message,
+                                        icon: res.success
+                                            ? Icons.cloud_done_rounded
+                                            : Icons.error_outline,
+                                      ));
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          Expanded(
+                            child: OutlinedButtonStacked(
+                              text: "Full Sync",
+                              iconData: appStateSettings["outlinedIcons"]
+                                  ? Icons.cloud_sync_outlined
+                                  : Icons.cloud_sync_rounded,
+                              onTap: () async {
+                                setState(() {
+                                  currentlyExporting = true;
+                                });
+                                final res = await pocketBaseSyncEngine.syncAll(
+                                    forceFullSync: true);
+                                if (mounted) {
+                                  setState(() {
+                                    currentlyExporting = false;
+                                  });
+                                  openSnackbar(SnackbarMessage(
+                                    title: res.success
+                                        ? "Full Sync completed"
+                                        : "Full Sync failed",
+                                    description: res.message,
+                                    icon: res.success
+                                        ? Icons.cloud_done_rounded
+                                        : Icons.error_outline,
+                                  ));
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextFont(
+                      text: "Last synced: " +
+                          (sharedPreferences.getString("pb_last_sync") == null
+                              ? "Never"
+                              : getWordedDateShortMore(
+                                  DateTime.parse(sharedPreferences
+                                      .getString("pb_last_sync")!),
+                                  includeTime: true,
+                                )),
+                      fontSize: 13,
+                      textColor: getColor(context, "textLight"),
+                    ),
+                    const SizedBox(height: 25),
+                  ],
+                ),
         ),
+        if (pocketBaseService.isLoggedIn) ...[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              child: Row(
+                children: [
+                  TextFont(
+                    text: "Sync History",
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (history.isEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: TextFont(
+                    text: "No sync history yet",
+                    fontSize: 14,
+                    textColor: getColor(context, "textLight"),
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final entry = history[index];
+                  final isSuccess = entry.status == "Success";
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 4),
+                    child: SettingsContainerOutlined(
+                      isWideOutlined: true,
+                      title: entry.syncType,
+                      description:
+                          "${getWordedDateShortMore(entry.dateTime, includeTime: true)} • Pushed: ${entry.pushedCount}, Pulled: ${entry.pulledCount}",
+                      icon: isSuccess
+                          ? Icons.cloud_done_rounded
+                          : Icons.cloud_off_rounded,
+                      onTap: () {
+                        openPopup(
+                          context,
+                          title: entry.syncType,
+                          icon: isSuccess
+                              ? Icons.cloud_done_rounded
+                              : Icons.cloud_off_rounded,
+                          description:
+                              "Time: ${getWordedDateShortMore(entry.dateTime, includeTime: true)}\nStatus: ${entry.status}\nPushed records: ${entry.pushedCount}\nPulled records: ${entry.pulledCount}\nDetails: ${entry.message}",
+                          onSubmit: () => popRoute(context),
+                          onSubmitLabel: "Close",
+                        );
+                      },
+                    ),
+                  );
+                },
+                childCount: history.length,
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        ],
       ],
     );
   }
