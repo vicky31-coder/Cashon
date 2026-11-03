@@ -30,7 +30,7 @@ import 'package:budget/widgets/util/saveFile.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide TextInput;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
@@ -38,6 +38,9 @@ import 'package:shimmer/shimmer.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:io';
 import 'package:budget/struct/randomConstants.dart';
+import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/widgets/textInput.dart';
 
 Future<bool> checkConnection() async {
   late bool isConnected;
@@ -90,6 +93,8 @@ Future<bool> testIfHasGmailAccess() async {
 }
 
 Future<bool> signOutGoogle() async {
+  await pocketBaseService.logout();
+  refreshUIAfterLoginChange();
   return true;
 }
 
@@ -97,61 +102,152 @@ Future<bool> refreshGoogleSignIn() async {
   return true;
 }
 
+Future<bool?> openPocketBaseAuthPopup(
+  BuildContext context, {
+  VoidCallback? onLoggedIn,
+}) async {
+  String email = "";
+  String password = "";
+  String passwordConfirm = "";
+  bool isRegister = false;
+  String errorMessage = "";
+
+  return await openPopup(
+    context,
+    icon: Icons.cloud_sync_outlined,
+    title: "PocketBase Backend",
+    subtitle: defaultPocketBaseUrl.replaceFirst("https://", ""),
+    descriptionWidget: StatefulBuilder(
+      builder: (context, setPopupState) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextInput(
+              labelText: "Email",
+              icon: Icons.email_outlined,
+              onChanged: (text) {
+                email = text.trim();
+              },
+            ),
+            SizedBox(height: 10),
+            TextInput(
+              labelText: "Password",
+              obscureText: true,
+              icon: Icons.lock_outline,
+              onChanged: (text) {
+                password = text;
+              },
+            ),
+            if (isRegister) ...[
+              SizedBox(height: 10),
+              TextInput(
+                labelText: "Confirm Password",
+                obscureText: true,
+                icon: Icons.lock_reset_outlined,
+                onChanged: (text) {
+                  passwordConfirm = text;
+                },
+              ),
+            ],
+            if (errorMessage.isNotEmpty) ...[
+              SizedBox(height: 10),
+              TextFont(
+                text: errorMessage,
+                textColor: getColor(context, "danger"),
+                fontSize: 13,
+                maxLines: 3,
+              ),
+            ],
+            SizedBox(height: 15),
+            Center(
+              child: Tappable(
+                onTap: () {
+                  setPopupState(() {
+                    isRegister = !isRegister;
+                    errorMessage = "";
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFont(
+                    text: isRegister
+                        ? "Already have an account? Login"
+                        : "Don't have an account? Register",
+                    fontSize: 14,
+                    textColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+    onSubmitLabel: isRegister ? "Register" : "Login",
+    onSubmit: () async {
+      if (email.isEmpty || password.isEmpty) {
+        openSnackbar(
+            SnackbarMessage(title: "Please enter both email and password"));
+        return;
+      }
+      if (isRegister && password != passwordConfirm) {
+        openSnackbar(SnackbarMessage(title: "Passwords do not match"));
+        return;
+      }
+
+      try {
+        openLoadingPopup(context);
+        if (isRegister) {
+          await pocketBaseService.register(email, password, passwordConfirm);
+        } else {
+          await pocketBaseService.login(email, password);
+        }
+        popRoute(context); // close loading
+        popRoute(context, true); // close popup
+
+        openSnackbar(
+          SnackbarMessage(
+            title: "Connected successfully",
+            icon: Icons.cloud_done_rounded,
+          ),
+        );
+
+        refreshUIAfterLoginChange();
+        if (onLoggedIn != null) onLoggedIn();
+
+        pocketBaseSyncEngine.syncAll().then((result) {
+          if (result.success) {
+            openSnackbar(
+              SnackbarMessage(
+                title: "Sync completed",
+                description:
+                    "Pushed ${result.pushedCount}, pulled ${result.pulledCount}",
+                icon: Icons.sync,
+              ),
+            );
+          }
+          refreshUIAfterLoginChange();
+        });
+      } catch (e) {
+        popRoute(context); // close loading
+        openSnackbar(
+          SnackbarMessage(
+            title: "Authentication Failed",
+            description: e.toString().replaceFirst("ClientException: ", ""),
+            icon: Icons.error_outline,
+          ),
+        );
+      }
+    },
+    onCancelLabel: "cancel".tr(),
+    onCancel: () => popRoute(context, false),
+  );
+}
+
 Future<bool> signInAndSync(BuildContext context,
     {required dynamic Function() next}) async {
-  dynamic result = true;
-  if (getPlatform() == PlatformOS.isIOS &&
-      appStateSettings["hasSignedIn"] != true) {
-    result = await openPopup(
-      null,
-      icon: appStateSettings["outlinedIcons"]
-          ? Icons.badge_outlined
-          : Icons.badge_rounded,
-      title: "backups".tr(),
-      description: "google-drive-backup-disclaimer".tr(),
-      onSubmitLabel: "continue".tr(),
-      onSubmit: () {
-        popRoute(null, true);
-      },
-      onCancel: () {
-        popRoute(null);
-      },
-      onCancelLabel: "cancel".tr(),
-    );
-  }
-
-  if (result != true) return false;
-  loadingIndeterminateKey.currentState?.setVisibility(true);
-  try {
-    await signInGoogle(
-      context: context,
-      waitForCompletion: false,
-      next: next,
-    );
-    if (appStateSettings["username"] == "" && googleUser != null) {
-      await updateSettings("username", googleUser?.displayName ?? "",
-          pagesNeedingRefresh: [0], updateGlobalState: false);
-    }
-    if (googleUser != null) {
-      loadingIndeterminateKey.currentState?.setVisibility(true);
-      await syncData(context);
-      loadingIndeterminateKey.currentState?.setVisibility(true);
-      await syncPendingQueueOnServer();
-      loadingIndeterminateKey.currentState?.setVisibility(true);
-      await getCloudBudgets();
-      loadingIndeterminateKey.currentState?.setVisibility(true);
-      await createBackupInBackground(context);
-    } else {
-      throw ("cannot sync data - user not logged in");
-    }
-    loadingIndeterminateKey.currentState?.setVisibility(false);
-    return true;
-  } catch (e) {
-    print("Error syncing data after login!");
-    print(e.toString());
-    loadingIndeterminateKey.currentState?.setVisibility(false);
-    return false;
-  }
+  final result = await openPocketBaseAuthPopup(context, onLoggedIn: next);
+  return result == true;
 }
 
 Future<void> createBackupInBackground(context) async {
@@ -338,92 +434,47 @@ class GoogleAccountLoginButtonState extends State<GoogleAccountLoginButton> {
 
   @override
   Widget build(BuildContext context) {
+    bool isLoggedIn = pocketBaseService.isLoggedIn;
+    String userEmail = pocketBaseService.userEmail ?? "";
+
     if (widget.navigationSidebarButton == true) {
       return AnimatedSwitcher(
         duration: Duration(milliseconds: 600),
-        child: googleUser == null
-            ? getPlatform() == PlatformOS.isIOS
-                ? NavigationSidebarButton(
-                    key: ValueKey("login"),
-                    label: "backup".tr(),
-                    icon: MoreIcons.google_drive,
-                    iconScale: 0.87,
-                    onTap: loginWithSync,
-                    isSelected: false,
-                  )
-                : NavigationSidebarButton(
-                    key: ValueKey("login"),
-                    label: "login".tr(),
-                    icon: MoreIcons.google,
-                    onTap: loginWithSync,
-                    isSelected: false,
-                  )
-            : getPlatform() == PlatformOS.isIOS
-                ? NavigationSidebarButton(
-                    key: ValueKey("user"),
-                    label: "backup".tr(),
-                    icon: MoreIcons.google_drive,
-                    iconScale: 0.87,
-                    onTap: openPage,
-                    isSelected: widget.isButtonSelected,
-                  )
-                : NavigationSidebarButton(
-                    key: ValueKey("user"),
-                    label: googleUser!.displayName ?? "",
-                    icon: widget.forceButtonName == null
-                        ? appStateSettings["outlinedIcons"]
-                            ? Icons.person_outlined
-                            : Icons.person_rounded
-                        : MoreIcons.google_drive,
-                    iconScale: widget.forceButtonName == null ? 1 : 0.87,
-                    onTap: openPage,
-                    isSelected: widget.isButtonSelected,
-                  ),
+        child: !isLoggedIn
+            ? NavigationSidebarButton(
+                key: ValueKey("login"),
+                label: "login".tr(),
+                icon: Icons.cloud_outlined,
+                onTap: loginWithSync,
+                isSelected: false,
+              )
+            : NavigationSidebarButton(
+                key: ValueKey("user"),
+                label: userEmail,
+                icon: Icons.cloud_done_rounded,
+                onTap: openPage,
+                isSelected: widget.isButtonSelected,
+              ),
       );
     }
-    return googleUser == null
-        ? getPlatform() == PlatformOS.isIOS
-            ? SettingsContainerOpenPage(
-                openPage: AccountsPage(),
-                isOutlined: widget.isOutlinedButton,
-                onTap: (openContainer) {
-                  loginWithSync(onNext: openContainer);
-                },
-                title: widget.forceButtonName ?? "backup".tr(),
-                icon: MoreIcons.google_drive,
-                iconScale: 0.87,
-              )
-            : SettingsContainerOpenPage(
-                openPage: AccountsPage(),
-                isOutlined: widget.isOutlinedButton,
-                onTap: (openContainer) {
-                  loginWithSync(onNext: openContainer);
-                },
-                title: widget.forceButtonName ?? "login".tr(),
-                icon: widget.forceButtonName == null
-                    ? MoreIcons.google
-                    : MoreIcons.google_drive,
-                iconScale: widget.forceButtonName == null ? 1 : 0.87,
-              )
-        : getPlatform() == PlatformOS.isIOS
-            ? SettingsContainerOpenPage(
-                openPage: AccountsPage(),
-                title: widget.forceButtonName ?? "backup".tr(),
-                icon: MoreIcons.google_drive,
-                isOutlined: widget.isOutlinedButton,
-                iconScale: 0.87,
-              )
-            : SettingsContainerOpenPage(
-                openPage: AccountsPage(),
-                title: widget.forceButtonName ?? googleUser!.displayName ?? "",
-                icon: widget.forceButtonName == null
-                    ? appStateSettings["outlinedIcons"]
-                        ? Icons.person_outlined
-                        : Icons.person_rounded
-                    : MoreIcons.google_drive,
-                iconScale: widget.forceButtonName == null ? 1 : 0.87,
-                isOutlined: widget.isOutlinedButton,
-              );
+    return !isLoggedIn
+        ? SettingsContainerOpenPage(
+            openPage: AccountsPage(),
+            isOutlined: widget.isOutlinedButton,
+            onTap: (openContainer) {
+              loginWithSync(onNext: openContainer);
+            },
+            title: widget.forceButtonName ?? "login".tr(),
+            icon: Icons.cloud_outlined,
+            iconScale: 1,
+          )
+        : SettingsContainerOpenPage(
+            openPage: AccountsPage(),
+            title: widget.forceButtonName ?? userEmail,
+            icon: Icons.cloud_done_rounded,
+            iconScale: 1,
+            isOutlined: widget.isOutlinedButton,
+          );
   }
 }
 

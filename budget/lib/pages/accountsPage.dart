@@ -23,6 +23,11 @@ import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:budget/widgets/extraInfoBoxes.dart';
 import 'package:budget/widgets/outlinedButtonStacked.dart';
+import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/widgets/openSnackbar.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
+import 'package:budget/struct/databaseGlobal.dart';
 
 class AccountsPage extends StatefulWidget {
   const AccountsPage({Key? key}) : super(key: key);
@@ -40,6 +45,9 @@ class AccountsPageState extends State<AccountsPage> {
 
   @override
   Widget build(BuildContext context) {
+    String userInitial = (pocketBaseService.userEmail?.isNotEmpty ?? false)
+        ? pocketBaseService.userEmail![0].toUpperCase()
+        : "U";
     Widget profileWidget = Container(
       width: 100,
       height: 100,
@@ -50,7 +58,7 @@ class AccountsPageState extends State<AccountsPage> {
       ),
       child: Center(
         child: TextFont(
-            text: googleUser?.displayName![0] ?? "",
+            text: userInitial,
             fontSize: 60,
             textAlign: TextAlign.center,
             fontWeight: FontWeight.bold,
@@ -63,9 +71,7 @@ class AccountsPageState extends State<AccountsPage> {
       horizontalPaddingConstrained: true,
       dragDownToDismiss: true,
       expandedHeight: 56,
-      title: getPlatform() == PlatformOS.isIOS
-          ? "backup".tr()
-          : "data-backup".tr(),
+      title: "Backend Sync",
       appBarBackgroundColor: getPlatform() == PlatformOS.isIOS
           ? null
           : Theme.of(context).colorScheme.secondaryContainer,
@@ -73,60 +79,23 @@ class AccountsPageState extends State<AccountsPage> {
           ? null
           : Theme.of(context).colorScheme.secondaryContainer,
       bottomPadding: false,
-      actions: [
-        // Show the tip if it was dissmissed
-        if (kIsWeb && appStateSettings["autoLoginDisabledOnWebTip"] == false)
-          CustomPopupMenuButton(
-            showButtons: true,
-            keepOutFirst: true,
-            items: [
-              DropdownItemMenu(
-                id: "auto-login-disabled-info",
-                label: "info".tr(),
-                icon: appStateSettings["outlinedIcons"]
-                    ? Icons.info_outlined
-                    : Icons.info_outline_rounded,
-                action: () {
-                  openPopup(
-                    context,
-                    icon: appStateSettings["outlinedIcons"]
-                        ? Icons.lightbulb_outlined
-                        : Icons.lightbulb_outline_rounded,
-                    title: "auto-login-disabled-on-web".tr(),
-                    description: "why-is-auto-login-disabled-on-web".tr(),
-                    onExtraLabel2: "read-more-here".tr(),
-                    onExtra2: () {
-                      openUrl(
-                          "https://pub.dev/packages/google_sign_in_web#differences-between-google-identity-services-sdk-and-google-sign-in-for-web-sdk");
-                    },
-                    onSubmit: () {
-                      popRoute(context);
-                    },
-                    onSubmitLabel: "ok".tr(),
-                  );
-                },
-              ),
-            ],
-          ),
-      ],
+      actions: [],
       slivers: [
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
-            child: googleUser == null
+            child: !pocketBaseService.isLoggedIn
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SettingsContainerOutlined(
-                        title: getPlatform() == PlatformOS.isIOS
-                            ? "google-drive-backup".tr()
-                            : "sign-in-with-google".tr(),
-                        icon: getPlatform() == PlatformOS.isIOS
-                            ? MoreIcons.google_drive
-                            : MoreIcons.google,
+                        title: "Connect Backend & Sync",
+                        icon: Icons.cloud_outlined,
                         isExpanded: false,
                         onTap: () async {
-                          await signInAndSync(context, next: () {});
+                          await openPocketBaseAuthPopup(context, onLoggedIn: () {
+                            setState(() {});
+                          });
                         },
                       )
                     ],
@@ -135,71 +104,28 @@ class AccountsPageState extends State<AccountsPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: 35),
-                      getPlatform() == PlatformOS.isIOS
-                          ? Container(
-                              padding: EdgeInsetsDirectional.all(20),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                MoreIcons.google_drive,
-                                size: 50,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )
-                          : ClipOval(
-                              child: googleUser == null ||
-                                      googleUser!.photoUrl == null
-                                  ? profileWidget
-                                  : FadeInImage.memoryNetwork(
-                                      fadeInDuration:
-                                          Duration(milliseconds: 100),
-                                      fadeOutDuration:
-                                          Duration(milliseconds: 100),
-                                      placeholder: kTransparentImage,
-                                      image: googleUser!.photoUrl.toString(),
-                                      height: 95,
-                                      width: 95,
-                                      imageErrorBuilder: (BuildContext context,
-                                          Object exception,
-                                          StackTrace? stackTrace) {
-                                        return profileWidget;
-                                      },
-                                    ),
-                            ),
+                      profileWidget,
                       SizedBox(height: 10),
                       TextFont(
-                        text: getPlatform() == PlatformOS.isIOS
-                            ? "google-drive-backup".tr()
-                            : (googleUser?.displayName ?? "").toString(),
+                        text: (pocketBaseService.userEmail ?? "").toString(),
                         textAlign: TextAlign.center,
-                        fontSize: 25,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                       SizedBox(height: 2),
                       TextFont(
-                        text: (appStateSettings["currentUserEmail"] ?? "")
-                            .toString(),
+                        text: "PocketBase Backend Connected",
                         textAlign: TextAlign.center,
-                        fontSize: 15,
+                        fontSize: 14,
+                        textColor: getColor(context, "textLight"),
                       ),
                       SizedBox(height: 15),
                       IntrinsicWidth(
                         child: Button(
                           label: "logout".tr(),
                           onTap: () async {
-                            final result = await signOutGoogle();
-                            if (result == true) {
-                              if (getIsFullScreen(context) == false) {
-                                maybePopRoute(context);
-                                settingsPageStateKey.currentState
-                                    ?.refreshState();
-                              } else {
-                                pageNavigationFrameworkKey.currentState!
-                                    .changePage(0, switchNavbar: true);
-                              }
-                            }
+                            await signOutGoogle();
+                            setState(() {});
                           },
                           padding: EdgeInsetsDirectional.symmetric(
                               horizontal: 17, vertical: 12),
@@ -219,10 +145,10 @@ class AccountsPageState extends State<AccountsPage> {
                                   opacity: currentlyExporting ? 0.4 : 1,
                                   duration: Duration(milliseconds: 200),
                                   child: OutlinedButtonStacked(
-                                    text: "backup".tr(),
+                                    text: "Sync Now",
                                     iconData: appStateSettings["outlinedIcons"]
-                                        ? Icons.cloud_upload_outlined
-                                        : Icons.cloud_upload_rounded,
+                                        ? Icons.sync_outlined
+                                        : Icons.sync_rounded,
                                     customIconBuilder: (icon) => BouncingWidget(
                                       animate: currentlyExporting,
                                       child: icon,
@@ -231,12 +157,22 @@ class AccountsPageState extends State<AccountsPage> {
                                       setState(() {
                                         currentlyExporting = true;
                                       });
-                                      await createBackup(context,
-                                          deleteOldBackups: true);
-                                      if (mounted)
+                                      final res = await pocketBaseSyncEngine
+                                          .syncAll();
+                                      if (mounted) {
                                         setState(() {
                                           currentlyExporting = false;
                                         });
+                                        openSnackbar(SnackbarMessage(
+                                          title: res.success
+                                              ? "Sync completed"
+                                              : "Sync failed",
+                                          description: res.message,
+                                          icon: res.success
+                                              ? Icons.cloud_done_rounded
+                                              : Icons.error_outline,
+                                        ));
+                                      }
                                     },
                                   ),
                                 ),
@@ -245,12 +181,30 @@ class AccountsPageState extends State<AccountsPage> {
                             SizedBox(width: 15),
                             Expanded(
                               child: OutlinedButtonStacked(
-                                text: "restore".tr(),
+                                text: "Full Sync",
                                 iconData: appStateSettings["outlinedIcons"]
-                                    ? Icons.cloud_download_outlined
-                                    : Icons.cloud_download_rounded,
+                                    ? Icons.cloud_sync_outlined
+                                    : Icons.cloud_sync_rounded,
                                 onTap: () async {
-                                  await chooseBackup(context);
+                                  setState(() {
+                                    currentlyExporting = true;
+                                  });
+                                  final res = await pocketBaseSyncEngine
+                                      .syncAll(forceFullSync: true);
+                                  if (mounted) {
+                                    setState(() {
+                                      currentlyExporting = false;
+                                    });
+                                    openSnackbar(SnackbarMessage(
+                                      title: res.success
+                                          ? "Full Sync completed"
+                                          : "Full Sync failed",
+                                      description: res.message,
+                                      icon: res.success
+                                          ? Icons.cloud_done_rounded
+                                          : Icons.error_outline,
+                                    ));
+                                  }
                                 },
                               ),
                             ),
@@ -258,30 +212,19 @@ class AccountsPageState extends State<AccountsPage> {
                         ),
                       ),
                       SizedBox(height: 15),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                            horizontal: 18.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SyncCloudBackupButton(
-                                onTap: () async {
-                                  chooseBackup(context,
-                                      isManaging: true, isClientSync: true);
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 18),
-                            Expanded(
-                              child: BackupsCloudBackupButton(
-                                onTap: () async {
-                                  await chooseBackup(context, isManaging: true);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                      TextFont(
+                        text: "Last synced: " +
+                            (sharedPreferences.getString("pb_last_sync") == null
+                                ? "Never"
+                                : getWordedDateShortMore(
+                                    DateTime.parse(sharedPreferences
+                                        .getString("pb_last_sync")!),
+                                    includeTime: true,
+                                  )),
+                        fontSize: 13,
+                        textColor: getColor(context, "textLight"),
                       ),
+                      SizedBox(height: 25),
                       if (kIsWeb)
                         TipBox(
                           padding: const EdgeInsetsDirectional.symmetric(
