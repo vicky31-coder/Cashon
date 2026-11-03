@@ -20,7 +20,6 @@ import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/colors.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
 
@@ -216,7 +215,7 @@ Future<bool> shareFeedback(String feedbackText, String feedbackType,
   }
 
   try {
-    FirebaseFirestore? db = await firebaseGetDBInstanceAnonymous();
+    dynamic db = await firebaseGetDBInstanceAnonymous();
     if (db == null) {
       throw ("Can't connect to db");
     }
@@ -230,7 +229,7 @@ Future<bool> shareFeedback(String feedbackText, String feedbackType,
       "appVersion": getVersionString(),
     };
 
-    DocumentReference feedbackCreatedOnCloud =
+    dynamic feedbackCreatedOnCloud =
         await db.collection("feedback").add(feedbackEntry);
 
     openSnackbar(SnackbarMessage(

@@ -28,12 +28,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:device_preview/device_preview.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'firebase_options.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 // Requires hot restart when changed
@@ -44,9 +41,6 @@ bool allowDangerousDebugFlags = kDebugMode;
 void main() async {
   captureLogs(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
     await EasyLocalization.ensureInitialized();
     sharedPreferences = await SharedPreferences.getInstance();
     database = await constructDb('db');
@@ -62,12 +56,9 @@ void main() async {
         .compareTo((b.mostLikelyCategoryName ?? b.icon)));
     setHighRefreshRate();
     runApp(
-      DevicePreview(
-        enabled: enableDevicePreview,
-        builder: (context) => InitializeLocalizations(
-          child: RestartApp(
-            child: InitializeApp(key: appStateKey),
-          ),
+      InitializeLocalizations(
+        child: RestartApp(
+          child: InitializeApp(key: appStateKey),
         ),
       ),
     );
@@ -106,8 +97,7 @@ class App extends StatelessWidget {
       showPerformanceOverlay: kProfileMode,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
-      locale:
-          enableDevicePreview ? DevicePreview.locale(context) : context.locale,
+      locale: context.locale,
       shortcuts: shortcuts,
       actions: keyboardIntents,
       themeAnimationDuration: Duration(milliseconds: 400),

@@ -1,2 +1,7 @@
 # Miscellaneous
 /.vscode/
+build/
+**/build/
+.gradle/
+**/.gradle/
+

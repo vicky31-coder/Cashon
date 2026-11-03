@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
 
 Future<String?> getPhotoAndUpload({required ImageSource source}) async {
   dynamic result = await openLoadingPopupTryCatch(() async {
@@ -109,59 +108,5 @@ Future<String?> uploadFileToDrive({
   required Uint8List fileBytes,
   required String fileName,
 }) async {
-  if (googleUser == null) {
-    await signInGoogle(drivePermissionsAttachments: true);
-  }
-
-  final authHeaders = await googleUser!.authHeaders;
-  final authenticateClient = GoogleAuthClient(authHeaders);
-  final driveApi = drive.DriveApi(authenticateClient);
-
-  String folderName = "Cashew";
-  drive.FileList list = await driveApi.files.list(
-      q: "mimeType='application/vnd.google-apps.folder' and name='$folderName'");
-  String? folderId;
-  for (var file in list.files!) {
-    if (file.name == folderName) {
-      folderId = file.id;
-      break;
-    }
-  }
-
-  if (folderId == null) {
-    // If the folder doesn't exist, create it
-    drive.File folder = drive.File();
-    folder.name = folderName;
-    folder.mimeType = "application/vnd.google-apps.folder";
-    drive.File createdFolder = await driveApi.files.create(folder);
-    folderId = createdFolder.id;
-  }
-
-  if (folderId == null) throw ("Folder could not be created in Google Drive");
-
-  drive.Media media = new drive.Media(mediaStream, fileBytes.length);
-
-  drive.File driveFile = new drive.File();
-  String timestamp = DateFormat("yyyy-MM-dd-hhmmss").format(DateTime.now());
-  driveFile.name = timestamp + fileName;
-  driveFile.modifiedTime = DateTime.now().toUtc();
-  driveFile.parents = [folderId];
-
-  drive.File driveFileCreated =
-      await driveApi.files.create(driveFile, uploadMedia: media);
-
-  // Only if we want attachments to be publicly available
-  // drive.Permission permission = drive.Permission();
-  // permission.role = "reader";
-  // await driveApi.permissions.create(
-  //   permission,
-  //   driveFileCreated.id!,
-  //   sendNotificationEmail: false,
-  // );
-
-  // Retrieve the updated metadata for the file with permissions
-  drive.File fileOnDrive = await driveApi.files.get(driveFileCreated.id!,
-      $fields: "id, name, webViewLink, permissions") as drive.File;
-
-  return fileOnDrive.webViewLink;
+  return null;
 }

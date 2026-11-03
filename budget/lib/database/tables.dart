@@ -11,7 +11,6 @@ import 'package:budget/struct/syncClient.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/periodCyclePicker.dart';
 import 'package:budget/widgets/walletEntry.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
@@ -4235,11 +4234,11 @@ class FinanceDatabase extends _$FinanceDatabase {
     // print(budget);
 
     if (budget.sharedKey != null && updateSharedEntry == true) {
-      FirebaseFirestore? db = await firebaseGetDBInstance();
+      dynamic db = await firebaseGetDBInstance();
       if (db == null) {
         return -1;
       }
-      DocumentReference collectionRef =
+      dynamic collectionRef =
           db.collection('budgets').doc(budget.sharedKey);
       collectionRef.update({
         "name": budget.name,

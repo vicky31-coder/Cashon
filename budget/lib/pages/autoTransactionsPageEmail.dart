@@ -25,42 +25,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:budget/functions.dart';
-import 'package:googleapis/gmail/v1.dart' as gMail;
 import 'package:html/parser.dart';
-import 'package:notification_listener_service/notification_event.dart';
-import 'package:notification_listener_service/notification_listener_service.dart';
-
 import 'addButton.dart';
 
-StreamSubscription<ServiceNotificationEvent>? notificationListenerSubscription;
+StreamSubscription? notificationListenerSubscription;
 List<String> recentCapturedNotifications = [];
 
 Future initNotificationScanning() async {
-  if (getPlatform(ignoreEmulation: true) != PlatformOS.isAndroid) return;
-  notificationListenerSubscription?.cancel();
-  if (appStateSettings["notificationScanning"] != true) return;
-
-  bool status = await requestReadNotificationPermission();
-
-  if (status == true) {
-    notificationListenerSubscription =
-        NotificationListenerService.notificationsStream.listen(onNotification);
-  }
+  return;
 }
 
 Future<bool> requestReadNotificationPermission() async {
-  bool status = await NotificationListenerService.isPermissionGranted();
-  if (status != true) {
-    status = await NotificationListenerService.requestPermission();
-  }
-  return status;
-}
-
-onNotification(ServiceNotificationEvent event) async {
-  String messageString = getNotificationMessage(event);
-  recentCapturedNotifications.insert(0, messageString);
-  recentCapturedNotifications.take(50);
-  queueTransactionFromMessage(messageString);
+  return false;
 }
 
 class InitializeNotificationService extends StatefulWidget {
@@ -157,15 +133,8 @@ Future queueTransactionFromMessage(String messageString,
   }
 }
 
-String getNotificationMessage(ServiceNotificationEvent event) {
-  String output = "";
-  output = output + "Package name: " + event.packageName.toString() + "\n";
-  output =
-      output + "Notification removed: " + event.hasRemoved.toString() + "\n";
-  output = output + "\n----\n\n";
-  output = output + "Notification Title: " + event.title.toString() + "\n\n";
-  output = output + "Notification Content: " + event.content.toString();
-  return output;
+String getNotificationMessage(dynamic event) {
+  return "";
 }
 
 class AutoTransactionsPageNotifications extends StatefulWidget {
@@ -390,8 +359,11 @@ class _AutoTransactionsPageEmailState extends State<AutoTransactionsPageEmail> {
 
 Future<void> parseEmailsInBackground(context,
     {bool sayUpdates = false, bool forceParse = false}) async {
-  if (appStateSettings["hasSignedIn"] == false) return;
-  if (errorSigningInDuringCloud == true) return;
+  return;
+}
+
+/*
+Future<void> parseEmailsInBackgroundOld(context,
   if (appStateSettings["emailScanning"] == false) return;
   // Prevent sign-in on web - background sign-in cannot access Google Drive etc.
   if (kIsWeb && !entireAppLoaded) return;
@@ -608,6 +580,7 @@ Future<void> parseEmailsInBackground(context,
     }
   }
 }
+*/
 
 String? getTransactionTitleFromEmail(String messageString,
     String titleTransactionBefore, String titleTransactionAfter) {
@@ -649,7 +622,7 @@ class _GmailApiScreenState extends State<GmailApiScreen> {
   int amountOfEmails =
       appStateSettings["EmailAutoTransactions-amountOfEmails"] ?? 10;
 
-  late gMail.GmailApi gmailApi;
+  dynamic gmailApi;
   List<String> messagesList = [];
 
   @override
@@ -658,44 +631,10 @@ class _GmailApiScreenState extends State<GmailApiScreen> {
   }
 
   init() async {
-    loading = true;
-    if (googleUser != null) {
-      try {
-        final authHeaders = await googleUser!.authHeaders;
-        final authenticateClient = GoogleAuthClient(authHeaders);
-        gMail.GmailApi gmailApi = gMail.GmailApi(authenticateClient);
-        gMail.ListMessagesResponse results = await gmailApi.users.messages
-            .list(googleUser!.id.toString(), maxResults: amountOfEmails);
-        setState(() {
-          loaded = true;
-          error = "";
-        });
-        int currentEmailIndex = 0;
-        for (gMail.Message message in results.messages!) {
-          gMail.Message messageData = await gmailApi.users.messages
-              .get(googleUser!.id.toString(), message.id!);
-          // print(DateTime.fromMillisecondsSinceEpoch(
-          //     int.parse(messageData.internalDate ?? "")));
-          String emailMessageString = getEmailMessage(messageData);
-          messagesList.add(emailMessageString);
-          currentEmailIndex++;
-          loadingProgressKey.currentState
-              ?.setProgressPercentage(currentEmailIndex / amountOfEmails);
-          if (mounted) {
-            setState(() {});
-          } else {
-            loadingProgressKey.currentState?.setProgressPercentage(0);
-            break;
-          }
-        }
-      } catch (e) {
-        setState(() {
-          loaded = true;
-          error = e.toString();
-        });
-      }
-    }
-    loading = false;
+    setState(() {
+      loaded = true;
+    });
+    return;
   }
 
   @override
@@ -1079,28 +1018,6 @@ class EmailsList extends StatelessWidget {
   }
 }
 
-String getEmailMessage(gMail.Message messageData) {
-  String messageEncoded = messageData.payload?.parts?[0].body?.data ?? "";
-  String messageString;
-  if (messageEncoded == "") {
-    gMail.MessagePart payload = messageData.payload!;
-    try {
-      String htmlString = utf8
-          .decode(payload.body!.dataAsBytes)
-          .replaceAll("[^\\x00-\\x7F]", "");
-      String parsedString = parseHtmlString(htmlString);
-      messageString = parsedString;
-    } catch (e) {
-      messageString = (messageData.snippet ?? "") +
-          "\n\n" +
-          "There was an error getting the rest of the email";
-    }
-  } else {
-    messageString = parseHtmlString(utf8.decode(base64.decode(messageEncoded)));
-  }
-  return messageString
-      .split(RegExp(r"[ \t\r\f\v]+"))
-      .join(" ")
-      .replaceAll(new RegExp(r'(?:[\t ]*(?:\r?\n|\r))+'), '\n\n')
-      .replaceAll(RegExp(r"(?<=\n) +"), "");
+String getEmailMessage(dynamic messageData) {
+  return "";
 }

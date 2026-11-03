@@ -71,7 +71,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
-import 'package:googleapis/drive/v3.dart';
 import 'package:provider/provider.dart';
 // import 'package:feature_discovery/feature_discovery.dart';
 
@@ -329,8 +328,7 @@ Future<bool> runAllCloudFunctions(BuildContext context,
     loadingIndeterminateKey.currentState?.setVisibility(false);
     runningCloudFunctions = false;
     canSyncData = true;
-    if (e is DetailedApiRequestError &&
-            e.status == 401 &&
+    if (e.toString().contains("401") &&
             forceSignIn == true ||
         e is PlatformException) {
       // Request had invalid authentication credentials. Try logging out and back in.
