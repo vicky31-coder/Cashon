@@ -5,24 +5,26 @@ import 'package:budget/pages/addBudgetPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/languageMap.dart';
 import 'package:budget/struct/settings.dart';
-import 'package:budget/widgets/accountAndBackup.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/currencyPicker.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
 import 'package:budget/widgets/linearGradientFadedEdges.dart';
-import 'package:budget/widgets/moreIcons.dart';
-import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
-import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/viewAllTransactionsButton.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide TextInput;
 import 'package:budget/functions.dart';
 import 'package:budget/database/initializeDefaultDatabase.dart';
+import 'package:budget/pages/addTransactionPage.dart' show HorizontalBreak;
+import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/widgets/textInput.dart';
+import 'package:budget/widgets/openSnackbar.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
 
 import 'package:budget/widgets/pageIndicator.dart';
 
@@ -39,7 +41,7 @@ class OnBoardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         body: OnBoardingPageBody(
             popNavigationWhenDone: popNavigationWhenDone,
             showPreviewDemoButton: showPreviewDemoButton));
@@ -137,6 +139,128 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
   FocusNode _focusNode = FocusNode();
   late FocusAttachment _focusAttachment;
 
+  bool _showLoginForm = false;
+  bool _isRegister = false;
+  bool _isLoadingAuth = false;
+
+  final TextEditingController _serverUrlController = TextEditingController(
+    text: pocketBaseService.serverUrl,
+  );
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordConfirmController =
+      TextEditingController();
+
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _confirmFocus = FocusNode();
+
+  Future<void> _submitOnboardingLogin() async {
+    minimizeKeyboard(context);
+
+    String serverUrl = _serverUrlController.text.trim();
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text;
+    final String passwordConfirm = _passwordConfirmController.text;
+
+    if (serverUrl.isEmpty) {
+      openSnackbar(SnackbarMessage(
+        title: "Server URL Required",
+        description: "Please enter your PocketBase server URL.",
+        icon: Icons.link_off_rounded,
+      ));
+      return;
+    }
+
+    if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
+      serverUrl = "https://$serverUrl";
+      _serverUrlController.text = serverUrl;
+    }
+
+    if (email.isEmpty || !email.contains('@')) {
+      openSnackbar(SnackbarMessage(
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        icon: Icons.alternate_email_rounded,
+      ));
+      return;
+    }
+
+    if (password.isEmpty) {
+      openSnackbar(SnackbarMessage(
+        title: "Password Required",
+        description: "Please enter your password.",
+        icon: Icons.lock_outline,
+      ));
+      return;
+    }
+
+    if (_isRegister) {
+      if (password.length < 8) {
+        openSnackbar(SnackbarMessage(
+          title: "Password Too Short",
+          description: "Password must be at least 8 characters.",
+          icon: Icons.lock_clock_outlined,
+        ));
+        return;
+      }
+      if (password != passwordConfirm) {
+        openSnackbar(SnackbarMessage(
+          title: "Passwords Do Not Match",
+          description: "Please ensure both password fields match.",
+          icon: Icons.error_outline,
+        ));
+        return;
+      }
+    }
+
+    setState(() {
+      _isLoadingAuth = true;
+    });
+
+    openLoadingPopup(context);
+
+    try {
+      await pocketBaseService.setServerUrl(serverUrl);
+
+      if (_isRegister) {
+        await pocketBaseService.register(email, password, passwordConfirm);
+      } else {
+        await pocketBaseService.login(email, password);
+      }
+
+      try {
+        await pocketBaseSyncEngine.syncAll(forceFullSync: true);
+      } catch (syncErr) {
+        debugPrint("Initial onboarding sync error: $syncErr");
+      }
+
+      popRoute(context); // close loading popup
+
+      openSnackbar(SnackbarMessage(
+        title: _isRegister ? "Account Created" : "Welcome Back",
+        description: "Connected to PocketBase successfully.",
+        icon: Icons.check_circle_outline,
+      ));
+
+      await nextNavigation();
+    } catch (e) {
+      popRoute(context); // close loading popup
+      final errorMsg = getPocketBaseErrorMessage(e);
+      openSnackbar(SnackbarMessage(
+        title: _isRegister ? "Registration Failed" : "Sign In Failed",
+        description: errorMsg,
+        icon: Icons.error_outline,
+      ));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingAuth = false;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -166,6 +290,13 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _serverUrlController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _passwordConfirmController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmFocus.dispose();
     super.dispose();
   }
 
@@ -436,138 +567,171 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
               maxLines: 5,
             ),
           ),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 25),
+            child: TextFont(
+              text: "onboarding-info-3".tr(),
+              textAlign: TextAlign.center,
+              fontSize: 15,
+              maxLines: 5,
+              textColor: getColor(context, "black").withOpacity(0.5),
+            ),
+          ),
           SizedBox(height: 25),
-          getPlatform() == PlatformOS.isIOS
-              ? IntrinsicWidth(
-                  child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 350),
+            firstCurve: Curves.easeInOutCubic,
+            secondCurve: Curves.easeInOutCubic,
+            sizeCurve: Curves.easeInOutCubic,
+            crossFadeState: _showLoginForm
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: Column(
+              children: [
+                Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
                     child: Button(
-                      label: "lets-go".tr(),
+                      label: "Sign In",
+                      icon: Icons.login_rounded,
+                      expandedLayout: true,
                       onTap: () {
-                        nextNavigation();
+                        setState(() {
+                          _showLoginForm = true;
+                        });
                       },
-                      expandedLayout: false,
                     ),
                   ),
-                )
-              : SizedBox.shrink(),
-          getPlatform() == PlatformOS.isIOS
-              ? SizedBox.shrink()
-              : SettingsContainerOutlined(
-                  onTap: () async {
-                    loadingIndeterminateKey.currentState?.setVisibility(true);
-                    openLoadingPopupTryCatch(
-                      () async {
-                        // Can maybe use this function, but on web first login does not sync...
-                        // Let's just use the functionality below this
-                        // await signInAndSync(context, next: () {});
-
-                        await signInGoogle(
-                          context: context,
-                          waitForCompletion: false,
-                          next: () {},
-                        );
-                        if (appStateSettings["username"] == "" &&
-                            googleUser != null) {
-                          updateSettings(
-                              "username", googleUser?.displayName ?? "",
-                              pagesNeedingRefresh: [0],
-                              updateGlobalState: false);
-                        }
-                        // If user has sync backups, but no real backups it will show up here
-                        // For now disable restoring of a backup popup, the sync backups will be restored automatically using the function call below
-                        // var result;
-                        // List<drive.File>? files = (await getDriveFiles()).$2;
-                        // if ((files?.length ?? 0) > 0) {
-                        //   result = await openPopup(
-                        //     context,
-                        //     icon: appStateSettings["outlinedIcons"] ? Icons.cloud_sync_outlined : Icons.cloud_sync_rounded,
-                        //     title: "backup-found".tr(),
-                        //     description: "backup-found-description".tr(),
-                        //     onSubmit: () {
-                        //       popRoute(context, true);
-                        //     },
-                        //     onCancel: () {
-                        //       popRoute(context, false);
-                        //     },
-                        //     onSubmitLabel: "restore".tr(),
-                        //     onCancelLabel: "cancel".tr(),
-                        //   );
-                        // }
-                        // if (result == true) {
-                        //   chooseBackup(context, hideDownloadButton: true);
-                        // } else if (result == false && googleUser != null) {
-                        //   openLoadingPopup(context);
-                        //   // set this to true so cloud functions run
-                        //   entireAppLoaded = true;
-                        //   await runAllCloudFunctions(
-                        //     context,
-                        //     forceSignIn: true,
-                        //   );
-                        //   popRoute(context);
-                        //   nextNavigation();
-                        // }
-                        // else {
-                        //   nextNavigation();
-                        // }
-
-                        // set this to true so cloud functions run
-                        entireAppLoaded = true;
-                        await runAllCloudFunctions(
-                          context,
-                          forceSignIn: true,
-                        );
-
-                        nextNavigation();
-                        loadingIndeterminateKey.currentState
-                            ?.setVisibility(false);
-                      },
-                      onError: (e) {
-                        print("Error signing in: " + e.toString());
-                        loadingIndeterminateKey.currentState
-                            ?.setVisibility(false);
-                      },
-                    );
-                  },
-                  title: "sign-in-with-google".tr(),
-                  icon: MoreIcons.google,
-                  isExpanded: false,
                 ),
-          getPlatform() == PlatformOS.isIOS
-              ? SizedBox.shrink()
-              : SizedBox(height: 8),
-          getPlatform() == PlatformOS.isIOS
-              ? SizedBox.shrink()
-              : Padding(
-                  padding:
-                      const EdgeInsetsDirectional.symmetric(horizontal: 25),
-                  child: TextFont(
-                    text: "onboarding-info-3".tr(),
-                    textAlign: TextAlign.center,
-                    fontSize: 16,
-                    maxLines: 5,
-                  ),
-                ),
-          getPlatform() == PlatformOS.isIOS
-              ? SizedBox.shrink()
-              : SizedBox(height: 35),
-          getPlatform() == PlatformOS.isIOS
-              ? SizedBox.shrink()
-              : LowKeyButton(
+                const SizedBox(height: 16),
+                LowKeyButton(
                   onTap: () {
                     nextNavigation();
                   },
                   text: "continue-without-sign-in".tr(),
                 ),
-          // IntrinsicWidth(
-          //   child: Button(
-          //     label: "Let's go!",
-          //     onTap: () {
-          //       nextNavigation();
-          //     },
-          //   ),
-          // ),
+              ],
+            ),
+            secondChild: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: getColor(context, "canvasContainer"),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        TextInput(
+                          labelText: "Server URL",
+                          icon: Icons.dns_outlined,
+                          controller: _serverUrlController,
+                          keyboardType: TextInputType.url,
+                          textInputAction: TextInputAction.next,
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 16, vertical: 8),
+                          onSubmitted: (_) => _emailFocus.requestFocus(),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: HorizontalBreak(),
+                        ),
+                        TextInput(
+                          labelText: "Email",
+                          icon: Icons.email_outlined,
+                          controller: _emailController,
+                          focusNode: _emailFocus,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 16, vertical: 8),
+                          onSubmitted: (_) => _passwordFocus.requestFocus(),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: HorizontalBreak(),
+                        ),
+                        TextInput(
+                          labelText: "Password",
+                          icon: Icons.lock_outline,
+                          controller: _passwordController,
+                          focusNode: _passwordFocus,
+                          obscureText: true,
+                          textInputAction: _isRegister
+                              ? TextInputAction.next
+                              : TextInputAction.done,
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 16, vertical: 8),
+                          onSubmitted: (_) {
+                            if (_isRegister) {
+                              _confirmFocus.requestFocus();
+                            } else {
+                              _submitOnboardingLogin();
+                            }
+                          },
+                        ),
+                        if (_isRegister) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: HorizontalBreak(),
+                          ),
+                          TextInput(
+                            labelText: "Confirm Password",
+                            icon: Icons.lock_reset_outlined,
+                            controller: _passwordConfirmController,
+                            focusNode: _confirmFocus,
+                            obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            padding: const EdgeInsetsDirectional.symmetric(
+                                horizontal: 16, vertical: 8),
+                            onSubmitted: (_) => _submitOnboardingLogin(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      child: Button(
+                        label: _isLoadingAuth
+                            ? "Please wait..."
+                            : (_isRegister ? "Sign Up" : "Sign In"),
+                        icon: _isRegister
+                            ? Icons.person_add_rounded
+                            : Icons.login_rounded,
+                        disabled: _isLoadingAuth,
+                        expandedLayout: true,
+                        onTap: _submitOnboardingLogin,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  LowKeyButton(
+                    text: _isRegister
+                        ? "Already have an account? Sign In"
+                        : "Don't have an account? Sign Up",
+                    onTap: () {
+                      setState(() {
+                        _isRegister = !_isRegister;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  LowKeyButton(
+                    text: "continue-without-sign-in".tr(),
+                    onTap: () {
+                      nextNavigation();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     ];
@@ -601,8 +765,9 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
             ),
           ),
         ),
-        Align(
-          alignment: AlignmentDirectional.bottomCenter,
+        if (MediaQuery.viewInsetsOf(context).bottom == 0)
+          Align(
+            alignment: AlignmentDirectional.bottomCenter,
           child: Padding(
             padding: EdgeInsetsDirectional.only(
                 bottom: MediaQuery.viewPaddingOf(context).bottom),

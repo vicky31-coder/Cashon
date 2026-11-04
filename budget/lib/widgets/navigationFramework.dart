@@ -92,9 +92,7 @@ class InitialPageRouteNavigator extends StatelessWidget {
           listenable: pocketBaseService,
           builder: (context, _) {
             Widget activePage;
-            if (!pocketBaseService.isLoggedIn) {
-              activePage = const LoginPage(key: ValueKey("LoginPage"));
-            } else if (appStateSettings["hasOnboarded"] != true) {
+            if (appStateSettings["hasOnboarded"] != true) {
               activePage = const OnBoardingPage(key: ValueKey("Onboarding"));
             } else {
               activePage = PageNavigationFrameworkSafeArea(

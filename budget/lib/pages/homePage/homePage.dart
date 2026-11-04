@@ -15,12 +15,10 @@ import 'package:budget/pages/homePage/homePagePieChart.dart';
 import 'package:budget/pages/homePage/homePageWalletList.dart';
 import 'package:budget/pages/homePage/homePageWalletSwitcher.dart';
 import 'package:budget/pages/homePage/homeTransactions.dart';
-import 'package:budget/pages/homePage/homePageUsername.dart';
 import 'package:budget/pages/homePage/homePageBudgets.dart';
 import 'package:budget/pages/homePage/homePageUpcomingTransactions.dart';
 import 'package:budget/pages/homePage/homePageAllSpendingSummary.dart';
 import 'package:budget/pages/editHomePage.dart';
-import 'package:budget/pages/settingsPage.dart';
 import 'package:budget/pages/homePage/homePageCreditDebts.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
@@ -350,34 +348,39 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   children: [
                     PreviewDemoWarning(),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                                start: 17, end: 5),
-                            child: TextFont(
-                              text: getDynamicGreeting(),
-                              fontWeight: FontWeight.bold,
-                              fontSize: getIsFullScreen(context) ? 22 : 24,
-                              maxLines: 2,
-                              textColor: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
-                          ),
+                    // Header space with dynamic greeting and profile avatar positioned directly above the account boxes
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (getExpandedHeaderHeight(context, null) - 56)
+                            .clamp(45.0, 110.0),
+                      ),
+                      child: Container(
+                        alignment: AlignmentDirectional.bottomStart,
+                        padding: EdgeInsetsDirectional.only(
+                          start: 16,
+                          end: 12,
+                          bottom: enableDoubleColumn(context) ? 8 : 12,
                         ),
-                        buildHomeProfileAvatar(context),
-                      ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: TextFont(
+                                text: getDynamicGreeting(),
+                                fontWeight: FontWeight.bold,
+                                fontSize: getIsFullScreen(context) ? 25 : 27,
+                                maxLines: 2,
+                                textColor: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            ),
+                            buildHomeProfileAvatar(context),
+                          ],
+                        ),
+                      ),
                     ),
-                    // Wipe all remaining pixels off - sometimes graphics artifacts are left behind
-                    Container(
-                        height: 1,
-                        color: Theme.of(context).colorScheme.background),
-                    const SizedBox(height: 5),
                     // Not full screen
                     if (enableDoubleColumn(context) != true) ...[
                       KeepAliveClientMixin(child: HomePageRatingBox()),

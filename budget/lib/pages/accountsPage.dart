@@ -40,6 +40,7 @@ class AccountsPage extends StatefulWidget {
 
 class AccountsPageState extends State<AccountsPage> {
   bool currentlyExporting = false;
+  bool fullSyncOption = false;
 
   void refreshState() {
     setState(() {});
@@ -181,83 +182,98 @@ class AccountsPageState extends State<AccountsPage> {
                     const SizedBox(height: 25),
                     Padding(
                       padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 18.0),
-                      child: Row(
+                          horizontal: 24.0),
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: IgnorePointer(
-                              ignoring: currentlyExporting,
-                              child: AnimatedOpacity(
-                                opacity: currentlyExporting ? 0.4 : 1,
-                                duration: const Duration(milliseconds: 200),
-                                child: OutlinedButtonStacked(
-                                  text: "Sync Now",
-                                  iconData: appStateSettings["outlinedIcons"]
-                                      ? Icons.sync_outlined
-                                      : Icons.sync_rounded,
-                                  customIconBuilder: (icon) => BouncingWidget(
-                                    animate: currentlyExporting,
-                                    child: icon,
-                                  ),
-                                  onTap: () async {
-                                    setState(() {
-                                      currentlyExporting = true;
-                                    });
-                                    final res =
-                                        await pocketBaseSyncEngine.syncAll();
-                                    if (mounted) {
+                          Center(
+                            child: FractionallySizedBox(
+                              widthFactor: 0.55,
+                              child: IgnorePointer(
+                                ignoring: currentlyExporting,
+                                child: AnimatedOpacity(
+                                  opacity: currentlyExporting ? 0.4 : 1,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Button(
+                                    label: currentlyExporting
+                                        ? "Syncing..."
+                                        : (fullSyncOption
+                                            ? "Full Sync"
+                                            : "Sync Now"),
+                                    icon: fullSyncOption
+                                        ? (appStateSettings["outlinedIcons"]
+                                            ? Icons.cloud_sync_outlined
+                                            : Icons.cloud_sync_rounded)
+                                        : (appStateSettings["outlinedIcons"]
+                                            ? Icons.sync_outlined
+                                            : Icons.sync_rounded),
+                                    expandedLayout: true,
+                                    onTap: () async {
                                       setState(() {
-                                        currentlyExporting = false;
+                                        currentlyExporting = true;
                                       });
-                                      openSnackbar(SnackbarMessage(
-                                        title: res.success
-                                            ? "Sync completed"
-                                            : "Sync failed",
-                                        description: res.message,
-                                        icon: res.success
-                                            ? Icons.cloud_done_rounded
-                                            : Icons.error_outline,
-                                      ));
-                                    }
-                                  },
+                                      final res =
+                                          await pocketBaseSyncEngine.syncAll(
+                                        forceFullSync: fullSyncOption,
+                                      );
+                                      if (mounted) {
+                                        setState(() {
+                                          currentlyExporting = false;
+                                        });
+                                        openSnackbar(SnackbarMessage(
+                                          title: res.success
+                                              ? (fullSyncOption
+                                                  ? "Full Sync completed"
+                                                  : "Sync completed")
+                                              : "Sync failed",
+                                          description: res.message,
+                                          icon: res.success
+                                              ? Icons.cloud_done_rounded
+                                              : Icons.error_outline,
+                                        ));
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: OutlinedButtonStacked(
-                              text: "Full Sync",
-                              iconData: appStateSettings["outlinedIcons"]
-                                  ? Icons.cloud_sync_outlined
-                                  : Icons.cloud_sync_rounded,
-                              onTap: () async {
-                                setState(() {
-                                  currentlyExporting = true;
-                                });
-                                final res = await pocketBaseSyncEngine.syncAll(
-                                    forceFullSync: true);
-                                if (mounted) {
-                                  setState(() {
-                                    currentlyExporting = false;
-                                  });
-                                  openSnackbar(SnackbarMessage(
-                                    title: res.success
-                                        ? "Full Sync completed"
-                                        : "Full Sync failed",
-                                    description: res.message,
-                                    icon: res.success
-                                        ? Icons.cloud_done_rounded
-                                        : Icons.error_outline,
-                                  ));
-                                }
-                              },
+                          const SizedBox(height: 10),
+                          Tappable(
+                            color: Colors.transparent,
+                            borderRadius: 12,
+                            onTap: () {
+                              setState(() {
+                                fullSyncOption = !fullSyncOption;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextFont(
+                                    text: "Full Sync",
+                                    fontSize: 14,
+                                    textColor: getColor(context, "textLight"),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  PlatformSwitch(
+                                    value: fullSyncOption,
+                                    onTap: () {
+                                      setState(() {
+                                        fullSyncOption = !fullSyncOption;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 12),
                     TextFont(
                       text: "Last synced: " +
                           (sharedPreferences.getString("pb_last_sync") == null
@@ -308,26 +324,28 @@ class AccountsPageState extends State<AccountsPage> {
                 (context, index) {
                   final entry = history[index];
                   final isSuccess = entry.status == "Success";
+                  final formattedDate =
+                      DateFormat("dd MM yyyy, hh:mm a").format(entry.dateTime);
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 4),
                     child: SettingsContainerOutlined(
                       isWideOutlined: true,
-                      title: entry.syncType,
+                      title: formattedDate,
                       description:
-                          "${getWordedDateShortMore(entry.dateTime, includeTime: true)} • Pushed: ${entry.pushedCount}, Pulled: ${entry.pulledCount}",
+                          "${entry.syncType} • Pushed: ${entry.pushedCount}, Pulled: ${entry.pulledCount}",
                       icon: isSuccess
                           ? Icons.cloud_done_rounded
                           : Icons.cloud_off_rounded,
                       onTap: () {
                         openPopup(
                           context,
-                          title: entry.syncType,
+                          title: formattedDate,
                           icon: isSuccess
                               ? Icons.cloud_done_rounded
                               : Icons.cloud_off_rounded,
                           description:
-                              "Time: ${getWordedDateShortMore(entry.dateTime, includeTime: true)}\nStatus: ${entry.status}\nPushed records: ${entry.pushedCount}\nPulled records: ${entry.pulledCount}\nDetails: ${entry.message}",
+                              "Type: ${entry.syncType}\nStatus: ${entry.status}\nPushed records: ${entry.pushedCount}\nPulled records: ${entry.pulledCount}\nDetails: ${entry.message}",
                           onSubmit: () => popRoute(context),
                           onSubmitLabel: "Close",
                         );
@@ -335,7 +353,7 @@ class AccountsPageState extends State<AccountsPage> {
                     ),
                   );
                 },
-                childCount: history.length,
+                childCount: history.length > 20 ? 20 : history.length,
               ),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 30)),

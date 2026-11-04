@@ -66,7 +66,9 @@ List<SyncHistoryEntry> getSyncHistory() {
   if (raw == null || raw.isEmpty) return [];
   try {
     final List decoded = jsonDecode(raw);
-    return decoded.map((e) => SyncHistoryEntry.fromJson(e)).toList();
+    final list = decoded.map((e) => SyncHistoryEntry.fromJson(e)).toList();
+    if (list.length > 20) return list.sublist(0, 20);
+    return list;
   } catch (e) {
     return [];
   }
@@ -75,8 +77,8 @@ List<SyncHistoryEntry> getSyncHistory() {
 Future<void> addSyncHistory(SyncHistoryEntry entry) async {
   List<SyncHistoryEntry> history = getSyncHistory();
   history.insert(0, entry);
-  if (history.length > 50) {
-    history = history.sublist(0, 50);
+  if (history.length > 20) {
+    history = history.sublist(0, 20);
   }
   await sharedPreferences.setString(
     "pb_sync_history",

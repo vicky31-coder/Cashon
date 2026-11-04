@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:budget/colors.dart';
 import 'package:budget/database/initializeDefaultDatabase.dart';
-import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart' show HorizontalBreak;
 import 'package:budget/struct/databaseGlobal.dart';
@@ -32,20 +31,25 @@ class _LoginPageState extends State<LoginPage> {
   bool _isRegister = false;
   bool _isLoading = false;
 
+  final TextEditingController _serverUrlController =
+      TextEditingController(text: pocketBaseService.serverUrl);
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordConfirmController =
       TextEditingController();
 
+  final FocusNode _serverUrlFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _confirmFocus = FocusNode();
 
   @override
   void dispose() {
+    _serverUrlController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _passwordConfirmController.dispose();
+    _serverUrlFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
@@ -55,9 +59,24 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _submit() async {
     minimizeKeyboard(context);
 
+    String serverUrl = _serverUrlController.text.trim();
     final String email = _emailController.text.trim();
     final String password = _passwordController.text;
     final String passwordConfirm = _passwordConfirmController.text;
+
+    if (serverUrl.isEmpty) {
+      openSnackbar(SnackbarMessage(
+        title: "Server URL Required",
+        description: "Please enter your PocketBase server URL.",
+        icon: Icons.link_off_rounded,
+      ));
+      return;
+    }
+
+    if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
+      serverUrl = "https://$serverUrl";
+      _serverUrlController.text = serverUrl;
+    }
 
     if (email.isEmpty || !email.contains('@')) {
       openSnackbar(SnackbarMessage(
@@ -103,6 +122,8 @@ class _LoginPageState extends State<LoginPage> {
     openLoadingPopup(context);
 
     try {
+      await pocketBaseService.setServerUrl(serverUrl);
+
       if (_isRegister) {
         await pocketBaseService.register(email, password, passwordConfirm);
       } else {
@@ -260,6 +281,21 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       children: [
                         TextInput(
+                          labelText: "Server URL",
+                          icon: Icons.dns_outlined,
+                          controller: _serverUrlController,
+                          focusNode: _serverUrlFocus,
+                          keyboardType: TextInputType.url,
+                          textInputAction: TextInputAction.next,
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 16, vertical: 8),
+                          onSubmitted: (_) => _emailFocus.requestFocus(),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: HorizontalBreak(),
+                        ),
+                        TextInput(
                           labelText: "Email",
                           icon: Icons.email_outlined,
                           controller: _emailController,
@@ -315,17 +351,22 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 22),
 
-                  // Action Button
-                  Button(
-                    label: _isLoading
-                        ? "Please wait..."
-                        : (_isRegister ? "Create Account" : "Sign In"),
-                    icon: _isRegister
-                        ? Icons.person_add_rounded
-                        : Icons.login_rounded,
-                    disabled: _isLoading,
-                    expandedLayout: true,
-                    onTap: _submit,
+                  // Action Button (Half Width)
+                  Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      child: Button(
+                        label: _isLoading
+                            ? "Please wait..."
+                            : (_isRegister ? "Create Account" : "Sign In"),
+                        icon: _isRegister
+                            ? Icons.person_add_rounded
+                            : Icons.login_rounded,
+                        disabled: _isLoading,
+                        expandedLayout: true,
+                        onTap: _submit,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -338,6 +379,16 @@ class _LoginPageState extends State<LoginPage> {
                       setState(() {
                         _isRegister = !_isRegister;
                       });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Continue without signing in
+                  LowKeyButton(
+                    text: "continue-without-sign-in".tr(),
+                    onTap: () async {
+                      await updateSettings("hasOnboarded", true,
+                          pagesNeedingRefresh: [], updateGlobalState: true);
                     },
                   ),
                   const SizedBox(height: 24),

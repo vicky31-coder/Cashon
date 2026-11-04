@@ -108,6 +108,7 @@ Future<bool?> openPocketBaseAuthPopup(
   BuildContext context, {
   VoidCallback? onLoggedIn,
 }) async {
+  String serverUrl = pocketBaseService.serverUrl;
   String email = "";
   String password = "";
   String passwordConfirm = "";
@@ -118,12 +119,20 @@ Future<bool?> openPocketBaseAuthPopup(
     context,
     icon: Icons.cloud_sync_outlined,
     title: "PocketBase Backend",
-    subtitle: defaultPocketBaseUrl.replaceFirst("https://", ""),
     descriptionWidget: StatefulBuilder(
       builder: (context, setPopupState) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextInput(
+              labelText: "Server URL",
+              initialValue: serverUrl,
+              icon: Icons.dns_outlined,
+              onChanged: (text) {
+                serverUrl = text.trim();
+              },
+            ),
+            SizedBox(height: 10),
             TextInput(
               labelText: "Email",
               icon: Icons.email_outlined,
@@ -187,6 +196,10 @@ Future<bool?> openPocketBaseAuthPopup(
     ),
     onSubmitLabel: isRegister ? "Register" : "Login",
     onSubmit: () async {
+      if (serverUrl.isEmpty) {
+        openSnackbar(SnackbarMessage(title: "Please enter a server URL"));
+        return;
+      }
       if (email.isEmpty || password.isEmpty) {
         openSnackbar(
             SnackbarMessage(title: "Please enter both email and password"));
@@ -199,6 +212,11 @@ Future<bool?> openPocketBaseAuthPopup(
 
       try {
         openLoadingPopup(context);
+        if (!serverUrl.startsWith("http://") &&
+            !serverUrl.startsWith("https://")) {
+          serverUrl = "https://$serverUrl";
+        }
+        await pocketBaseService.setServerUrl(serverUrl);
         if (isRegister) {
           await pocketBaseService.register(email, password, passwordConfirm);
         } else {

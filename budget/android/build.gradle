@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools:r8:8.5.35'
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -25,6 +35,11 @@ subprojects { subproject ->
                 if (subproject.android.namespace == null) {
                     subproject.android.namespace = subproject.group
                 }
+                try {
+                    subproject.android {
+                        compileSdkVersion 35
+                    }
+                } catch (Exception ignored) {}
             }
         }
     }

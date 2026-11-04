@@ -7,8 +7,7 @@ import 'package:pocketbase/pocketbase.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 
-const String defaultPocketBaseUrl =
-    "https://cashonbackend.hl.rhaegarsystems.com";
+const String defaultPocketBaseUrl = "";
 
 String getPocketBaseErrorMessage(dynamic e) {
   if (e is ClientException) {
@@ -76,17 +75,25 @@ class PocketBaseService extends ChangeNotifier {
       },
     );
 
-    pb = PocketBase(serverUrl, authStore: authStore);
-    isInitialized = true;
+    if (serverUrl.isNotEmpty) {
+      pb = PocketBase(serverUrl, authStore: authStore);
+      isInitialized = true;
+    } else {
+      pb = PocketBase("http://localhost", authStore: authStore);
+      isInitialized = false;
+    }
 
     // Proactive token rotation and validation if an existing session is saved
-    if (pb.authStore.isValid && pb.authStore.token.isNotEmpty) {
+    if (isInitialized && pb.authStore.isValid && pb.authStore.token.isNotEmpty) {
       refreshToken();
     }
   }
 
   bool get isLoggedIn =>
-      isInitialized && pb.authStore.isValid && pb.authStore.token.isNotEmpty;
+      isInitialized &&
+      serverUrl.isNotEmpty &&
+      pb.authStore.isValid &&
+      pb.authStore.token.isNotEmpty;
 
   String? get userEmail => pb.authStore.record?.getStringValue("email");
   String? get userId => pb.authStore.record?.id;
@@ -149,7 +156,11 @@ class PocketBaseService extends ChangeNotifier {
   }
 
   Future<void> setServerUrl(String url) async {
-    await sharedPreferences.setString("pb_server_url", url);
+    String formattedUrl = url.trim();
+    if (formattedUrl.endsWith("/")) {
+      formattedUrl = formattedUrl.substring(0, formattedUrl.length - 1);
+    }
+    await sharedPreferences.setString("pb_server_url", formattedUrl);
     isInitialized = false;
     await init();
     _safeNotifyListeners();
