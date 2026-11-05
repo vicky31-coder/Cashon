@@ -1,6 +1,10 @@
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/struct/settings.dart';
+import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
+import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/accountAndBackup.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
@@ -14,9 +18,10 @@ import 'package:timer_builder/timer_builder.dart';
 bool enableSwipeDownToRefresh(BuildContext context) {
   return selectingTransactionsActive == 0 &&
       runningCloudFunctions == false &&
-      appStateSettings["hasSignedIn"] != false &&
-      appStateSettings["backupSync"] == true &&
-      googleUser != null;
+      (pocketBaseService.isLoggedIn ||
+          (appStateSettings["hasSignedIn"] != false &&
+              appStateSettings["backupSync"] == true &&
+              googleUser != null));
   // && getIsFullScreen(context) == false;
 }
 
@@ -131,7 +136,14 @@ class _PullDownToRefreshSyncState extends State<PullDownToRefreshSync>
 
   _refreshSync() async {
     _animationController.reverse();
-    if (runningCloudFunctions == false) {
+    if (pocketBaseService.isLoggedIn && !pocketBaseSyncEngine.isSyncing) {
+      final res = await pocketBaseSyncEngine.syncAll();
+      openSnackbar(SnackbarMessage(
+        title: res.success ? "Sync completed" : "Sync failed",
+        description: res.message,
+        icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
+      ));
+    } else if (runningCloudFunctions == false) {
       await runAllCloudFunctions(context);
     }
   }

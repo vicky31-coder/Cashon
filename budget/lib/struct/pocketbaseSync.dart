@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:pocketbase/pocketbase.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/pocketbaseService.dart';
@@ -57,7 +56,7 @@ class SyncHistoryEntry {
         pulledCount: json["pulled_count"] ?? 0,
         status: json["status"] ?? "Success",
         message: json["message"] ?? "",
-        dateTime: DateTime.tryParse(json["date_time"] ?? "") ?? DateTime.now(),
+        dateTime: DateTime.tryParse(json["date_time"] ?? "")?.toLocal() ?? DateTime.now(),
       );
 }
 
@@ -104,6 +103,20 @@ Future<void> addSyncHistory(SyncHistoryEntry entry) async {
   }
 }
 
+Future<void> clearSyncHistory() async {
+  await sharedPreferences.remove("pb_sync_history");
+  if (pocketBaseService.isLoggedIn) {
+    try {
+      final records = await pocketBaseService.client
+          .collection("sync_history")
+          .getFullList(filter: 'user = "${pocketBaseService.userId}"');
+      for (final r in records) {
+        await pocketBaseService.client.collection("sync_history").delete(r.id);
+      }
+    } catch (_) {}
+  }
+}
+
 class PocketBaseSyncEngine {
   static final PocketBaseSyncEngine _instance =
       PocketBaseSyncEngine._internal();
@@ -111,6 +124,48 @@ class PocketBaseSyncEngine {
   PocketBaseSyncEngine._internal();
 
   bool isSyncing = false;
+  List<HomePageWidgetDisplay>? _parseHomePageWidgetDisplay(
+      RecordModel r, TransactionWallet? existing) {
+    final dynamic raw = r.data['home_page_widget_display'];
+    if (raw == null || raw == "" || raw == "null") {
+      return existing?.homePageWidgetDisplay;
+    }
+    try {
+      List rawList;
+      if (raw is List) {
+        rawList = raw;
+      } else if (raw is String) {
+        rawList = jsonDecode(raw);
+      } else {
+        return existing?.homePageWidgetDisplay;
+      }
+      List<HomePageWidgetDisplay> parsed = [];
+      for (var item in rawList) {
+        if (item is int &&
+            item >= 0 &&
+            item < HomePageWidgetDisplay.values.length) {
+          parsed.add(HomePageWidgetDisplay.values[item]);
+        } else if (item is String) {
+          int? asInt = int.tryParse(item);
+          if (asInt != null &&
+              asInt >= 0 &&
+              asInt < HomePageWidgetDisplay.values.length) {
+            parsed.add(HomePageWidgetDisplay.values[asInt]);
+          } else {
+            for (var v in HomePageWidgetDisplay.values) {
+              if (v.name == item || v.toString() == item) {
+                parsed.add(v);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return parsed.isNotEmpty ? parsed : existing?.homePageWidgetDisplay;
+    } catch (e) {
+      return existing?.homePageWidgetDisplay;
+    }
+  }
 
   Future<SyncResult> syncAll({bool forceFullSync = false}) async {
     if (isSyncing) {
@@ -170,7 +225,7 @@ class PocketBaseSyncEngine {
             "home_page_widget_display": w.homePageWidgetDisplay == null
                 ? null
                 : jsonEncode(w.homePageWidgetDisplay!
-                    .map((e) => e.toString())
+                    .map((e) => e.index)
                     .toList()),
           },
         );
@@ -234,7 +289,7 @@ class PocketBaseSyncEngine {
             "budget_transaction_filters": b.budgetTransactionFilters == null
                 ? null
                 : jsonEncode(b.budgetTransactionFilters!
-                    .map((e) => e.toString())
+                    .map((e) => e.index)
                     .toList()),
             "member_transaction_filters": b.memberTransactionFilters,
             "is_absolute_spending_limit": b.isAbsoluteSpendingLimit,
@@ -434,9 +489,14 @@ class PocketBaseSyncEngine {
         collection: "wallets",
         filter: dateFilter,
         onRecord: (r) async {
+          final String walletPk = r.getStringValue("client_id");
+          TransactionWallet? existing;
+          try {
+            existing = await database.getWalletInstance(walletPk);
+          } catch (_) {}
           await database.createOrUpdateWallet(
             TransactionWallet(
-              walletPk: r.getStringValue("client_id"),
+              walletPk: walletPk,
               name: r.getStringValue("name"),
               colour: r.getStringValue("colour").isEmpty
                   ? null
@@ -456,7 +516,7 @@ class PocketBaseSyncEngine {
                   ? null
                   : r.getStringValue("currency_format"),
               decimals: r.getIntValue("decimals", 2),
-              homePageWidgetDisplay: null,
+              homePageWidgetDisplay: _parseHomePageWidgetDisplay(r, existing),
             ),
             insert: false,
           );

@@ -14,6 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 Future<String?> initializeNotifications() async {
+  if (kIsWeb ||
+      (getPlatform(ignoreEmulation: true) != PlatformOS.isAndroid &&
+          getPlatform(ignoreEmulation: true) != PlatformOS.isIOS)) {
+    return null;
+  }
   // Since iOS cannot send scheduled notifications when the app is open
   // There is no need to listen to incoming notification payloads
   if (getPlatform(ignoreEmulation: true) != PlatformOS.isIOS) {

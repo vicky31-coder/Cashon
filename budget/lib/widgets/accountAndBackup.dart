@@ -39,7 +39,6 @@ import 'package:universal_html/html.dart' as html;
 import 'dart:io';
 import 'package:budget/struct/randomConstants.dart';
 import 'package:budget/struct/pocketbaseService.dart';
-import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/widgets/textInput.dart';
 
 Future<bool> checkConnection() async {
@@ -234,20 +233,6 @@ Future<bool?> openPocketBaseAuthPopup(
 
         refreshUIAfterLoginChange();
         if (onLoggedIn != null) onLoggedIn();
-
-        pocketBaseSyncEngine.syncAll().then((result) {
-          if (result.success) {
-            openSnackbar(
-              SnackbarMessage(
-                title: "Sync completed",
-                description:
-                    "Pushed ${result.pushedCount}, pulled ${result.pulledCount}",
-                icon: Icons.sync,
-              ),
-            );
-          }
-          refreshUIAfterLoginChange();
-        });
       } catch (e) {
         popRoute(context); // close loading
         openSnackbar(
