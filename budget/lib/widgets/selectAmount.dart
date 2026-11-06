@@ -110,7 +110,6 @@ class _SelectAmountState extends State<SelectAmount> {
   String amount = "";
 
   FocusNode _focusNode = FocusNode();
-  late FocusAttachment _focusAttachment;
   late String? walletPkForCurrency;
   late String? selectedWalletPk = widget.selectedWalletPk;
 
@@ -150,146 +149,150 @@ class _SelectAmountState extends State<SelectAmount> {
     // if (amount.endsWith(".0")) {
     //   amount = widget.amountPassed.replaceAll(".0", "");
     // }
-    _focusAttachment = _focusNode.attach(context, onKeyEvent: (node, event) {
-      bool keyIsPressed = event.runtimeType == KeyDownEvent ||
-          event.runtimeType == KeyRepeatEvent;
-      if (!keyIsPressed) {
-        if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
-          isControlPressed = false;
-        }
-        return KeyEventResult.ignored;
-      }
-      if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
-        isControlPressed = true;
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey.keyLabel == "Go Back" ||
-          event.logicalKey == LogicalKeyboardKey.escape) {
-        popRoute(context);
-        return KeyEventResult.handled;
-      } else if (isControlPressed &&
-          event.logicalKey == LogicalKeyboardKey.keyC) {
-        copyToClipboard(amount);
-        return KeyEventResult.handled;
-      } else if (isControlPressed &&
-          event.logicalKey == LogicalKeyboardKey.keyV) {
-        pasteFromClipboard();
-        return KeyEventResult.handled;
-      }
-
-      // 1. Direct character match for numbers 0-9 (supports all keyboards & numpads)
-      final String? ch = event.character;
-      if (ch != null &&
-          ch.length == 1 &&
-          ch.compareTo('0') >= 0 &&
-          ch.compareTo('9') <= 0) {
-        addToAmount(ch);
-        return KeyEventResult.handled;
-      }
-
-      // 2. Logical key fallbacks for digit and numpad keys
-      if (event.logicalKey == LogicalKeyboardKey.digit0 ||
-          event.logicalKey == LogicalKeyboardKey.numpad0) {
-        addToAmount("0");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
-          event.logicalKey == LogicalKeyboardKey.numpad1) {
-        addToAmount("1");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
-          event.logicalKey == LogicalKeyboardKey.numpad2) {
-        addToAmount("2");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
-          event.logicalKey == LogicalKeyboardKey.numpad3) {
-        addToAmount("3");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
-          event.logicalKey == LogicalKeyboardKey.numpad4) {
-        addToAmount("4");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
-          event.logicalKey == LogicalKeyboardKey.numpad5) {
-        addToAmount("5");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
-          event.logicalKey == LogicalKeyboardKey.numpad6) {
-        addToAmount("6");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
-          event.logicalKey == LogicalKeyboardKey.numpad7) {
-        addToAmount("7");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
-          event.logicalKey == LogicalKeyboardKey.numpad8) {
-        addToAmount("8");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
-          event.logicalKey == LogicalKeyboardKey.numpad9) {
-        addToAmount("9");
-        return KeyEventResult.handled;
-      } else if (ch == '*' ||
-          ch == 'x' ||
-          ch == 'X' ||
-          event.logicalKey == LogicalKeyboardKey.asterisk ||
-          event.logicalKey == LogicalKeyboardKey.numpadMultiply) {
-        addToAmount("×");
-        return KeyEventResult.handled;
-      } else if (ch == '/' ||
-          event.logicalKey == LogicalKeyboardKey.slash ||
-          event.logicalKey == LogicalKeyboardKey.numpadDivide) {
-        addToAmount("÷");
-        return KeyEventResult.handled;
-      } else if (ch == '+' ||
-          event.logicalKey == LogicalKeyboardKey.add ||
-          event.logicalKey == LogicalKeyboardKey.numpadAdd) {
-        addToAmount("+");
-        return KeyEventResult.handled;
-      } else if (ch == '-' ||
-          event.logicalKey == LogicalKeyboardKey.minus ||
-          event.logicalKey == LogicalKeyboardKey.numpadSubtract) {
-        addToAmount("-");
-        return KeyEventResult.handled;
-      } else if (ch == '.' ||
-          ch == ',' ||
-          event.logicalKey == LogicalKeyboardKey.period ||
-          event.logicalKey == LogicalKeyboardKey.comma ||
-          event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
-        addToAmount(".");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
-          event.logicalKey == LogicalKeyboardKey.delete) {
-        removeToAmount();
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        if (widget.next != null) {
-          widget.next!();
-        }
-        if (widget.popWithAmount) {
-          popRoute(
-              context,
-              (amount == ""
-                  ? 0
-                  : includesOperations(amount, false)
-                      ? calculateResult(amount)
-                      : double.tryParse(amount) ?? 0));
-        }
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (!mounted) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    if (FocusManager.instance.primaryFocus?.context?.widget is EditableText) {
+      return false;
+    }
+
+    bool keyIsPressed =
+        event is KeyDownEvent || event is KeyRepeatEvent;
+    if (!keyIsPressed) {
+      if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
+        isControlPressed = false;
+      }
+      return false;
+    }
+    if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
+      isControlPressed = true;
+      return true;
+    }
+    if (event.logicalKey.keyLabel == "Go Back" ||
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      popRoute(context);
+      return true;
+    } else if (isControlPressed &&
+        event.logicalKey == LogicalKeyboardKey.keyC) {
+      copyToClipboard(amount);
+      return true;
+    } else if (isControlPressed &&
+        event.logicalKey == LogicalKeyboardKey.keyV) {
+      pasteFromClipboard();
+      return true;
+    }
+
+    // 1. Direct character match for numbers 0-9 (supports all keyboards & numpads)
+    final String? ch = event.character;
+    if (ch != null &&
+        ch.length == 1 &&
+        ch.compareTo('0') >= 0 &&
+        ch.compareTo('9') <= 0) {
+      addToAmount(ch);
+      return true;
+    }
+
+    // 2. Logical key fallbacks for digit and numpad keys
+    if (event.logicalKey == LogicalKeyboardKey.digit0 ||
+        event.logicalKey == LogicalKeyboardKey.numpad0) {
+      addToAmount("0");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
+        event.logicalKey == LogicalKeyboardKey.numpad1) {
+      addToAmount("1");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
+        event.logicalKey == LogicalKeyboardKey.numpad2) {
+      addToAmount("2");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
+        event.logicalKey == LogicalKeyboardKey.numpad3) {
+      addToAmount("3");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
+        event.logicalKey == LogicalKeyboardKey.numpad4) {
+      addToAmount("4");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
+        event.logicalKey == LogicalKeyboardKey.numpad5) {
+      addToAmount("5");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
+        event.logicalKey == LogicalKeyboardKey.numpad6) {
+      addToAmount("6");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
+        event.logicalKey == LogicalKeyboardKey.numpad7) {
+      addToAmount("7");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
+        event.logicalKey == LogicalKeyboardKey.numpad8) {
+      addToAmount("8");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
+        event.logicalKey == LogicalKeyboardKey.numpad9) {
+      addToAmount("9");
+      return true;
+    } else if (ch == '*' ||
+        ch == 'x' ||
+        ch == 'X' ||
+        event.logicalKey == LogicalKeyboardKey.asterisk ||
+        event.logicalKey == LogicalKeyboardKey.numpadMultiply) {
+      addToAmount("×");
+      return true;
+    } else if (ch == '/' ||
+        event.logicalKey == LogicalKeyboardKey.slash ||
+        event.logicalKey == LogicalKeyboardKey.numpadDivide) {
+      addToAmount("÷");
+      return true;
+    } else if (ch == '+' ||
+        event.logicalKey == LogicalKeyboardKey.add ||
+        event.logicalKey == LogicalKeyboardKey.numpadAdd) {
+      addToAmount("+");
+      return true;
+    } else if (ch == '-' ||
+        event.logicalKey == LogicalKeyboardKey.minus ||
+        event.logicalKey == LogicalKeyboardKey.numpadSubtract) {
+      addToAmount("-");
+      return true;
+    } else if (ch == '.' ||
+        ch == ',' ||
+        event.logicalKey == LogicalKeyboardKey.period ||
+        event.logicalKey == LogicalKeyboardKey.comma ||
+        event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
+      addToAmount(".");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
+        event.logicalKey == LogicalKeyboardKey.delete) {
+      removeToAmount();
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (widget.next != null) {
+        widget.next!();
+      }
+      if (widget.popWithAmount) {
+        popRoute(
+            context,
+            (amount == ""
+                ? 0
+                : includesOperations(amount, false)
+                    ? calculateResult(amount)
+                    : double.tryParse(amount) ?? 0));
+      }
+      return true;
+    }
+    return false;
   }
 
   void addToAmount(String input, {bool hapticFeedback = true}) {
@@ -678,7 +681,6 @@ class _SelectAmountState extends State<SelectAmount> {
 
   @override
   Widget build(BuildContext context) {
-    _focusAttachment.reparent();
     String amountConverted = amount;
     if (amountConverted == "") amountConverted = "0";
     amountConverted = widget.convertToMoney == false
@@ -707,18 +709,8 @@ class _SelectAmountState extends State<SelectAmount> {
                             : countDecimalDigits(amount),
                       )),
           );
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () {
-          if (!_focusNode.hasFocus) {
-            _focusNode.requestFocus();
-          }
-        },
-        child: Column(
-          children: [
+    return Column(
+      children: [
         Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -940,9 +932,7 @@ class _SelectAmountState extends State<SelectAmount> {
           ),
         ),
       ],
-    ),
-  ),
-);
+    );
   }
 }
 
@@ -1333,100 +1323,109 @@ class _SelectAmountValueState extends State<SelectAmountValue> {
   String amount = "";
 
   FocusNode _focusNode = FocusNode();
-  late FocusAttachment _focusAttachment;
 
   @override
   void initState() {
     super.initState();
     amount = widget.amountPassed;
-    _focusAttachment = _focusNode.attach(context, onKeyEvent: (node, event) {
-      bool keyIsPressed = event.runtimeType == KeyDownEvent ||
-          event.runtimeType == KeyRepeatEvent;
-      if (!keyIsPressed) {
-        return KeyEventResult.ignored;
-      }
-      String? ch = event.character;
-      if (ch != null &&
-          ch.isNotEmpty &&
-          ch.compareTo('0') >= 0 &&
-          ch.compareTo('9') <= 0) {
-        addToAmount(ch);
-        return KeyEventResult.handled;
-      } else if (event.logicalKey.keyLabel == "Go Back" ||
-          event.logicalKey == LogicalKeyboardKey.escape) {
-        popRoute(context);
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit0 ||
-          event.logicalKey == LogicalKeyboardKey.numpad0) {
-        addToAmount("0");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
-          event.logicalKey == LogicalKeyboardKey.numpad1) {
-        addToAmount("1");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
-          event.logicalKey == LogicalKeyboardKey.numpad2) {
-        addToAmount("2");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
-          event.logicalKey == LogicalKeyboardKey.numpad3) {
-        addToAmount("3");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
-          event.logicalKey == LogicalKeyboardKey.numpad4) {
-        addToAmount("4");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
-          event.logicalKey == LogicalKeyboardKey.numpad5) {
-        addToAmount("5");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
-          event.logicalKey == LogicalKeyboardKey.numpad6) {
-        addToAmount("6");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
-          event.logicalKey == LogicalKeyboardKey.numpad7) {
-        addToAmount("7");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
-          event.logicalKey == LogicalKeyboardKey.numpad8) {
-        addToAmount("8");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
-          event.logicalKey == LogicalKeyboardKey.numpad9) {
-        addToAmount("9");
-        return KeyEventResult.handled;
-      } else if (ch == '.' ||
-          ch == ',' ||
-          event.logicalKey == LogicalKeyboardKey.period ||
-          event.logicalKey == LogicalKeyboardKey.comma ||
-          event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
-        addToAmount(".");
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
-          event.logicalKey == LogicalKeyboardKey.delete) {
-        removeToAmount();
-        return KeyEventResult.handled;
-      } else if (event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        if (widget.next != null) {
-          widget.next!();
-        }
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (!mounted) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
+    if (FocusManager.instance.primaryFocus?.context?.widget is EditableText) {
+      return false;
+    }
+
+    bool keyIsPressed =
+        event is KeyDownEvent || event is KeyRepeatEvent;
+    if (!keyIsPressed) {
+      return false;
+    }
+    if (event.logicalKey.keyLabel == "Go Back" ||
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      popRoute(context);
+      return true;
+    }
+
+    // 1. Direct character match for numbers 0-9
+    final String? ch = event.character;
+    if (ch != null &&
+        ch.length == 1 &&
+        ch.compareTo('0') >= 0 &&
+        ch.compareTo('9') <= 0) {
+      addToAmount(ch);
+      return true;
+    }
+
+    // 2. Logical key fallbacks for digit and numpad keys
+    if (event.logicalKey == LogicalKeyboardKey.digit0 ||
+        event.logicalKey == LogicalKeyboardKey.numpad0) {
+      addToAmount("0");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
+        event.logicalKey == LogicalKeyboardKey.numpad1) {
+      addToAmount("1");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
+        event.logicalKey == LogicalKeyboardKey.numpad2) {
+      addToAmount("2");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
+        event.logicalKey == LogicalKeyboardKey.numpad3) {
+      addToAmount("3");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
+        event.logicalKey == LogicalKeyboardKey.numpad4) {
+      addToAmount("4");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
+        event.logicalKey == LogicalKeyboardKey.numpad5) {
+      addToAmount("5");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
+        event.logicalKey == LogicalKeyboardKey.numpad6) {
+      addToAmount("6");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
+        event.logicalKey == LogicalKeyboardKey.numpad7) {
+      addToAmount("7");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
+        event.logicalKey == LogicalKeyboardKey.numpad8) {
+      addToAmount("8");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
+        event.logicalKey == LogicalKeyboardKey.numpad9) {
+      addToAmount("9");
+      return true;
+    } else if (ch == '.' ||
+        ch == ',' ||
+        event.logicalKey == LogicalKeyboardKey.period ||
+        event.logicalKey == LogicalKeyboardKey.comma ||
+        event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
+      addToAmount(".");
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
+        event.logicalKey == LogicalKeyboardKey.delete) {
+      removeToAmount();
+      return true;
+    } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (widget.next != null) {
+        widget.next!();
+      }
+      return true;
+    }
+    return false;
   }
 
   void addToAmount(String input) {
@@ -1477,78 +1476,65 @@ class _SelectAmountValueState extends State<SelectAmountValue> {
 
   @override
   Widget build(BuildContext context) {
-    _focusAttachment.reparent();
     String amountConverted = amount.replaceAll(".", getDecimalSeparator());
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () {
-          if (!_focusNode.hasFocus) {
-            _focusNode.requestFocus();
-          }
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (widget.showEnteredNumber == true)
-              Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
-                child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child: FractionallySizedBox(
-                    key: ValueKey(amount),
-                    widthFactor: 1,
-                    child: TextFont(
-                      autoSizeText: true,
-                      maxLines: 1,
-                      minFontSize: 16,
-                      text: amountConverted + widget.suffix,
-                      textAlign: TextAlign.end,
-                      fontSize: 35,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (widget.showEnteredNumber == true)
+          Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
+            child: AnimatedSwitcher(
+              duration: Duration(milliseconds: 200),
+              child: FractionallySizedBox(
+                key: ValueKey(amount),
+                widthFactor: 1,
+                child: TextFont(
+                  autoSizeText: true,
+                  maxLines: 1,
+                  minFontSize: 16,
+                  text: amountConverted + widget.suffix,
+                  textAlign: TextAlign.end,
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            Container(height: 10),
-            NumberPadAmount(
-              extraWidgetAboveNumbers: widget.extraWidgetAboveNumbers,
-              addToAmount: addToAmount,
-              enableDecimal: widget.enableDecimal,
-              removeToAmount: removeToAmount,
-              removeAll: removeAll,
-              canChange: () => true,
-              padding: EdgeInsetsDirectional.zero,
-              setState: () => setState(() {}),
-              enableCalculator: false,
             ),
-            Container(height: 15),
-            AnimatedSwitcher(
-              duration: Duration(milliseconds: 500),
-              child: amount != "" || widget.allowZero
-                  ? Button(
-                      key: Key("addSuccess"),
-                      label: widget.nextLabel ?? "",
-                      width: MediaQuery.sizeOf(context).width,
-                      onTap: () {
-                        if (widget.next != null) {
-                          widget.next!();
-                        }
-                      },
-                    )
-                  : Button(
-                      key: Key("addNoSuccess"),
-                      label: widget.nextLabel ?? "",
-                      width: MediaQuery.sizeOf(context).width,
-                      onTap: () {},
-                      color: Colors.grey,
-                    ),
-            )
-          ],
+          ),
+        Container(height: 10),
+        NumberPadAmount(
+          extraWidgetAboveNumbers: widget.extraWidgetAboveNumbers,
+          addToAmount: addToAmount,
+          enableDecimal: widget.enableDecimal,
+          removeToAmount: removeToAmount,
+          removeAll: removeAll,
+          canChange: () => true,
+          padding: EdgeInsetsDirectional.zero,
+          setState: () => setState(() {}),
+          enableCalculator: false,
         ),
-      ),
+        Container(height: 15),
+        AnimatedSwitcher(
+          duration: Duration(milliseconds: 500),
+          child: amount != "" || widget.allowZero
+              ? Button(
+                  key: Key("addSuccess"),
+                  label: widget.nextLabel ?? "",
+                  width: MediaQuery.sizeOf(context).width,
+                  onTap: () {
+                    if (widget.next != null) {
+                      widget.next!();
+                    }
+                  },
+                )
+              : Button(
+                  key: Key("addNoSuccess"),
+                  label: widget.nextLabel ?? "",
+                  width: MediaQuery.sizeOf(context).width,
+                  onTap: () {},
+                  color: Colors.grey,
+                ),
+        )
+      ],
     );
   }
 }
