@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/legacy.dart';
+import 'package:budget/struct/settings.dart';
+import 'package:budget/widgets/navigationFramework.dart';
 
 class WindowsWindowFrame extends StatelessWidget {
   final Widget child;
@@ -125,6 +127,8 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> with WindowListener {
       padding: const EdgeInsets.only(left: 10, right: 12),
       child: Row(
         children: [
+          const _SidebarToggleButton(),
+          const SizedBox(width: 8),
           Expanded(
             child: DragToMoveArea(
               child: GestureDetector(
@@ -145,6 +149,77 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> with WindowListener {
           ),
           _MacOsWindowButtons(isMaximized: _isMaximized),
         ],
+      ),
+    );
+  }
+}
+
+class _SidebarToggleButton extends StatefulWidget {
+  const _SidebarToggleButton();
+
+  @override
+  State<_SidebarToggleButton> createState() => _SidebarToggleButtonState();
+}
+
+class _SidebarToggleButtonState extends State<_SidebarToggleButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isExpanded = appStateSettings["expandedNavigationSidebar"] == true;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: Tooltip(
+        message: isExpanded ? "Collapse sidebar" : "Expand sidebar",
+        waitDuration: const Duration(milliseconds: 300),
+        child: GestureDetector(
+          onTap: () {
+            if (sidebarStateKey.currentState != null) {
+              sidebarStateKey.currentState?.toggleSidebar();
+            } else {
+              appStateSettings["expandedNavigationSidebar"] =
+                  !(appStateSettings["expandedNavigationSidebar"] ?? true);
+              updateSettings(
+                  "expandedNavigationSidebar",
+                  appStateSettings["expandedNavigationSidebar"],
+                  updateGlobalState: true);
+            }
+          },
+          child: Container(
+            width: 28,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _isHovered
+                  ? (isDark
+                      ? Colors.white.withOpacity(0.12)
+                      : Colors.black.withOpacity(0.08))
+                  : (isExpanded
+                      ? (isDark
+                          ? Colors.white.withOpacity(0.06)
+                          : Colors.black.withOpacity(0.04))
+                      : Colors.transparent),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: isExpanded
+                    ? (isDark ? Colors.white24 : Colors.black12)
+                    : Colors.transparent,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.view_sidebar_outlined,
+              size: 15,
+              color: isExpanded
+                  ? (isDark ? Colors.white : Colors.black87)
+                  : (isDark ? Colors.white60 : Colors.black45),
+            ),
+          ),
+        ),
       ),
     );
   }

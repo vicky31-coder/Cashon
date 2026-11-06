@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
 import 'package:budget/pages/editCategoriesPage.dart';
@@ -25,14 +27,16 @@ import 'package:timer_builder/timer_builder.dart';
 
 // returns 0 if no navigation sidebar should be shown
 double getWidthNavigationSidebar(BuildContext context) {
-  if (!pocketBaseService.isLoggedIn) return 0;
+  bool isDesktop =
+      !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+  if (!isDesktop && !pocketBaseService.isLoggedIn) return 0;
   double screenPercent = 0.3;
   double maxWidthNavigation = 270;
   double minScreenWidth = 700;
 
   if (MediaQuery.sizeOf(context).width < minScreenWidth) return 0;
   if (appStateSettings["expandedNavigationSidebar"] == false) {
-    return 70 + MediaQuery.viewPaddingOf(context).left;
+    return 0;
   }
   return (MediaQuery.sizeOf(context).width * screenPercent > maxWidthNavigation
           ? maxWidthNavigation
@@ -80,6 +84,17 @@ class NavigationSidebarState extends State<NavigationSidebar> {
 
   void refreshState() {
     setState(() {});
+  }
+
+  void toggleSidebar() {
+    setState(() {
+      appStateSettings["expandedNavigationSidebar"] =
+          !(appStateSettings["expandedNavigationSidebar"] ?? true);
+    });
+    updateSettings(
+        "expandedNavigationSidebar",
+        appStateSettings["expandedNavigationSidebar"],
+        updateGlobalState: true);
   }
 
   void setSelectedIndex(index) {
@@ -187,16 +202,10 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                     curve: Curves.easeInOutCubic,
                                     child: IconButton(
                                       padding: EdgeInsetsDirectional.all(15),
-                                        onPressed: () {
-                                          setState(() {
-                                            appStateSettings["expandedNavigationSidebar"] =
-                                                !appStateSettings["expandedNavigationSidebar"];
-                                          });
-                                          updateSettings(
-                                              "expandedNavigationSidebar",
-                                              appStateSettings["expandedNavigationSidebar"],
-                                              updateGlobalState: false);
-                                        },
+                                      onPressed: toggleSidebar,
+                                      tooltip: (appStateSettings["expandedNavigationSidebar"] ?? true)
+                                          ? "collapse-sidebar".tr()
+                                          : "expand-sidebar".tr(),
                                       icon: Icon(
                                         appStateSettings["outlinedIcons"]
                                             ? Icons.chevron_left_outlined
