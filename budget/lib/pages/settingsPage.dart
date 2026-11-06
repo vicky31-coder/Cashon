@@ -195,8 +195,7 @@ class MorePages extends StatelessWidget {
                       vertical: 5, horizontal: 4),
                   child: SettingsContainer(
                     onTap: () {
-                      openBottomSheet(context, const EditHomePage(),
-                          fullSnap: true);
+                      pushRoute(context, const EditHomePage());
                     },
                     title: "edit-home".tr(),
                     icon: appStateSettings["outlinedIcons"]

@@ -21,7 +21,6 @@ import 'package:budget/functions.dart';
 import 'package:budget/database/initializeDefaultDatabase.dart';
 import 'package:budget/pages/addTransactionPage.dart' show HorizontalBreak;
 import 'package:budget/struct/pocketbaseService.dart';
-import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/widgets/textInput.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
@@ -139,7 +138,7 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
   FocusNode _focusNode = FocusNode();
   late FocusAttachment _focusAttachment;
 
-  bool _showLoginForm = false;
+  bool _showLoginForm = true;
   bool _isRegister = false;
   bool _isLoadingAuth = false;
 
@@ -227,12 +226,6 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
         await pocketBaseService.register(email, password, passwordConfirm);
       } else {
         await pocketBaseService.login(email, password);
-      }
-
-      try {
-        await pocketBaseSyncEngine.syncAll(forceFullSync: true);
-      } catch (syncErr) {
-        debugPrint("Initial onboarding sync error: $syncErr");
       }
 
       popRoute(context); // close loading popup
@@ -590,8 +583,8 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
             firstChild: Column(
               children: [
                 Center(
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 240),
                     child: Button(
                       label: "Sign In",
                       icon: Icons.login_rounded,
@@ -613,7 +606,10 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
                 ),
               ],
             ),
-            secondChild: Padding(
+            secondChild: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
@@ -693,44 +689,84 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: FractionallySizedBox(
-                      widthFactor: 0.5,
-                      child: Button(
-                        label: _isLoadingAuth
-                            ? "Please wait..."
-                            : (_isRegister ? "Sign Up" : "Sign In"),
-                        icon: _isRegister
-                            ? Icons.person_add_rounded
-                            : Icons.login_rounded,
-                        disabled: _isLoadingAuth,
-                        expandedLayout: true,
-                        onTap: _submitOnboardingLogin,
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Sign In Icon Button
+                      Tooltip(
+                        message: "Sign In",
+                        child: ButtonIcon(
+                          icon: Icons.login_rounded,
+                          size: 54,
+                          iconPadding: 24,
+                          color: !_isRegister
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.secondaryContainer,
+                          iconColor: !_isRegister
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSecondaryContainer,
+                          onTap: () {
+                            if (_isLoadingAuth) return;
+                            if (_isRegister) {
+                              setState(() {
+                                _isRegister = false;
+                              });
+                            } else {
+                              _submitOnboardingLogin();
+                            }
+                          },
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  LowKeyButton(
-                    text: _isRegister
-                        ? "Already have an account? Sign In"
-                        : "Don't have an account? Sign Up",
-                    onTap: () {
-                      setState(() {
-                        _isRegister = !_isRegister;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  LowKeyButton(
-                    text: "continue-without-sign-in".tr(),
-                    onTap: () {
-                      nextNavigation();
-                    },
+                      const SizedBox(width: 18),
+                      // Sign Up Icon Button
+                      Tooltip(
+                        message: "Sign Up",
+                        child: ButtonIcon(
+                          icon: Icons.person_add_rounded,
+                          size: 54,
+                          iconPadding: 24,
+                          color: _isRegister
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.secondaryContainer,
+                          iconColor: _isRegister
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSecondaryContainer,
+                          onTap: () {
+                            if (_isLoadingAuth) return;
+                            if (!_isRegister) {
+                              setState(() {
+                                _isRegister = true;
+                              });
+                            } else {
+                              _submitOnboardingLogin();
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 18),
+                      // Skip / Continue without sign in Button
+                      Tooltip(
+                        message: "continue-without-sign-in".tr(),
+                        child: ButtonIcon(
+                          icon: Icons.arrow_forward_rounded,
+                          size: 54,
+                          iconPadding: 24,
+                          color: getColor(context, "canvasContainer"),
+                          iconColor: getColor(context, "black").withOpacity(0.65),
+                          onTap: () {
+                            if (_isLoadingAuth) return;
+                            nextNavigation();
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              ),
             ),
+          ),
           ),
         ],
       ),

@@ -1,14 +1,12 @@
 import 'dart:io';
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
-import 'package:budget/main.dart';
 import 'package:budget/pages/addTransactionPage.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/accountAndBackup.dart';
 import 'package:budget/widgets/accountProfileBottomSheet.dart';
 import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/button.dart';
-import 'package:budget/widgets/dropdownSelect.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/iconButtonScaled.dart';
 import 'package:budget/widgets/moreIcons.dart';
@@ -20,10 +18,7 @@ import 'package:budget/widgets/settingsContainers.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:transparent_image/transparent_image.dart';
-import 'package:budget/widgets/extraInfoBoxes.dart';
 import 'package:budget/widgets/outlinedButtonStacked.dart';
 import 'package:budget/struct/pocketbaseService.dart';
 import 'package:budget/struct/pocketbaseSync.dart';
@@ -44,6 +39,28 @@ class AccountsPageState extends State<AccountsPage> {
 
   void refreshState() {
     setState(() {});
+  }
+  Future<void> _triggerSync({required bool forceFullSync}) async {
+    if (currentlyExporting) return;
+    setState(() {
+      currentlyExporting = true;
+      fullSyncOption = forceFullSync;
+    });
+    final res = await pocketBaseSyncEngine.syncAll(
+      forceFullSync: forceFullSync,
+    );
+    if (mounted) {
+      setState(() {
+        currentlyExporting = false;
+      });
+      openSnackbar(SnackbarMessage(
+        title: res.success
+            ? (forceFullSync ? "Full Sync completed" : "Sync completed")
+            : "Sync failed",
+        description: res.message,
+        icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
+      ));
+    }
   }
 
   @override
@@ -181,108 +198,55 @@ class AccountsPageState extends State<AccountsPage> {
                     ),
                     const SizedBox(height: 25),
                     Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 24.0),
-                      child: Column(
-                        children: [
-                          Center(
-                            child: FractionallySizedBox(
-                              widthFactor: 0.55,
-                              child: IgnorePointer(
-                                ignoring: currentlyExporting,
-                                child: AnimatedOpacity(
-                                  opacity: currentlyExporting ? 0.4 : 1,
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Button(
-                                    label: currentlyExporting
-                                        ? "Syncing..."
-                                        : (fullSyncOption
-                                            ? "Full Sync"
-                                            : "Sync Now"),
-                                    icon: fullSyncOption
-                                        ? (appStateSettings["outlinedIcons"]
-                                            ? Icons.cloud_sync_outlined
-                                            : Icons.cloud_sync_rounded)
-                                        : (appStateSettings["outlinedIcons"]
-                                            ? Icons.sync_outlined
-                                            : Icons.sync_rounded),
-                                    expandedLayout: true,
-                                    onTap: () async {
-                                      setState(() {
-                                        currentlyExporting = true;
-                                      });
-                                      final res =
-                                          await pocketBaseSyncEngine.syncAll(
-                                        forceFullSync: fullSyncOption,
-                                      );
-                                      if (mounted) {
-                                        setState(() {
-                                          currentlyExporting = false;
-                                        });
-                                        openSnackbar(SnackbarMessage(
-                                          title: res.success
-                                              ? (fullSyncOption
-                                                  ? "Full Sync completed"
-                                                  : "Sync completed")
-                                              : "Sync failed",
-                                          description: res.message,
-                                          icon: res.success
-                                              ? Icons.cloud_done_rounded
-                                              : Icons.error_outline,
-                                        ));
-                                      }
-                                    },
-                                  ),
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 520),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _SyncActionButton(
+                                  title: "Sync Now",
+                                  subtitle: "Fast delta sync",
+                                  icon: appStateSettings["outlinedIcons"]
+                                      ? Icons.sync_outlined
+                                      : Icons.sync_rounded,
+                                  isPrimary: true,
+                                  isLoading:
+                                      currentlyExporting && !fullSyncOption,
+                                  onTap: () =>
+                                      _triggerSync(forceFullSync: false),
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Tappable(
-                            color: Colors.transparent,
-                            borderRadius: 12,
-                            onTap: () {
-                              setState(() {
-                                fullSyncOption = !fullSyncOption;
-                              });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextFont(
-                                    text: "Full Sync",
-                                    fontSize: 14,
-                                    textColor: getColor(context, "textLight"),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  PlatformSwitch(
-                                    value: fullSyncOption,
-                                    onTap: () {
-                                      setState(() {
-                                        fullSyncOption = !fullSyncOption;
-                                      });
-                                    },
-                                  ),
-                                ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _SyncActionButton(
+                                  title: "Full Sync",
+                                  subtitle: "Recheck all records",
+                                  icon: appStateSettings["outlinedIcons"]
+                                      ? Icons.cloud_sync_outlined
+                                      : Icons.cloud_sync_rounded,
+                                  isPrimary: false,
+                                  isLoading:
+                                      currentlyExporting && fullSyncOption,
+                                  onTap: () =>
+                                      _triggerSync(forceFullSync: true),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     TextFont(
                       text: "Last synced: " +
                           (sharedPreferences.getString("pb_last_sync") == null
                               ? "Never"
-                              : getWordedDateShortMore(
+                              : DateFormat('dd MMM yyyy, hh:mm a').format(
                                   DateTime.parse(sharedPreferences
-                                      .getString("pb_last_sync")!),
-                                  includeTime: true,
-                                )),
+                                          .getString("pb_last_sync")!)
+                                      .toLocal())),
                       fontSize: 13,
                       textColor: getColor(context, "textLight"),
                     ),
@@ -295,12 +259,42 @@ class AccountsPageState extends State<AccountsPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextFont(
                     text: "Sync History",
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  if (history.isNotEmpty)
+                    Tappable(
+                      color: Colors.transparent,
+                      borderRadius: 10,
+                      onTap: () async {
+                        await clearSyncHistory();
+                        setState(() {});
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.delete_sweep_outlined,
+                              size: 18,
+                              color: getColor(context, "textLight"),
+                            ),
+                            const SizedBox(width: 4),
+                            TextFont(
+                              text: "Clear All",
+                              fontSize: 13,
+                              textColor: getColor(context, "textLight"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -325,7 +319,7 @@ class AccountsPageState extends State<AccountsPage> {
                   final entry = history[index];
                   final isSuccess = entry.status == "Success";
                   final formattedDate =
-                      DateFormat("dd MM yyyy, hh:mm a").format(entry.dateTime);
+                      DateFormat("dd MMM yyyy, hh:mm a").format(entry.dateTime.toLocal());
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 4),
@@ -575,6 +569,103 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SyncActionButton extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isLoading;
+  final bool isPrimary;
+  final VoidCallback onTap;
+
+  const _SyncActionButton({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isLoading,
+    required this.isPrimary,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bgColor = isPrimary
+        ? theme.colorScheme.primaryContainer
+        : getColor(context, "canvasContainer");
+    final fgColor = isPrimary
+        ? theme.colorScheme.onPrimaryContainer
+        : getColor(context, "black");
+
+    return Tappable(
+      color: bgColor,
+      borderRadius: 18,
+      onTap: isLoading ? () {} : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isPrimary
+                ? theme.colorScheme.primary.withOpacity(0.3)
+                : theme.colorScheme.outline.withOpacity(0.12),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isPrimary
+                    ? theme.colorScheme.primary.withOpacity(0.18)
+                    : theme.colorScheme.secondaryContainer.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: fgColor,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      size: 24,
+                      color: fgColor,
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFont(
+                    text: title,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    textColor: fgColor,
+                  ),
+                  const SizedBox(height: 2),
+                  TextFont(
+                    text: subtitle,
+                    fontSize: 11,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textColor: fgColor.withOpacity(0.65),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

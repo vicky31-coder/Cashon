@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:window_manager/legacy.dart';
+import 'package:budget/widgets/windowsWindowFrame.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/accountsPage.dart';
 import 'package:budget/pages/autoTransactionsPageEmail.dart';
@@ -16,7 +19,6 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/pocketbaseService.dart';
-import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/struct/notificationsGlobal.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/globalLoadingProgress.dart';
@@ -53,8 +55,29 @@ void main() async {
     await initializeSettings();
     await pocketBaseService.init();
     tz.initializeTimeZones();
-    final String? locationName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(locationName ?? "America/New_York"));
+    try {
+      final String? locationName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(locationName ?? "America/New_York"));
+    } catch (e) {
+      print("Could not determine local timezone: $e");
+    }
+
+    if (!kIsWeb && Platform.isWindows) {
+      await windowManager.ensureInitialized();
+      WindowOptions windowOptions = const WindowOptions(
+        size: Size(1280, 780),
+        minimumSize: Size(800, 600),
+        center: true,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.hidden,
+      );
+      windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+    }
+
+
     iconObjects.sort((a, b) => (a.mostLikelyCategoryName ?? a.icon)
         .compareTo((b.mostLikelyCategoryName ?? b.icon)));
     setHighRefreshRate();
@@ -97,6 +120,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     print("Rebuilt Material App");
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       showPerformanceOverlay: kProfileMode,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
@@ -149,7 +173,6 @@ class App extends StatelessWidget {
             await setHighRefreshRate();
             if (pocketBaseService.isLoggedIn) {
               await pocketBaseService.refreshToken();
-              pocketBaseSyncEngine.syncAll();
             }
           },
           child: InitializeBiometrics(
@@ -170,6 +193,8 @@ class App extends StatelessWidget {
         if (kIsWeb) {
           return FadeIn(
               duration: Duration(milliseconds: 1000), child: mainWidget);
+        } else if (Platform.isWindows) {
+          return WindowsWindowFrame(child: mainWidget);
         } else {
           return mainWidget;
         }

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/main.dart';
 import 'package:budget/pages/editCategoriesPage.dart';
@@ -14,15 +16,20 @@ import 'package:budget/widgets/timeDigits.dart';
 import 'package:budget/widgets/util/showDatePicker.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/colors.dart';
+import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
+import 'package:budget/widgets/openSnackbar.dart';
 import 'package:timer_builder/timer_builder.dart';
 
 // returns 0 if no navigation sidebar should be shown
 double getWidthNavigationSidebar(BuildContext context) {
-  if (!pocketBaseService.isLoggedIn) return 0;
+  bool isDesktop =
+      !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+  if (!isDesktop && !pocketBaseService.isLoggedIn) return 0;
   double screenPercent = 0.3;
   double maxWidthNavigation = 270;
   double minScreenWidth = 700;
@@ -79,6 +86,17 @@ class NavigationSidebarState extends State<NavigationSidebar> {
     setState(() {});
   }
 
+  void toggleSidebar() {
+    setState(() {
+      appStateSettings["expandedNavigationSidebar"] =
+          !(appStateSettings["expandedNavigationSidebar"] ?? true);
+    });
+    updateSettings(
+        "expandedNavigationSidebar",
+        appStateSettings["expandedNavigationSidebar"],
+        updateGlobalState: true);
+  }
+
   void setSelectedIndex(index) {
     setState(() {
       selectedIndex = index;
@@ -103,10 +121,11 @@ class NavigationSidebarState extends State<NavigationSidebar> {
       child: AnimatedContainer(
         duration: appStateSettings["appAnimations"] != AppAnimations.all.index
             ? Duration.zero
-            : Duration(milliseconds: 1500),
-        curve: Curves.easeInOutCubicEmphasized,
+            : Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
         width: getWidthNavigationSidebar(context),
-        child: Container(
+        child: ClipRect(
+          child: Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.background,
             border: BorderDirectional(
@@ -154,8 +173,8 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                   duration: appStateSettings["appAnimations"] !=
                                           AppAnimations.all.index
                                       ? Duration.zero
-                                      : Duration(milliseconds: 1500),
-                                  curve: Curves.easeInOutCubicEmphasized,
+                                      : Duration(milliseconds: 250),
+                                  curve: Curves.easeInOutCubic,
                                   padding: EdgeInsetsDirectional.only(
                                     bottom: appStateSettings[
                                             "expandedNavigationSidebar"]
@@ -175,21 +194,18 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                         appStateSettings["appAnimations"] !=
                                                 AppAnimations.all.index
                                             ? Duration.zero
-                                            : Duration(milliseconds: 1500),
+                                            : Duration(milliseconds: 250),
                                     turns: appStateSettings[
                                             "expandedNavigationSidebar"]
                                         ? 0
                                         : -0.5,
-                                    curve: Curves.easeInOutCubicEmphasized,
+                                    curve: Curves.easeInOutCubic,
                                     child: IconButton(
                                       padding: EdgeInsetsDirectional.all(15),
-                                      onPressed: () {
-                                        updateSettings(
-                                            "expandedNavigationSidebar",
-                                            !appStateSettings[
-                                                "expandedNavigationSidebar"],
-                                            updateGlobalState: true);
-                                      },
+                                      onPressed: toggleSidebar,
+                                      tooltip: (appStateSettings["expandedNavigationSidebar"] ?? true)
+                                          ? "collapse-sidebar".tr()
+                                          : "expand-sidebar".tr(),
                                       icon: Icon(
                                         appStateSettings["outlinedIcons"]
                                             ? Icons.chevron_left_outlined
@@ -227,9 +243,9 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                                       "appAnimations"] !=
                                                   AppAnimations.all.index
                                               ? Duration.zero
-                                              : Duration(milliseconds: 1500),
+                                              : Duration(milliseconds: 250),
                                           curve:
-                                              Curves.easeInOutCubicEmphasized,
+                                              Curves.easeInOutCubic,
                                           padding: EdgeInsetsDirectional.only(
                                             top: appStateSettings[
                                                     "expandedNavigationSidebar"]
@@ -251,8 +267,8 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                 duration: appStateSettings["appAnimations"] !=
                                         AppAnimations.all.index
                                     ? Duration.zero
-                                    : Duration(milliseconds: 1500),
-                                curve: Curves.easeInOutCubicEmphasized,
+                                    : Duration(milliseconds: 250),
+                                curve: Curves.easeInOutCubic,
                                 height: appStateSettings[
                                         "expandedNavigationSidebar"]
                                     ? 40
@@ -325,6 +341,7 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                             ],
                           ),
                         ],
+                    ),
                       ),
                     ),
                   ),
@@ -451,45 +468,50 @@ class _SyncButtonState extends State<SyncButton> {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> triggerManualSync() async {
+      if (runningCloudFunctions == false && !pocketBaseSyncEngine.isSyncing) {
+        refreshButtonKey.currentState?.startAnimation();
+        if (pocketBaseService.isLoggedIn) {
+          final res = await pocketBaseSyncEngine.syncAll();
+          openSnackbar(SnackbarMessage(
+            title: res.success ? "Sync completed" : "Sync failed",
+            description: res.message,
+            icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
+          ));
+        } else {
+          await runAllCloudFunctions(
+            context,
+            forceSignIn: true,
+          );
+        }
+        refreshButtonKey.currentState?.startAnimation();
+      }
+    }
+
     Widget refreshButton = Opacity(
-      opacity: 0.6,
+      opacity: 0.7,
       child: RefreshButton(
         key: refreshButtonKey,
         halfAnimation: true,
         customIcon: appStateSettings["outlinedIcons"]
-            ? Icons.sync_outlined
-            : Icons.sync_rounded,
-        flipIcon: true,
+            ? Icons.cloud_sync_outlined
+            : Icons.cloud_sync_rounded,
+        flipIcon: false,
         padding: EdgeInsetsDirectional.zero,
         iconOnly: true,
-        onTap: () async {
-          if (runningCloudFunctions == false) {
-            await runAllCloudFunctions(
-              context,
-              forceSignIn: true,
-            );
-          }
-        },
+        onTap: triggerManualSync,
       ),
     );
     return AnimatedExpanded(
-      expand: !(appStateSettings["currentUserEmail"] == "" ||
-          appStateSettings["backupSync"] == false),
+      expand: pocketBaseService.isLoggedIn ||
+          !(appStateSettings["currentUserEmail"] == "" ||
+              appStateSettings["backupSync"] == false),
       child: Padding(
         padding:
             const EdgeInsetsDirectional.symmetric(horizontal: 5, vertical: 1),
         child: Tappable(
           borderRadius: getPlatform() == PlatformOS.isIOS ? 10 : 50,
-          onTap: () async {
-            if (runningCloudFunctions == false) {
-              refreshButtonKey.currentState?.startAnimation();
-              await runAllCloudFunctions(
-                context,
-                forceSignIn: true,
-              );
-              refreshButtonKey.currentState?.startAnimation();
-            }
-          },
+          onTap: triggerManualSync,
           // Do not use Animated Switcher because otherwise duplicate key!
           child: appStateSettings["expandedNavigationSidebar"]
               ? Padding(
@@ -556,6 +578,10 @@ class _SyncButtonState extends State<SyncButton> {
 DateTime? getTimeLastSynced() {
   DateTime? timeLastSynced = null;
   try {
+    final pbLastSync = sharedPreferences.getString("pb_last_sync");
+    if (pbLastSync != null && pbLastSync.isNotEmpty) {
+      return DateTime.tryParse(pbLastSync)?.toLocal();
+    }
     if (appStateSettings["lastSynced"] == null) throw ("lastSynced is null!");
     timeLastSynced = DateTime.tryParse(
       appStateSettings["lastSynced"],
@@ -659,7 +685,7 @@ class NavigationSidebarButton extends StatelessWidget {
             sizeDuration:
                 appStateSettings["appAnimations"] != AppAnimations.all.index
                     ? Duration.zero
-                    : Duration(milliseconds: 800),
+                    : Duration(milliseconds: 250),
             switcherDuration:
                 appStateSettings["appAnimations"] != AppAnimations.all.index
                     ? Duration.zero
@@ -680,6 +706,9 @@ class NavigationSidebarButton extends StatelessWidget {
                           child: TextFont(
                             text: label.capitalizeFirst,
                             fontSize: 16,
+                            maxLines: 1,
+                            overflow: TextOverflow.clip,
+                            softWrap: false,
                           ),
                         ),
                         trailing,
@@ -736,7 +765,7 @@ class _EdiDatatButtonsState extends State<EditDataButtons> {
                 appStateSettings["appAnimations"] != AppAnimations.all.index
                     ? Duration.zero
                     : Duration(milliseconds: 600),
-            curve: Curves.easeInOutCubicEmphasized,
+            curve: Curves.easeInOutCubic,
             turns: showEditDataButtons ? 0 : -0.5,
             child: Icon(
               appStateSettings["outlinedIcons"]
@@ -748,15 +777,15 @@ class _EdiDatatButtonsState extends State<EditDataButtons> {
         AnimatedPadding(
           duration: appStateSettings["appAnimations"] != AppAnimations.all.index
               ? Duration.zero
-              : Duration(milliseconds: 1500),
-          curve: Curves.easeInOutCubicEmphasized,
+              : Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
           padding: EdgeInsetsDirectional.only(
               start: appStateSettings["expandedNavigationSidebar"] ? 8 : 0),
           child: AnimatedSizeSwitcher(
             sizeDuration:
                 appStateSettings["appAnimations"] != AppAnimations.all.index
                     ? Duration.zero
-                    : Duration(milliseconds: 800),
+                    : Duration(milliseconds: 250),
             switcherDuration:
                 appStateSettings["appAnimations"] != AppAnimations.all.index
                     ? Duration.zero

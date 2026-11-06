@@ -7,7 +7,6 @@ import 'package:budget/pages/addTransactionPage.dart' show HorizontalBreak;
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/languageMap.dart';
 import 'package:budget/struct/pocketbaseService.dart';
-import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
@@ -128,13 +127,6 @@ class _LoginPageState extends State<LoginPage> {
         await pocketBaseService.register(email, password, passwordConfirm);
       } else {
         await pocketBaseService.login(email, password);
-      }
-
-      // Initial sync down from server
-      try {
-        await pocketBaseSyncEngine.syncAll(forceFullSync: true);
-      } catch (syncError) {
-        debugPrint("Initial sync error: $syncError");
       }
 
       // Ensure local database has at least the default initial setup if brand new

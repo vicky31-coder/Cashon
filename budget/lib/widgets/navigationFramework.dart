@@ -473,15 +473,7 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
 
       print("Entire app loaded");
 
-      database.watchAllForAutoSync().listen((event) {
-        // Must be logged in to perform an automatic sync - googleUser != null
-        // If we remove this, it will ask the user to login though - but it can be annoying
-        // Users can visually see the last time of sync, especially on web where sign-in is not automatic,
-        // so it shouldn't be an issue
-        if (runningCloudFunctions == false && googleUser != null) {
-          createSyncBackup(changeMadeSync: true);
-        }
-      });
+      // Automatic sync on data mutation disabled; sync is performed manually by user.
 
       if (kIsWeb) {
         // On web, disable the browser's context menu since this example uses a custom
