@@ -174,50 +174,46 @@ class _SidebarToggleButtonState extends State<_SidebarToggleButton> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: Tooltip(
-        message: isExpanded ? "Collapse sidebar" : "Expand sidebar",
-        waitDuration: const Duration(milliseconds: 300),
-        child: GestureDetector(
-          onTap: () {
-            if (sidebarStateKey.currentState != null) {
-              sidebarStateKey.currentState?.toggleSidebar();
-            } else {
-              appStateSettings["expandedNavigationSidebar"] =
-                  !(appStateSettings["expandedNavigationSidebar"] ?? true);
-              updateSettings(
-                  "expandedNavigationSidebar",
-                  appStateSettings["expandedNavigationSidebar"],
-                  updateGlobalState: true);
-            }
-          },
-          child: Container(
-            width: 28,
-            height: 24,
-            decoration: BoxDecoration(
-              color: _isHovered
-                  ? (isDark
-                      ? Colors.white.withOpacity(0.12)
-                      : Colors.black.withOpacity(0.08))
-                  : (isExpanded
-                      ? (isDark
-                          ? Colors.white.withOpacity(0.06)
-                          : Colors.black.withOpacity(0.04))
-                      : Colors.transparent),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isExpanded
-                    ? (isDark ? Colors.white24 : Colors.black12)
-                    : Colors.transparent,
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              Icons.view_sidebar_outlined,
-              size: 15,
+      child: GestureDetector(
+        onTap: () {
+          if (sidebarStateKey.currentState != null) {
+            sidebarStateKey.currentState?.toggleSidebar();
+          } else {
+            appStateSettings["expandedNavigationSidebar"] =
+                !(appStateSettings["expandedNavigationSidebar"] ?? true);
+            updateSettings(
+                "expandedNavigationSidebar",
+                appStateSettings["expandedNavigationSidebar"],
+                updateGlobalState: true);
+          }
+        },
+        child: Container(
+          width: 28,
+          height: 24,
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? (isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : Colors.black.withOpacity(0.08))
+                : (isExpanded
+                    ? (isDark
+                        ? Colors.white.withOpacity(0.06)
+                        : Colors.black.withOpacity(0.04))
+                    : Colors.transparent),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
               color: isExpanded
-                  ? (isDark ? Colors.white : Colors.black87)
-                  : (isDark ? Colors.white60 : Colors.black45),
+                  ? (isDark ? Colors.white24 : Colors.black12)
+                  : Colors.transparent,
+              width: 1,
             ),
+          ),
+          child: Icon(
+            Icons.view_sidebar_outlined,
+            size: 15,
+            color: isExpanded
+                ? (isDark ? Colors.white : Colors.black87)
+                : (isDark ? Colors.white60 : Colors.black45),
           ),
         ),
       ),
