@@ -36,7 +36,7 @@ double getWidthNavigationSidebar(BuildContext context) {
 
   if (MediaQuery.sizeOf(context).width < minScreenWidth) return 0;
   if (appStateSettings["expandedNavigationSidebar"] == false) {
-    return 0;
+    return 70 + MediaQuery.viewPaddingOf(context).left;
   }
   return (MediaQuery.sizeOf(context).width * screenPercent > maxWidthNavigation
           ? maxWidthNavigation
