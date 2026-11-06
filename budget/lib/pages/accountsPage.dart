@@ -34,31 +34,37 @@ class AccountsPage extends StatefulWidget {
 }
 
 class AccountsPageState extends State<AccountsPage> {
-  bool currentlyExporting = false;
-  bool fullSyncOption = false;
+  bool isPushing = false;
+  bool isPulling = false;
 
   void refreshState() {
     setState(() {});
   }
-  Future<void> _triggerSync({required bool forceFullSync}) async {
-    if (currentlyExporting) return;
-    setState(() {
-      currentlyExporting = true;
-      fullSyncOption = forceFullSync;
-    });
-    final res = await pocketBaseSyncEngine.syncAll(
-      forceFullSync: forceFullSync,
-    );
+
+  Future<void> _triggerPush() async {
+    if (isPushing || isPulling) return;
+    setState(() => isPushing = true);
+    final res = await pocketBaseSyncEngine.pushAll();
     if (mounted) {
-      setState(() {
-        currentlyExporting = false;
-      });
+      setState(() => isPushing = false);
       openSnackbar(SnackbarMessage(
-        title: res.success
-            ? (forceFullSync ? "Full Sync completed" : "Sync completed")
-            : "Sync failed",
+        title: res.success ? "Push Completed" : "Push Failed",
         description: res.message,
-        icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
+        icon: res.success ? Icons.cloud_upload_rounded : Icons.error_outline,
+      ));
+    }
+  }
+
+  Future<void> _triggerPull() async {
+    if (isPushing || isPulling) return;
+    setState(() => isPulling = true);
+    final res = await pocketBaseSyncEngine.pullAll(forceFull: true);
+    if (mounted) {
+      setState(() => isPulling = false);
+      openSnackbar(SnackbarMessage(
+        title: res.success ? "Pull Completed" : "Pull Failed",
+        description: res.message,
+        icon: res.success ? Icons.cloud_download_rounded : Icons.error_outline,
       ));
     }
   }
@@ -206,31 +212,27 @@ class AccountsPageState extends State<AccountsPage> {
                             children: [
                               Expanded(
                                 child: _SyncActionButton(
-                                  title: "Sync Now",
-                                  subtitle: "Fast delta sync",
+                                  title: "Push",
+                                  subtitle: "Upload local changes",
                                   icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.sync_outlined
-                                      : Icons.sync_rounded,
+                                      ? Icons.cloud_upload_outlined
+                                      : Icons.cloud_upload_rounded,
                                   isPrimary: true,
-                                  isLoading:
-                                      currentlyExporting && !fullSyncOption,
-                                  onTap: () =>
-                                      _triggerSync(forceFullSync: false),
+                                  isLoading: isPushing,
+                                  onTap: _triggerPush,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _SyncActionButton(
-                                  title: "Full Sync",
-                                  subtitle: "Recheck all records",
+                                  title: "Pull",
+                                  subtitle: "Download cloud data",
                                   icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.cloud_sync_outlined
-                                      : Icons.cloud_sync_rounded,
+                                      ? Icons.cloud_download_outlined
+                                      : Icons.cloud_download_rounded,
                                   isPrimary: false,
-                                  isLoading:
-                                      currentlyExporting && fullSyncOption,
-                                  onTap: () =>
-                                      _triggerSync(forceFullSync: true),
+                                  isLoading: isPulling,
+                                  onTap: _triggerPull,
                                 ),
                               ),
                             ],

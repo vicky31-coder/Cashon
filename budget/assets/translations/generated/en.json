@@ -1,4 +1,6 @@
 {
+  "collapse-sidebar": "Collapse sidebar",
+  "expand-sidebar": "Expand sidebar",
   "default-account-name": "Bank",
   "default-budget-name": "Budget",
   "budget-history": "Budget History",

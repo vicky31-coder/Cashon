@@ -167,6 +167,140 @@ class PocketBaseSyncEngine {
     }
   }
 
+  Future<SyncResult> pushAll({bool forceFull = false}) async {
+    if (isSyncing) {
+      return SyncResult(success: false, message: "Sync already in progress");
+    }
+    if (!pocketBaseService.isLoggedIn) {
+      return SyncResult(success: false, message: "Not logged in to backend");
+    }
+
+    isSyncing = true;
+    int pushed = 0;
+
+    try {
+      await pocketBaseService.refreshToken();
+      if (!pocketBaseService.isLoggedIn) {
+        return SyncResult(
+            success: false, message: "Session expired, please sign in again");
+      }
+
+      final pb = pocketBaseService.client;
+      final userId = pocketBaseService.userId!;
+      final String? lastSyncStr = sharedPreferences.getString("pb_last_sync");
+      DateTime lastSync = (forceFull || lastSyncStr == null)
+          ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
+          : (DateTime.tryParse(lastSyncStr)?.toUtc() ??
+              DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
+
+      final DateTime syncStartTime = DateTime.now().toUtc();
+      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastSync);
+
+      await sharedPreferences.setString(
+          "pb_last_sync", syncStartTime.toIso8601String());
+
+      await addSyncHistory(SyncHistoryEntry(
+        id: syncStartTime.millisecondsSinceEpoch.toString(),
+        syncType: "Push",
+        pushedCount: pushed,
+        pulledCount: 0,
+        status: "Success",
+        message: "Push completed ($pushed records)",
+        dateTime: syncStartTime,
+      ));
+
+      return SyncResult(
+        success: true,
+        message: "Successfully pushed $pushed record(s)",
+        pushedCount: pushed,
+        pulledCount: 0,
+      );
+    } catch (e, stack) {
+      debugPrint("PocketBase push error: $e\n$stack");
+      await addSyncHistory(SyncHistoryEntry(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        syncType: "Push",
+        pushedCount: pushed,
+        pulledCount: 0,
+        status: "Failed",
+        message: e.toString(),
+        dateTime: DateTime.now(),
+      ));
+      return SyncResult(success: false, message: e.toString());
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  Future<SyncResult> pullAll({bool forceFull = true}) async {
+    if (isSyncing) {
+      return SyncResult(success: false, message: "Sync already in progress");
+    }
+    if (!pocketBaseService.isLoggedIn) {
+      return SyncResult(success: false, message: "Not logged in to backend");
+    }
+
+    isSyncing = true;
+    int pulled = 0;
+
+    try {
+      await pocketBaseService.refreshToken();
+      if (!pocketBaseService.isLoggedIn) {
+        return SyncResult(
+            success: false, message: "Session expired, please sign in again");
+      }
+
+      final pb = pocketBaseService.client;
+      final String? lastSyncStr = sharedPreferences.getString("pb_last_sync");
+      DateTime lastSync = (forceFull || lastSyncStr == null)
+          ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
+          : (DateTime.tryParse(lastSyncStr)?.toUtc() ??
+              DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
+
+      final DateTime syncStartTime = DateTime.now().toUtc();
+      pulled = await _executePull(
+        pb: pb,
+        forceFullSync: forceFull,
+        lastSyncStr: lastSyncStr,
+        lastSync: lastSync,
+      );
+
+      await sharedPreferences.setString(
+          "pb_last_sync", syncStartTime.toIso8601String());
+
+      await addSyncHistory(SyncHistoryEntry(
+        id: syncStartTime.millisecondsSinceEpoch.toString(),
+        syncType: "Pull",
+        pushedCount: 0,
+        pulledCount: pulled,
+        status: "Success",
+        message: "Pull completed ($pulled records)",
+        dateTime: syncStartTime,
+      ));
+
+      return SyncResult(
+        success: true,
+        message: "Successfully pulled $pulled record(s)",
+        pushedCount: 0,
+        pulledCount: pulled,
+      );
+    } catch (e, stack) {
+      debugPrint("PocketBase pull error: $e\n$stack");
+      await addSyncHistory(SyncHistoryEntry(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        syncType: "Pull",
+        pushedCount: 0,
+        pulledCount: pulled,
+        status: "Failed",
+        message: e.toString(),
+        dateTime: DateTime.now(),
+      ));
+      return SyncResult(success: false, message: e.toString());
+    } finally {
+      isSyncing = false;
+    }
+  }
+
   Future<SyncResult> syncAll({bool forceFullSync = false}) async {
     if (isSyncing) {
       return SyncResult(success: false, message: "Sync already in progress");
@@ -197,10 +331,56 @@ class PocketBaseSyncEngine {
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
       final DateTime syncStartTime = DateTime.now().toUtc();
+      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastSync);
+      pulled = await _executePull(
+        pb: pb,
+        forceFullSync: forceFullSync,
+        lastSyncStr: lastSyncStr,
+        lastSync: lastSync,
+      );
 
-      // ==========================================
-      // 1. PUSH LOCAL CHANGES -> POCKETBASE
-      // ==========================================
+      await sharedPreferences.setString(
+          "pb_last_sync", syncStartTime.toIso8601String());
+
+      await addSyncHistory(SyncHistoryEntry(
+        id: syncStartTime.millisecondsSinceEpoch.toString(),
+        syncType: forceFullSync ? "Full Sync" : "Sync",
+        pushedCount: pushed,
+        pulledCount: pulled,
+        status: "Success",
+        message: "Sync completed successfully",
+        dateTime: syncStartTime,
+      ));
+
+      return SyncResult(
+        success: true,
+        message: "Sync completed successfully",
+        pushedCount: pushed,
+        pulledCount: pulled,
+      );
+    } catch (e, stack) {
+      debugPrint("PocketBase sync error: $e\n$stack");
+      await addSyncHistory(SyncHistoryEntry(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        syncType: forceFullSync ? "Full Sync" : "Sync",
+        pushedCount: pushed,
+        pulledCount: pulled,
+        status: "Failed",
+        message: e.toString(),
+        dateTime: DateTime.now(),
+      ));
+      return SyncResult(success: false, message: e.toString());
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  Future<int> _executePush({
+    required PocketBase pb,
+    required String userId,
+    required DateTime lastSync,
+  }) async {
+    int pushed = 0;
 
       // Wallets
       List<TransactionWallet> newWallets =
@@ -474,16 +654,22 @@ class PocketBaseSyncEngine {
           }
         }
       }
+    return pushed;
+  }
 
-      // ==========================================
-      // 2. PULL REMOTE CHANGES -> LOCAL DRIFT DB
-      // ==========================================
+  Future<int> _executePull({
+    required PocketBase pb,
+    required bool forceFullSync,
+    required String? lastSyncStr,
+    required DateTime lastSync,
+  }) async {
+    int pulled = 0;
 
-      String dateFilter = (forceFullSync || lastSyncStr == null)
-          ? ""
-          : 'date_time_modified >= "${lastSync.toUtc().toIso8601String().replaceFirst('T', ' ')}"';
+    String dateFilter = (forceFullSync || lastSyncStr == null)
+        ? ""
+        : 'date_time_modified >= "${lastSync.toUtc().toIso8601String().replaceFirst('T', ' ')}"';
 
-      // Pull Wallets
+    // Pull Wallets
       pulled += await _pullCollection(
         pb: pb,
         collection: "wallets",
@@ -840,41 +1026,7 @@ class PocketBaseSyncEngine {
         },
       );
 
-      // Save sync timestamp
-      await sharedPreferences.setString(
-          "pb_last_sync", syncStartTime.toIso8601String());
-
-      await addSyncHistory(SyncHistoryEntry(
-        id: syncStartTime.millisecondsSinceEpoch.toString(),
-        syncType: forceFullSync ? "Full Sync" : "Sync",
-        pushedCount: pushed,
-        pulledCount: pulled,
-        status: "Success",
-        message: "Sync completed successfully",
-        dateTime: syncStartTime,
-      ));
-
-      return SyncResult(
-        success: true,
-        message: "Sync completed successfully",
-        pushedCount: pushed,
-        pulledCount: pulled,
-      );
-    } catch (e, stack) {
-      debugPrint("PocketBase sync error: $e\n$stack");
-      await addSyncHistory(SyncHistoryEntry(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        syncType: forceFullSync ? "Full Sync" : "Sync",
-        pushedCount: pushed,
-        pulledCount: pulled,
-        status: "Failed",
-        message: e.toString(),
-        dateTime: DateTime.now(),
-      ));
-      return SyncResult(success: false, message: e.toString());
-    } finally {
-      isSyncing = false;
-    }
+    return pulled;
   }
 
   Future<void> _upsertRecord({

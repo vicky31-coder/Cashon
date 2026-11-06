@@ -62,14 +62,15 @@ void main() async {
       print("Could not determine local timezone: $e");
     }
 
-    if (!kIsWeb && Platform.isWindows) {
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
       await windowManager.ensureInitialized();
-      WindowOptions windowOptions = const WindowOptions(
-        size: Size(1280, 780),
-        minimumSize: Size(800, 600),
+      WindowOptions windowOptions = WindowOptions(
+        size: const Size(1280, 780),
+        minimumSize: const Size(800, 600),
         center: true,
         skipTaskbar: false,
-        titleBarStyle: TitleBarStyle.hidden,
+        titleBarStyle:
+            Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
       );
       windowManager.waitUntilReadyToShow(windowOptions, () async {
         await windowManager.show();
