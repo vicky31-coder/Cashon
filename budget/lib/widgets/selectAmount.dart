@@ -153,120 +153,116 @@ class _SelectAmountState extends State<SelectAmount> {
     _focusAttachment = _focusNode.attach(context, onKeyEvent: (node, event) {
       bool keyIsPressed = event.runtimeType == KeyDownEvent ||
           event.runtimeType == KeyRepeatEvent;
-      if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
-        if (keyIsPressed) {
-          isControlPressed = true;
-        } else {
+      if (!keyIsPressed) {
+        if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
           isControlPressed = false;
         }
+        return KeyEventResult.ignored;
       }
-      if (keyIsPressed && event.logicalKey.keyLabel == "Go Back" ||
+      if (event.logicalKey.keyLabel.toLowerCase().contains("control")) {
+        isControlPressed = true;
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey.keyLabel == "Go Back" ||
           event.logicalKey == LogicalKeyboardKey.escape) {
         popRoute(context);
+        return KeyEventResult.handled;
       } else if (isControlPressed &&
-          keyIsPressed &&
           event.logicalKey == LogicalKeyboardKey.keyC) {
         copyToClipboard(amount);
+        return KeyEventResult.handled;
       } else if (isControlPressed &&
-          keyIsPressed &&
           event.logicalKey == LogicalKeyboardKey.keyV) {
         pasteFromClipboard();
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit0) {
-        addToAmount("0");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit1) {
-        addToAmount("1");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit2) {
-        addToAmount("2");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit3) {
-        addToAmount("3");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit4) {
-        addToAmount("4");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit5) {
-        addToAmount("5");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit6) {
-        addToAmount("6");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit7) {
-        addToAmount("7");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit8) {
-        addToAmount("8");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit9) {
-        addToAmount("9");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      }
+
+      // 1. Direct character match for numbers 0-9 (supports all keyboards & numpads)
+      final String? ch = event.character;
+      if (ch != null &&
+          ch.length == 1 &&
+          ch.compareTo('0') >= 0 &&
+          ch.compareTo('9') <= 0) {
+        addToAmount(ch);
+        return KeyEventResult.handled;
+      }
+
+      // 2. Logical key fallbacks for digit and numpad keys
+      if (event.logicalKey == LogicalKeyboardKey.digit0 ||
           event.logicalKey == LogicalKeyboardKey.numpad0) {
         addToAmount("0");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
           event.logicalKey == LogicalKeyboardKey.numpad1) {
         addToAmount("1");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
           event.logicalKey == LogicalKeyboardKey.numpad2) {
         addToAmount("2");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
           event.logicalKey == LogicalKeyboardKey.numpad3) {
         addToAmount("3");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
           event.logicalKey == LogicalKeyboardKey.numpad4) {
         addToAmount("4");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
           event.logicalKey == LogicalKeyboardKey.numpad5) {
         addToAmount("5");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
           event.logicalKey == LogicalKeyboardKey.numpad6) {
         addToAmount("6");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
           event.logicalKey == LogicalKeyboardKey.numpad7) {
         addToAmount("7");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
           event.logicalKey == LogicalKeyboardKey.numpad8) {
         addToAmount("8");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
           event.logicalKey == LogicalKeyboardKey.numpad9) {
         addToAmount("9");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.asterisk) {
-        addToAmount("×");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '*' ||
+          ch == 'x' ||
+          ch == 'X' ||
+          event.logicalKey == LogicalKeyboardKey.asterisk ||
           event.logicalKey == LogicalKeyboardKey.numpadMultiply) {
         addToAmount("×");
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.slash) {
-        addToAmount("÷");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '/' ||
+          event.logicalKey == LogicalKeyboardKey.slash ||
           event.logicalKey == LogicalKeyboardKey.numpadDivide) {
         addToAmount("÷");
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.add) {
-        addToAmount("+");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '+' ||
+          event.logicalKey == LogicalKeyboardKey.add ||
           event.logicalKey == LogicalKeyboardKey.numpadAdd) {
         addToAmount("+");
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.minus) {
-        addToAmount("-");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '-' ||
+          event.logicalKey == LogicalKeyboardKey.minus ||
           event.logicalKey == LogicalKeyboardKey.numpadSubtract) {
         addToAmount("-");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.period) {
-        addToAmount(".");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '.' ||
+          ch == ',' ||
+          event.logicalKey == LogicalKeyboardKey.period ||
+          event.logicalKey == LogicalKeyboardKey.comma ||
           event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
         addToAmount(".");
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.comma) {
-        addToAmount(".");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.backspace) {
-        removeToAmount();
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
           event.logicalKey == LogicalKeyboardKey.delete) {
         removeToAmount();
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.enter) {
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         if (widget.next != null) {
           widget.next!();
         }
@@ -279,10 +275,15 @@ class _SelectAmountState extends State<SelectAmount> {
                       ? calculateResult(amount)
                       : double.tryParse(amount) ?? 0));
         }
+        return KeyEventResult.handled;
       }
-      return KeyEventResult.handled;
+      return KeyEventResult.ignored;
     });
-    _focusNode.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -706,8 +707,18 @@ class _SelectAmountState extends State<SelectAmount> {
                             : countDecimalDigits(amount),
                       )),
           );
-    return Column(
-      children: [
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          if (!_focusNode.hasFocus) {
+            _focusNode.requestFocus();
+          }
+        },
+        child: Column(
+          children: [
         Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -929,7 +940,9 @@ class _SelectAmountState extends State<SelectAmount> {
           ),
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 }
 
@@ -1329,91 +1342,85 @@ class _SelectAmountValueState extends State<SelectAmountValue> {
     _focusAttachment = _focusNode.attach(context, onKeyEvent: (node, event) {
       bool keyIsPressed = event.runtimeType == KeyDownEvent ||
           event.runtimeType == KeyRepeatEvent;
-      if (keyIsPressed && event.logicalKey.keyLabel == "Go Back" ||
+      if (!keyIsPressed) {
+        return KeyEventResult.ignored;
+      }
+      String? ch = event.character;
+      if (ch != null &&
+          ch.isNotEmpty &&
+          ch.compareTo('0') >= 0 &&
+          ch.compareTo('9') <= 0) {
+        addToAmount(ch);
+        return KeyEventResult.handled;
+      } else if (event.logicalKey.keyLabel == "Go Back" ||
           event.logicalKey == LogicalKeyboardKey.escape) {
         popRoute(context);
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit0) {
-        addToAmount("0");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit1) {
-        addToAmount("1");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit2) {
-        addToAmount("2");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit3) {
-        addToAmount("3");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit4) {
-        addToAmount("4");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit5) {
-        addToAmount("5");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit6) {
-        addToAmount("6");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit7) {
-        addToAmount("7");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit8) {
-        addToAmount("8");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.digit9) {
-        addToAmount("9");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit0 ||
           event.logicalKey == LogicalKeyboardKey.numpad0) {
         addToAmount("0");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
           event.logicalKey == LogicalKeyboardKey.numpad1) {
         addToAmount("1");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
           event.logicalKey == LogicalKeyboardKey.numpad2) {
         addToAmount("2");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
           event.logicalKey == LogicalKeyboardKey.numpad3) {
         addToAmount("3");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit4 ||
           event.logicalKey == LogicalKeyboardKey.numpad4) {
         addToAmount("4");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit5 ||
           event.logicalKey == LogicalKeyboardKey.numpad5) {
         addToAmount("5");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit6 ||
           event.logicalKey == LogicalKeyboardKey.numpad6) {
         addToAmount("6");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit7 ||
           event.logicalKey == LogicalKeyboardKey.numpad7) {
         addToAmount("7");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit8 ||
           event.logicalKey == LogicalKeyboardKey.numpad8) {
         addToAmount("8");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.digit9 ||
           event.logicalKey == LogicalKeyboardKey.numpad9) {
         addToAmount("9");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.period) {
-        addToAmount(".");
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (ch == '.' ||
+          ch == ',' ||
+          event.logicalKey == LogicalKeyboardKey.period ||
+          event.logicalKey == LogicalKeyboardKey.comma ||
           event.logicalKey == LogicalKeyboardKey.numpadDecimal) {
         addToAmount(".");
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.comma) {
-        addToAmount(".");
-      } else if (keyIsPressed &&
-          event.logicalKey == LogicalKeyboardKey.backspace) {
-        removeToAmount();
-      } else if (keyIsPressed &&
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
           event.logicalKey == LogicalKeyboardKey.delete) {
         removeToAmount();
-      } else if (keyIsPressed && event.logicalKey == LogicalKeyboardKey.enter) {
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         if (widget.next != null) {
           widget.next!();
         }
+        return KeyEventResult.handled;
       }
-      return KeyEventResult.handled;
+      return KeyEventResult.ignored;
     });
-    _focusNode.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -1428,7 +1435,6 @@ class _SelectAmountValueState extends State<SelectAmountValue> {
     }
 
     if (input == "." && widget.enableDecimal == false) return;
-    String amountClone = amount;
     if (input == "." && amount.contains(".")) {
     } else {
       if (amount == "0" || amount == "") {
@@ -1473,64 +1479,76 @@ class _SelectAmountValueState extends State<SelectAmountValue> {
   Widget build(BuildContext context) {
     _focusAttachment.reparent();
     String amountConverted = amount.replaceAll(".", getDecimalSeparator());
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        if (widget.showEnteredNumber == true)
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
-            child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 200),
-              child: FractionallySizedBox(
-                key: ValueKey(amount),
-                widthFactor: 1,
-                child: TextFont(
-                  autoSizeText: true,
-                  maxLines: 1,
-                  minFontSize: 16,
-                  text: amountConverted + widget.suffix,
-                  textAlign: TextAlign.end,
-                  fontSize: 35,
-                  fontWeight: FontWeight.bold,
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          if (!_focusNode.hasFocus) {
+            _focusNode.requestFocus();
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (widget.showEnteredNumber == true)
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
+                child: AnimatedSwitcher(
+                  duration: Duration(milliseconds: 200),
+                  child: FractionallySizedBox(
+                    key: ValueKey(amount),
+                    widthFactor: 1,
+                    child: TextFont(
+                      autoSizeText: true,
+                      maxLines: 1,
+                      minFontSize: 16,
+                      text: amountConverted + widget.suffix,
+                      textAlign: TextAlign.end,
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+            Container(height: 10),
+            NumberPadAmount(
+              extraWidgetAboveNumbers: widget.extraWidgetAboveNumbers,
+              addToAmount: addToAmount,
+              enableDecimal: widget.enableDecimal,
+              removeToAmount: removeToAmount,
+              removeAll: removeAll,
+              canChange: () => true,
+              padding: EdgeInsetsDirectional.zero,
+              setState: () => setState(() {}),
+              enableCalculator: false,
             ),
-          ),
-        Container(height: 10),
-        NumberPadAmount(
-          extraWidgetAboveNumbers: widget.extraWidgetAboveNumbers,
-          addToAmount: addToAmount,
-          enableDecimal: widget.enableDecimal,
-          removeToAmount: removeToAmount,
-          removeAll: removeAll,
-          canChange: () => true,
-          padding: EdgeInsetsDirectional.zero,
-          setState: () => setState(() {}),
-          enableCalculator: false,
+            Container(height: 15),
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 500),
+              child: amount != "" || widget.allowZero
+                  ? Button(
+                      key: Key("addSuccess"),
+                      label: widget.nextLabel ?? "",
+                      width: MediaQuery.sizeOf(context).width,
+                      onTap: () {
+                        if (widget.next != null) {
+                          widget.next!();
+                        }
+                      },
+                    )
+                  : Button(
+                      key: Key("addNoSuccess"),
+                      label: widget.nextLabel ?? "",
+                      width: MediaQuery.sizeOf(context).width,
+                      onTap: () {},
+                      color: Colors.grey,
+                    ),
+            )
+          ],
         ),
-        Container(height: 15),
-        AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
-          child: amount != "" || widget.allowZero
-              ? Button(
-                  key: Key("addSuccess"),
-                  label: widget.nextLabel ?? "",
-                  width: MediaQuery.sizeOf(context).width,
-                  onTap: () {
-                    if (widget.next != null) {
-                      widget.next!();
-                    }
-                  },
-                )
-              : Button(
-                  key: Key("addNoSuccess"),
-                  label: widget.nextLabel ?? "",
-                  width: MediaQuery.sizeOf(context).width,
-                  onTap: () {},
-                  color: Colors.grey,
-                ),
-        )
-      ],
+      ),
     );
   }
 }
