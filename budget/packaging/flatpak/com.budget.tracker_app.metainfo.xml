@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.budget.tracker_app</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Cashon</name>
+  <summary>Personal finance and expense manager</summary>
+  <description>
+    <p>
+      Cashon is an easy-to-use personal finance manager that helps you track expenses,
+      manage budgets, and visualize your financial habits.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.budget.tracker_app.desktop</launchable>
+  <url type="homepage">https://github.com/vigneshbalaji31/Cashon</url>
+  <developer_name>Rhaegar Systems</developer_name>
+  <provides>
+    <binary>cashon</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-11-07"/>
+  </releases>
+</component>

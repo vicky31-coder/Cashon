@@ -69,8 +69,7 @@ void main() async {
         minimumSize: const Size(800, 600),
         center: true,
         skipTaskbar: false,
-        titleBarStyle:
-            Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
+        titleBarStyle: TitleBarStyle.hidden,
       );
       windowManager.waitUntilReadyToShow(windowOptions, () async {
         await windowManager.show();
@@ -194,7 +193,7 @@ class App extends StatelessWidget {
         if (kIsWeb) {
           return FadeIn(
               duration: Duration(milliseconds: 1000), child: mainWidget);
-        } else if (Platform.isWindows) {
+        } else if (Platform.isWindows || Platform.isLinux) {
           return WindowsWindowFrame(child: mainWidget);
         } else {
           return mainWidget;

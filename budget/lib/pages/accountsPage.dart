@@ -9,9 +9,7 @@ import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/iconButtonScaled.dart';
-import 'package:budget/widgets/moreIcons.dart';
 import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/settingsContainers.dart';
@@ -44,7 +42,7 @@ class AccountsPageState extends State<AccountsPage> {
   Future<void> _triggerPush() async {
     if (isPushing || isPulling) return;
     setState(() => isPushing = true);
-    final res = await pocketBaseSyncEngine.pushAll();
+    final res = await pocketBaseSyncEngine.pushAll(forceFull: true);
     if (mounted) {
       setState(() => isPushing = false);
       openSnackbar(SnackbarMessage(
@@ -403,9 +401,7 @@ class EnableSignInWithGoogleFlyIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (appStateSettings["enableGoogleLoginFlyIn"] != true ||
-        getIsFullScreen(context) == false) return SizedBox.shrink();
-    return const SignInWithGoogleFlyIn();
+    return const SizedBox.shrink();
   }
 }
 
@@ -437,7 +433,7 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
     });
   }
 
-  bool get shouldExpand => !hide && googleUser == null;
+  bool get shouldExpand => !hide && !pocketBaseService.isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -467,10 +463,10 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                     ),
                     child: Tappable(
                       onTap: () async {
-                        await signInGoogle();
                         setState(() {
                           hide = true;
                         });
+                        await signInAndSync(context, next: () {});
                       },
                       borderRadius: 13,
                       color: dynamicPastel(
@@ -496,7 +492,7 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                                   Row(
                                     children: [
                                       Icon(
-                                        MoreIcons.google,
+                                        Icons.cloud_outlined,
                                         size: 25,
                                       ),
                                       SizedBox(width: 10),
@@ -541,12 +537,12 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                             padding: const EdgeInsetsDirectional.symmetric(
                                 horizontal: 22, vertical: 12),
                             child: Button(
-                              label: "Continue with Google",
+                              label: "Continue to Cloud",
                               onTap: () async {
-                                await signInGoogle();
                                 setState(() {
                                   hide = true;
                                 });
+                                await signInAndSync(context, next: () {});
                               },
                               color: Theme.of(context).colorScheme.primary,
                               textColor:
