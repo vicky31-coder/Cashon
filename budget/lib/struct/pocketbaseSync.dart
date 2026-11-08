@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:drift/drift.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
@@ -187,21 +188,23 @@ class PocketBaseSyncEngine {
 
       final pb = pocketBaseService.client;
       final userId = pocketBaseService.userId!;
-      final String? lastSyncStr = sharedPreferences.getString("pb_last_sync");
-      DateTime lastSync = (forceFull || lastSyncStr == null)
+      final String? lastPushedStr = sharedPreferences.getString("pb_last_pushed");
+      DateTime lastSync = (forceFull || lastPushedStr == null)
           ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
-          : (DateTime.tryParse(lastSyncStr)?.toUtc() ??
+          : (DateTime.tryParse(lastPushedStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
       final DateTime syncStartTime = DateTime.now().toUtc();
       pushed = await _executePush(pb: pb, userId: userId, lastSync: lastSync);
 
       await sharedPreferences.setString(
+          "pb_last_pushed", syncStartTime.toIso8601String());
+      await sharedPreferences.setString(
           "pb_last_sync", syncStartTime.toIso8601String());
 
       await addSyncHistory(SyncHistoryEntry(
         id: syncStartTime.millisecondsSinceEpoch.toString(),
-        syncType: "Push",
+        syncType: forceFull ? "Full Push" : "Push",
         pushedCount: pushed,
         pulledCount: 0,
         status: "Success",
@@ -219,7 +222,7 @@ class PocketBaseSyncEngine {
       debugPrint("PocketBase push error: $e\n$stack");
       await addSyncHistory(SyncHistoryEntry(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        syncType: "Push",
+        syncType: forceFull ? "Full Push" : "Push",
         pushedCount: pushed,
         pulledCount: 0,
         status: "Failed",
@@ -232,7 +235,7 @@ class PocketBaseSyncEngine {
     }
   }
 
-  Future<SyncResult> pullAll({bool forceFull = true}) async {
+  Future<SyncResult> pullAll({bool forceFull = false}) async {
     if (isSyncing) {
       return SyncResult(success: false, message: "Sync already in progress");
     }
@@ -251,26 +254,28 @@ class PocketBaseSyncEngine {
       }
 
       final pb = pocketBaseService.client;
-      final String? lastSyncStr = sharedPreferences.getString("pb_last_sync");
-      DateTime lastSync = (forceFull || lastSyncStr == null)
+      final String? lastPulledStr = sharedPreferences.getString("pb_last_pulled");
+      DateTime lastSync = (forceFull || lastPulledStr == null)
           ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
-          : (DateTime.tryParse(lastSyncStr)?.toUtc() ??
+          : (DateTime.tryParse(lastPulledStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
       final DateTime syncStartTime = DateTime.now().toUtc();
       pulled = await _executePull(
         pb: pb,
         forceFullSync: forceFull,
-        lastSyncStr: lastSyncStr,
+        lastSyncStr: lastPulledStr,
         lastSync: lastSync,
       );
 
+      await sharedPreferences.setString(
+          "pb_last_pulled", syncStartTime.toIso8601String());
       await sharedPreferences.setString(
           "pb_last_sync", syncStartTime.toIso8601String());
 
       await addSyncHistory(SyncHistoryEntry(
         id: syncStartTime.millisecondsSinceEpoch.toString(),
-        syncType: "Pull",
+        syncType: forceFull ? "Full Pull" : "Pull",
         pushedCount: 0,
         pulledCount: pulled,
         status: "Success",
@@ -288,7 +293,7 @@ class PocketBaseSyncEngine {
       debugPrint("PocketBase pull error: $e\n$stack");
       await addSyncHistory(SyncHistoryEntry(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        syncType: "Pull",
+        syncType: forceFull ? "Full Pull" : "Pull",
         pushedCount: 0,
         pulledCount: pulled,
         status: "Failed",
@@ -324,21 +329,30 @@ class PocketBaseSyncEngine {
 
       final pb = pocketBaseService.client;
       final userId = pocketBaseService.userId!;
-      final String? lastSyncStr = sharedPreferences.getString("pb_last_sync");
-      DateTime lastSync = (forceFullSync || lastSyncStr == null)
+      final String? lastPushedStr = sharedPreferences.getString("pb_last_pushed");
+      final String? lastPulledStr = sharedPreferences.getString("pb_last_pulled");
+      DateTime lastPush = (forceFullSync || lastPushedStr == null)
           ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
-          : (DateTime.tryParse(lastSyncStr)?.toUtc() ??
+          : (DateTime.tryParse(lastPushedStr)?.toUtc() ??
+              DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
+      DateTime lastPull = (forceFullSync || lastPulledStr == null)
+          ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
+          : (DateTime.tryParse(lastPulledStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
       final DateTime syncStartTime = DateTime.now().toUtc();
-      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastSync);
+      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastPush);
       pulled = await _executePull(
         pb: pb,
         forceFullSync: forceFullSync,
-        lastSyncStr: lastSyncStr,
-        lastSync: lastSync,
+        lastSyncStr: lastPulledStr,
+        lastSync: lastPull,
       );
 
+      await sharedPreferences.setString(
+          "pb_last_pushed", syncStartTime.toIso8601String());
+      await sharedPreferences.setString(
+          "pb_last_pulled", syncStartTime.toIso8601String());
       await sharedPreferences.setString(
           "pb_last_sync", syncStartTime.toIso8601String());
 
@@ -382,15 +396,18 @@ class PocketBaseSyncEngine {
   }) async {
     int pushed = 0;
 
-      // Wallets
-      List<TransactionWallet> newWallets =
-          await database.getAllNewWallets(lastSync);
+    // Wallets
+    List<TransactionWallet> newWallets =
+        await database.getAllNewWallets(lastSync);
+    if (newWallets.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "wallets", userId);
       for (TransactionWallet w in newWallets) {
         await _upsertRecord(
           pb: pb,
           collection: "wallets",
           clientId: w.walletPk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "name": w.name,
             "colour": w.colour,
@@ -411,16 +428,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // Categories
-      List<TransactionCategory> newCategories =
-          await database.getAllNewCategories(lastSync);
+    // Categories
+    List<TransactionCategory> newCategories =
+        await database.getAllNewCategories(lastSync);
+    if (newCategories.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "categories", userId);
       for (TransactionCategory c in newCategories) {
         await _upsertRecord(
           pb: pb,
           collection: "categories",
           clientId: c.categoryPk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "name": c.name,
             "colour": c.colour,
@@ -437,15 +458,19 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // Budgets
-      List<Budget> newBudgets = await database.getAllNewBudgets(lastSync);
+    // Budgets
+    List<Budget> newBudgets = await database.getAllNewBudgets(lastSync);
+    if (newBudgets.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "budgets", userId);
       for (Budget b in newBudgets) {
         await _upsertRecord(
           pb: pb,
           collection: "budgets",
           clientId: b.budgetPk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "name": b.name,
             "amount": b.amount,
@@ -477,16 +502,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // Objectives
-      List<Objective> newObjectives =
-          await database.getAllNewObjectives(lastSync);
+    // Objectives
+    List<Objective> newObjectives =
+        await database.getAllNewObjectives(lastSync);
+    if (newObjectives.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "objectives", userId);
       for (Objective o in newObjectives) {
         await _upsertRecord(
           pb: pb,
           collection: "objectives",
           clientId: o.objectivePk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "type": o.type.index,
             "name": o.name,
@@ -507,16 +536,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // Transactions
-      List<Transaction> newTransactions =
-          await database.getAllNewTransactions(lastSync);
+    // Transactions
+    List<Transaction> newTransactions =
+        await database.getAllNewTransactions(lastSync);
+    if (newTransactions.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "transactions", userId);
       for (Transaction t in newTransactions) {
         await _upsertRecord(
           pb: pb,
           collection: "transactions",
           clientId: t.transactionPk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "paired_transaction_fk": t.pairedTransactionFk,
             "name": t.name,
@@ -551,16 +584,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // CategoryBudgetLimits
-      List<CategoryBudgetLimit> newLimits =
-          await database.getAllNewCategoryBudgetLimits(lastSync);
+    // CategoryBudgetLimits
+    List<CategoryBudgetLimit> newLimits =
+        await database.getAllNewCategoryBudgetLimits(lastSync);
+    if (newLimits.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "category_budget_limits", userId);
       for (CategoryBudgetLimit l in newLimits) {
         await _upsertRecord(
           pb: pb,
           collection: "category_budget_limits",
           clientId: l.categoryLimitPk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "category_fk": l.categoryFk,
             "budget_fk": l.budgetFk,
@@ -572,16 +609,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // AssociatedTitles
-      List<TransactionAssociatedTitle> newTitles =
-          await database.getAllNewAssociatedTitles(lastSync);
+    // AssociatedTitles
+    List<TransactionAssociatedTitle> newTitles =
+        await database.getAllNewAssociatedTitles(lastSync);
+    if (newTitles.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "associated_titles", userId);
       for (TransactionAssociatedTitle a in newTitles) {
         await _upsertRecord(
           pb: pb,
           collection: "associated_titles",
           clientId: a.associatedTitlePk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "category_fk": a.categoryFk,
             "title": a.title,
@@ -594,16 +635,20 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // ScannerTemplates
-      List<ScannerTemplate> newTemplates =
-          await database.getAllNewScannerTemplates(lastSync);
+    // ScannerTemplates
+    List<ScannerTemplate> newTemplates =
+        await database.getAllNewScannerTemplates(lastSync);
+    if (newTemplates.isNotEmpty) {
+      final existingMap = await _getExistingRemoteIdMap(pb, "scanner_templates", userId);
       for (ScannerTemplate s in newTemplates) {
         await _upsertRecord(
           pb: pb,
           collection: "scanner_templates",
           clientId: s.scannerTemplatePk,
           userId: userId,
+          existingMap: existingMap,
           body: {
             "date_created": s.dateCreated.toUtc().toIso8601String(),
             "date_time_modified":
@@ -621,10 +666,14 @@ class PocketBaseSyncEngine {
         );
         pushed++;
       }
+    }
 
-      // Push Local Delete Logs to PocketBase
-      List<DeleteLog> newDeleteLogs =
-          await database.getAllNewDeleteLogs(lastSync);
+    // Push Local Delete Logs to PocketBase
+    List<DeleteLog> newDeleteLogs =
+        await database.getAllNewDeleteLogs(lastSync);
+    if (newDeleteLogs.isNotEmpty) {
+      final existingDeleteLogsMap =
+          await _getExistingRemoteIdMap(pb, "delete_logs", userId);
       for (DeleteLog log in newDeleteLogs) {
         String? targetCol = _deleteLogTypeToCollection(log.type);
         if (targetCol != null) {
@@ -640,20 +689,24 @@ class PocketBaseSyncEngine {
             debugPrint("Delete on PB error: $e");
           }
 
-          // Record in delete_logs
-          try {
-            await pb.collection("delete_logs").create(body: {
-              "client_id": log.entryPk,
-              "table_name": targetCol,
-              "date_time_modified":
-                  log.dateTimeModified.toUtc().toIso8601String(),
-              "user": userId,
-            });
-          } catch (e) {
-            debugPrint("PB delete_logs create error: $e");
+          // Record in delete_logs if not already recorded
+          if (!existingDeleteLogsMap.containsKey(log.entryPk)) {
+            try {
+              final created = await pb.collection("delete_logs").create(body: {
+                "client_id": log.entryPk,
+                "table_name": targetCol,
+                "date_time_modified":
+                    log.dateTimeModified.toUtc().toIso8601String(),
+                "user": userId,
+              });
+              existingDeleteLogsMap[log.entryPk] = created.id;
+            } catch (e) {
+              debugPrint("PB delete_logs create error: $e");
+            }
           }
         }
       }
+    }
     return pushed;
   }
 
@@ -676,10 +729,21 @@ class PocketBaseSyncEngine {
         filter: dateFilter,
         onRecord: (r) async {
           final String walletPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
           TransactionWallet? existing;
           try {
-            existing = await database.getWalletInstance(walletPk);
+            existing = await database.getWalletInstanceOrNull(walletPk);
           } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           await database.createOrUpdateWallet(
             TransactionWallet(
               walletPk: walletPk,
@@ -692,8 +756,7 @@ class PocketBaseSyncEngine {
                   : r.getStringValue("icon_name"),
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
               currency: r.getStringValue("currency").isEmpty
                   ? null
@@ -704,6 +767,7 @@ class PocketBaseSyncEngine {
               decimals: r.getIntValue("decimals", 2),
               homePageWidgetDisplay: _parseHomePageWidgetDisplay(r, existing),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
             insert: false,
           );
         },
@@ -715,12 +779,28 @@ class PocketBaseSyncEngine {
         collection: "categories",
         filter: dateFilter,
         onRecord: (r) async {
+          final String categoryPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          TransactionCategory? existing;
+          try {
+            existing = await database.getCategoryInstanceOrNull(categoryPk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           int? methodAddedIdx = r.data["method_added"] == null
               ? null
               : r.getIntValue("method_added");
           await database.createOrUpdateCategory(
             TransactionCategory(
-              categoryPk: r.getStringValue("client_id"),
+              categoryPk: categoryPk,
               name: r.getStringValue("name"),
               colour: r.getStringValue("colour").isEmpty
                   ? null
@@ -733,8 +813,7 @@ class PocketBaseSyncEngine {
                   : r.getStringValue("emoji_icon_name"),
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
               income: r.getBoolValue("income"),
               methodAdded: methodAddedIdx != null &&
@@ -746,6 +825,8 @@ class PocketBaseSyncEngine {
                   ? null
                   : r.getStringValue("main_category_pk"),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
+            updateSharedEntry: false,
             insert: false,
           );
         },
@@ -757,12 +838,28 @@ class PocketBaseSyncEngine {
         collection: "budgets",
         filter: dateFilter,
         onRecord: (r) async {
+          final String budgetPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          Budget? existing;
+          try {
+            existing = await database.getBudgetInstanceOrNull(budgetPk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           int? reocIdx = r.data["reoccurrence"] == null
               ? null
               : r.getIntValue("reoccurrence");
           await database.createOrUpdateBudget(
             Budget(
-              budgetPk: r.getStringValue("client_id"),
+              budgetPk: budgetPk,
               name: r.getStringValue("name"),
               amount: (r.data["amount"] as num?)?.toDouble() ?? 0.0,
               colour: r.getStringValue("colour").isEmpty
@@ -784,8 +881,7 @@ class PocketBaseSyncEngine {
                   : null,
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               pinned: r.getBoolValue("pinned"),
               order: r.getIntValue("order"),
               walletFk: r.getStringValue("wallet_fk", "0"),
@@ -804,6 +900,8 @@ class PocketBaseSyncEngine {
               sharedMembers: null,
               sharedAllMembersEver: null,
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
+            updateSharedEntry: false,
             insert: false,
           );
         },
@@ -815,10 +913,26 @@ class PocketBaseSyncEngine {
         collection: "objectives",
         filter: dateFilter,
         onRecord: (r) async {
+          final String objectivePk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          Objective? existing;
+          try {
+            existing = await database.getObjectiveInstanceOrNull(objectivePk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           int typeIdx = r.getIntValue("type", 0);
           await database.createOrUpdateObjective(
             Objective(
-              objectivePk: r.getStringValue("client_id"),
+              objectivePk: objectivePk,
               type: typeIdx >= 0 && typeIdx < ObjectiveType.values.length
                   ? ObjectiveType.values[typeIdx]
                   : ObjectiveType.goal,
@@ -831,8 +945,7 @@ class PocketBaseSyncEngine {
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
               endDate: DateTime.tryParse(r.getStringValue("end_date")),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               iconName: r.getStringValue("icon_name").isEmpty
                   ? null
                   : r.getStringValue("icon_name"),
@@ -844,6 +957,7 @@ class PocketBaseSyncEngine {
               archived: r.getBoolValue("archived"),
               walletFk: r.getStringValue("wallet_fk", "0"),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
             insert: false,
           );
         },
@@ -855,6 +969,22 @@ class PocketBaseSyncEngine {
         collection: "transactions",
         filter: dateFilter,
         onRecord: (r) async {
+          final String transactionPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          Transaction? existing;
+          try {
+            existing = await database.tryGetTransactionFromPk(transactionPk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           int? reocIdx = r.data["reoccurrence"] == null
               ? null
               : r.getIntValue("reoccurrence");
@@ -866,7 +996,7 @@ class PocketBaseSyncEngine {
 
           await database.createOrUpdateTransaction(
             Transaction(
-              transactionPk: r.getStringValue("client_id"),
+              transactionPk: transactionPk,
               pairedTransactionFk:
                   r.getStringValue("paired_transaction_fk").isEmpty
                       ? null
@@ -881,8 +1011,7 @@ class PocketBaseSyncEngine {
               walletFk: r.getStringValue("wallet_fk", "0"),
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               originalDateDue:
                   DateTime.tryParse(r.getStringValue("original_date_due")),
               income: r.getBoolValue("income"),
@@ -933,6 +1062,8 @@ class PocketBaseSyncEngine {
               sharedDateUpdated: null,
               sharedReferenceBudgetPk: null,
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
+            updateSharedEntry: false,
             insert: false,
           );
         },
@@ -944,16 +1075,32 @@ class PocketBaseSyncEngine {
         collection: "category_budget_limits",
         filter: dateFilter,
         onRecord: (r) async {
+          final String categoryLimitPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          CategoryBudgetLimit? existing;
+          try {
+            existing = await database.getCategoryLimitInstanceOrNull(categoryLimitPk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           await database.createOrUpdateCategoryLimit(
             CategoryBudgetLimit(
-              categoryLimitPk: r.getStringValue("client_id"),
+              categoryLimitPk: categoryLimitPk,
               categoryFk: r.getStringValue("category_fk"),
               budgetFk: r.getStringValue("budget_fk"),
               amount: (r.data["amount"] as num?)?.toDouble() ?? 0.0,
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               walletFk: r.getStringValue("wallet_fk", "0"),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
             insert: false,
           );
         },
@@ -965,18 +1112,34 @@ class PocketBaseSyncEngine {
         collection: "associated_titles",
         filter: dateFilter,
         onRecord: (r) async {
+          final String associatedTitlePk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          TransactionAssociatedTitle? existing;
+          try {
+            existing = await database.getAssociatedTitleInstanceOrNull(associatedTitlePk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           await database.createOrUpdateAssociatedTitle(
             TransactionAssociatedTitle(
-              associatedTitlePk: r.getStringValue("client_id"),
+              associatedTitlePk: associatedTitlePk,
               categoryFk: r.getStringValue("category_fk"),
               title: r.getStringValue("title"),
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
               isExactMatch: r.getBoolValue("is_exact_match"),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
             insert: false,
           );
         },
@@ -988,13 +1151,28 @@ class PocketBaseSyncEngine {
         collection: "scanner_templates",
         filter: dateFilter,
         onRecord: (r) async {
+          final String scannerTemplatePk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          ScannerTemplate? existing;
+          try {
+            existing = await database.getScannerTemplateInstanceOrNull(scannerTemplatePk);
+          } catch (_) {}
+
+          // Last-Write-Wins
+          if (existing != null &&
+              existing.dateTimeModified != null &&
+              remoteDate != null &&
+              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+            return;
+          }
+
           await database.createOrUpdateScannerTemplate(
             ScannerTemplate(
-              scannerTemplatePk: r.getStringValue("client_id"),
+              scannerTemplatePk: scannerTemplatePk,
               dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
                   DateTime.now(),
-              dateTimeModified:
-                  DateTime.tryParse(r.getStringValue("date_time_modified")),
+              dateTimeModified: remoteDate?.toLocal(),
               templateName: r.getStringValue("template_name"),
               contains: r.getStringValue("contains"),
               titleTransactionBefore:
@@ -1009,12 +1187,13 @@ class PocketBaseSyncEngine {
               walletFk: r.getStringValue("wallet_fk", "0"),
               ignore: r.getBoolValue("ignore"),
             ),
+            customDateTimeModified: remoteDate?.toLocal(),
             insert: false,
           );
         },
       );
 
-      // Pull Remote Deletions -> Purge Local Records
+      // Pull Remote Deletions -> Purge Local Records safely
       await _pullCollection(
         pb: pb,
         collection: "delete_logs",
@@ -1022,11 +1201,29 @@ class PocketBaseSyncEngine {
         onRecord: (r) async {
           String clientId = r.getStringValue("client_id");
           String tableName = r.getStringValue("table_name");
-          await _deleteLocalRecord(tableName, clientId);
+          DateTime? remoteDeletedAt =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          await _deleteLocalRecord(tableName, clientId, remoteDeletedAt);
         },
       );
 
     return pulled;
+  }
+
+  Future<Map<String, String>> _getExistingRemoteIdMap(
+      PocketBase pb, String collection, String userId) async {
+    try {
+      final records = await pb.collection(collection).getFullList(
+            filter: 'user = "$userId"',
+            fields: 'id,client_id',
+          );
+      return {
+        for (final r in records) r.getStringValue("client_id"): r.id,
+      };
+    } catch (e) {
+      debugPrint("Error fetching existing id map for $collection: $e");
+      return {};
+    }
   }
 
   Future<void> _upsertRecord({
@@ -1035,19 +1232,29 @@ class PocketBaseSyncEngine {
     required String clientId,
     required String userId,
     required Map<String, dynamic> body,
+    Map<String, String>? existingMap,
   }) async {
     try {
-      final existing = await pb
-          .collection(collection)
-          .getList(perPage: 1, filter: 'client_id = "$clientId"');
+      String? existingId = existingMap?[clientId];
+      if (existingId == null && existingMap == null) {
+        final existing = await pb
+            .collection(collection)
+            .getList(perPage: 1, filter: 'client_id = "$clientId"');
+        if (existing.items.isNotEmpty) {
+          existingId = existing.items.first.id;
+        }
+      }
 
-      if (existing.items.isNotEmpty) {
-        await pb.collection(collection).update(existing.items.first.id, body: body);
+      if (existingId != null && existingId.isNotEmpty) {
+        await pb.collection(collection).update(existingId, body: body);
       } else {
         final createBody = Map<String, dynamic>.from(body);
         createBody["client_id"] = clientId;
         createBody["user"] = userId;
-        await pb.collection(collection).create(body: createBody);
+        final created = await pb.collection(collection).create(body: createBody);
+        if (existingMap != null) {
+          existingMap[clientId] = created.id;
+        }
       }
     } catch (e) {
       debugPrint("Upsert error on $collection ($clientId): $e");
@@ -1062,12 +1269,16 @@ class PocketBaseSyncEngine {
   }) async {
     int count = 0;
     int page = 1;
+    final String userFilter = 'user = "${pocketBaseService.userId}"';
+    final String combinedFilter =
+        filter.isEmpty ? userFilter : '($userFilter) && ($filter)';
+
     while (true) {
       try {
         final result = await pb.collection(collection).getList(
               page: page,
               perPage: 100,
-              filter: filter.isEmpty ? null : filter,
+              filter: combinedFilter,
             );
         for (RecordModel record in result.items) {
           try {
@@ -1087,46 +1298,95 @@ class PocketBaseSyncEngine {
     return count;
   }
 
-  Future<void> _deleteLocalRecord(String tableName, String clientId) async {
+  Future<void> _deleteLocalRecord(
+      String tableName, String clientId, DateTime? remoteDeletedAt) async {
     switch (tableName) {
       case "wallets":
         await (database.delete(database.wallets)
-              ..where((t) => t.walletPk.equals(clientId)))
+              ..where((t) =>
+                  t.walletPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "categories":
         await (database.delete(database.categories)
-              ..where((t) => t.categoryPk.equals(clientId)))
+              ..where((t) =>
+                  t.categoryPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "transactions":
         await (database.delete(database.transactions)
-              ..where((t) => t.transactionPk.equals(clientId)))
+              ..where((t) =>
+                  t.transactionPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "budgets":
         await (database.delete(database.budgets)
-              ..where((t) => t.budgetPk.equals(clientId)))
+              ..where((t) =>
+                  t.budgetPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "objectives":
         await (database.delete(database.objectives)
-              ..where((t) => t.objectivePk.equals(clientId)))
+              ..where((t) =>
+                  t.objectivePk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "category_budget_limits":
         await (database.delete(database.categoryBudgetLimits)
-              ..where((t) => t.categoryLimitPk.equals(clientId)))
+              ..where((t) =>
+                  t.categoryLimitPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "associated_titles":
         await (database.delete(database.associatedTitles)
-              ..where((t) => t.associatedTitlePk.equals(clientId)))
+              ..where((t) =>
+                  t.associatedTitlePk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
       case "scanner_templates":
         await (database.delete(database.scannerTemplates)
-              ..where((t) => t.scannerTemplatePk.equals(clientId)))
+              ..where((t) =>
+                  t.scannerTemplatePk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
             .go();
         break;
     }

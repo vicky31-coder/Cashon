@@ -222,6 +222,8 @@ class PocketBaseService extends ChangeNotifier {
     pb.authStore.clear();
     await sharedPreferences.remove("pb_auth");
     await sharedPreferences.remove("pb_last_sync");
+    await sharedPreferences.remove("pb_last_pushed");
+    await sharedPreferences.remove("pb_last_pulled");
     _safeNotifyListeners();
   }
 }
