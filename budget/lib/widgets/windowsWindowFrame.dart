@@ -4,6 +4,52 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/legacy.dart';
 
+bool isTilingWindowManager() {
+  if (kIsWeb || !Platform.isLinux) return false;
+
+  final env = Platform.environment;
+
+  // Direct socket or instance detections
+  if (env.containsKey('HYPRLAND_INSTANCE_SIGNATURE') ||
+      env.containsKey('SWAYSOCK') ||
+      env.containsKey('I3SOCK') ||
+      env.containsKey('BSPWM_SOCKET') ||
+      env.containsKey('RIVER_SOCKET')) {
+    return true;
+  }
+
+  // Desktop environment or session string detections
+  final desktop = (env['XDG_CURRENT_DESKTOP'] ?? '').toLowerCase();
+  final session = (env['DESKTOP_SESSION'] ?? '').toLowerCase();
+  final sessionDesktop = (env['XDG_SESSION_DESKTOP'] ?? '').toLowerCase();
+
+  const tilingKeywords = [
+    'hyprland',
+    'i3',
+    'sway',
+    'bspwm',
+    'dwm',
+    'awesome',
+    'qtile',
+    'xmonad',
+    'river',
+    'niri',
+    'leftwm',
+    'herbstluftwm',
+    'omarchy',
+  ];
+
+  for (final keyword in tilingKeywords) {
+    if (desktop.contains(keyword) ||
+        session.contains(keyword) ||
+        sessionDesktop.contains(keyword)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 class WindowsWindowFrame extends StatelessWidget {
   final Widget child;
 
@@ -14,7 +60,7 @@ class WindowsWindowFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb || !Platform.isWindows) {
+    if (kIsWeb || (!Platform.isWindows && !Platform.isLinux)) {
       return child;
     }
 
@@ -120,6 +166,31 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTiling = isTilingWindowManager();
+
+    if (isTiling) {
+      return Container(
+        height: 10,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DragToMoveArea(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onDoubleTap: () async {
+              if (_isMaximized) {
+                await windowManager.unmaximize();
+              } else {
+                await windowManager.maximize();
+              }
+            },
+            child: Container(
+              color: Colors.transparent,
+              height: double.infinity,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       height: 32,
       padding: const EdgeInsets.only(left: 10, right: 12),

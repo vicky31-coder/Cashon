@@ -30,6 +30,8 @@
 .pub-cache/
 .pub/
 /build/
+/dist/
+packaging/tools/
 local.properties
 pubspec.lock
 

@@ -1208,35 +1208,6 @@ Future<bool> saveDriveFileToDevice({
 }
 
 bool openBackupReminderPopupCheck(BuildContext context) {
-  if ((appStateSettings["currentUserEmail"] == null ||
-          appStateSettings["currentUserEmail"] == "") &&
-      ((appStateSettings["numLogins"] + 1) % 7 == 0) &&
-      appStateSettings["canShowBackupReminderPopup"] == true) {
-    openPopup(
-      context,
-      icon: MoreIcons.google_drive,
-      iconScale: 0.9,
-      title: "backup-your-data-reminder".tr(),
-      description: "backup-your-data-reminder-description".tr() +
-          " " +
-          "google-drive".tr(),
-      onSubmitLabel: "backup".tr().capitalizeFirst,
-      onSubmit: () async {
-        popRoute(context);
-        await signInAndSync(context, next: () {});
-      },
-      onCancelLabel: "never".tr().capitalizeFirst,
-      onCancel: () async {
-        popRoute(context);
-        await updateSettings("canShowBackupReminderPopup", false,
-            updateGlobalState: false);
-      },
-      onExtraLabel: "later".tr().capitalizeFirst,
-      onExtra: () {
-        popRoute(context);
-      },
-    );
-    return true;
-  }
+  // Disabled: recurring backup modal has been removed
   return false;
 }

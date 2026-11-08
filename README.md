@@ -1,272 +1,150 @@
-<h1 align="center" style="font-size:28px; line-height:1"><b>Cashew</b></h1>
-
-
 <div align="center">
-  <a href="https://cashewapp.web.app/">
-    <img alt="Icon" src="promotional/icons/icon.png" width="150px" >
-  </a>
+  <img alt="Cashon Icon" src="promotional/icons/icon.png" width="130px" />
+  <h1><b>Cashon</b></h1>
+  <p><b>Modern, Private, Multiplatform Personal Finance & Budget Manager</b></p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter">
+    <img src="https://img.shields.io/badge/Backend-PocketBase-B8860B?logo=pocketbase" alt="PocketBase">
+    <img src="https://img.shields.io/badge/Database-Drift%20SQLite-003B57?logo=sqlite" alt="SQLite">
+    <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20Android-green" alt="Platforms">
+    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License">
+  </p>
 </div>
-
-
-<br />
-
-<div align="center">
-  <a href="https://apps.apple.com/us/app/cashew-expense-budget-tracker/id6463662930">
-    <img alt="iOS App Store Badge" src="promotional/store-banners/app-store-badge.png" height="60px">
-  </a>
-  <a href="https://play.google.com/store/apps/details?id=com.budget.tracker_app">
-    <img alt="Google Play Badge" src="promotional/store-banners/google-play-badge.png" height="60px">
-  </a>
-  <a href="https://github.com/jameskokoska/Cashew/releases/">
-    <img alt="GitHub Badge" src="promotional/store-banners/github-badge.png" height="60px">
-  </a>
-  <a href="https://budget-track.web.app/">
-    <img alt="PWA Badge" src="promotional/store-banners/pwa-badge.png" height="60px">
-  </a>
-</div>
-
-<h3 align="center" style="font-size:28px; line-height:1">
-  <a href="https://github.com/jameskokoska/Cashew/issues/725">🚀 Cashew Beta Testing</a>
-</h3>
 
 ---
 
-<br />
+## 📌 Overview
 
-<a href="https://cashewapp.web.app/">
-  <div align="center">
-    <img width="95%" src="promotional/GitHub/SocialPreviewGitHub.png" alt="Promo banner">
-  </div>
-</a>
+**Cashon** is a feature-rich, beautiful personal finance and budget tracking application designed to give you complete ownership and clarity over your money. 
 
-<br />
-
-Cashew is a full-fledged, feature-rich application designed to empower users in managing their finances effectively. Built using Flutter - with Drift's SQL package, and Firebase - this app offers a seamless and intuitive user experience across various devices. Development started in September 2021.
+Originally based on Cashew, Cashon has been completely re-architected with **de-Googled, self-hosted cloud synchronization** powered by [PocketBase](https://pocketbase.io), modern **Linux desktop native integration** (with support for tiling window managers like Hyprland, i3, and Sway), and first-class distribution packages for all major Linux formats (**AppImage**, **Flatpak**, **Debian/Ubuntu**, and **Arch Linux / AUR**).
 
 ---
 
-## Features
+## 🚀 What's New in Cashon
 
-<a href="https://www.youtube.com/watch?v=Oar9pkc7BSc&t=235s">
-  <div align="center">
-    <img width="80%" src="promotional/youtube-promo/thumbnail-oss.png" alt="Review Video">
-  </div>
-</a>
-<p align="center">
-  Cashew was featured on <a href="https://www.youtube.com/watch?v=Oar9pkc7BSc&t=235s">YouTube</a> on 'The Best Free and Open Source Apps in 2024!' (and in the thumbnail!)
-</p>
+### ☁️ Self-Hosted PocketBase Sync (De-Googled)
+- **Zero Proprietary Cloud Lock-In**: Complete removal of Firebase and Google Drive dependencies.
+- **Self-Hosted Backend**: Backed by a high-performance PocketBase server (`cashonbackend.hl.rhaegarsystems.com`) with instant sync, authentication tokens, and strict field schema integrity.
+- **Git-Style Push & Pull**: Independent manual or automatic sync controls—push local modifications or pull cloud snapshots with one click from the Accounts page.
 
-<br />
+### 🐧 First-Class Linux Desktop Experience
+- **Custom Frameless Titlebar**: Clean GTK undecorated window frame with custom modern titlebar styling.
+- **Tiling Window Manager Auto-Detection**: Automatically detects tiling environments (such as **Hyprland**, **i3**, **Sway**, and **Omarchy**) and cleanly hides redundant window minimize/maximize/close buttons.
+- **Impeller Graphics**: Runs with Flutter's next-generation Impeller OpenGL/Vulkan rendering backend for smooth animations and low latency.
+- **Distraction-Free**: Annoying recurring cloud reminder modals and login fly-in dropdowns have been removed for a clean, uninterrupted workflow.
 
-<a href="https://www.youtube.com/watch?v=NYZd7IKn1oY&t=536s">
-  <div align="center">
-    <img width="80%" src="promotional/youtube-promo/thumbnail-year-best.png" alt="Review Video">
-  </div>
-</a>
-<p align="center">
-  Cashew was featured on <a href="https://www.youtube.com/watch?v=NYZd7IKn1oY&t=536s">YouTube</a> on 'The Best Apps of 2023!'
-</p>
+### 📦 Universal Linux Packaging
+Native build scripts produce release artifacts ready for distribution:
+- **AppImage**: Standalone executable (`.AppImage`) runnable on any Linux distribution without installation.
+- **Flatpak**: Sandboxed package targeting `org.freedesktop.Platform 26.08` for bleeding-edge glibc compatibility.
+- **Debian / Ubuntu**: Native `.deb` package with system desktop launcher and high-res icon integration.
+- **Arch Linux / AUR**: Native `PKGBUILD` and `.pkg.tar.zst` ready for `pacman` and AUR helpers (`yay`, `paru`).
 
-<br>
+---
 
-<a href="https://www.youtube.com/watch?v=2MwWmqcn--s&t=261s">
-  <div align="center">
-    <img width="80%" src="promotional/youtube-promo/thumbnail.png" alt="Review Video">
-  </div>
-</a>
-<p align="center">
-  Cashew was featured on <a href="https://www.youtube.com/watch?v=2MwWmqcn--s&t=261s">YouTube</a> on 'Top Android Apps! (November 2023)'
-</p>
-
-<br>
-
-<div align="center">
-  <img width="80%" src="promotional/play-store-feature/play-store-feature.png" alt="Play Store Feature">
-</div>
-<p align="center">
-  Cashew was featured on <a href="https://play.google.com/store/apps/editorial?id=mc_apps_new_on_play_fcp">Google Play's Editorial 'New Apps We Love'</a> (November 2023)!
-</p>
-
-<br>
-
-<a href="https://github.com/nyas1/Material-You-app-list?tab=readme-ov-file#-economy:~:text=MDY%20Celenganku-,MDY%20Cashew,-MDY%20Allowance%20FOSS">
-  <div align="center">
-    <img width="80%" src="promotional/material-apps-feature/material-apps-feature.png" alt="Material Apps List Feature">
-  </div>
-</a>
-<p align="center">
-  Cashew was featured in the <a href="https://github.com/nyas1/Material-You-app-list?tab=readme-ov-file#-economy:~:text=MDY%20Celenganku-,MDY%20Cashew,-MDY%20Allowance%20FOSS">Material You Apps List</a>!
-</p>
-
-## Release
-
-Check out the [official website](https://cashewapp.web.app/)!
-
-This application is available on the [App Store](https://apps.apple.com/us/app/cashew-expense-budget-tracker/id6463662930), [Google Play](https://play.google.com/store/apps/details?id=com.budget.tracker_app), [GitHub](https://github.com/jameskokoska/Cashew/releases/) and as a [Web App (PWA)](https://budget-track.web.app/).
-
-### Changelog
-
-Changes and progress about development is all heavily documented in GitHub [commits](https://github.com/jameskokoska/Cashew/commits/main) and in the [changelog](https://github.com/jameskokoska/Cashew/blob/main/budget/lib/widgets/showChangelog.dart)
-
-## Key Features
+## ✨ Key Features
 
 ### 💸 Budget Management
+- **Custom Budgets & Flexible Periods**: Create budgets for weekly, monthly, annual, or custom time periods (ideal for one-time travel or project expenses).
+- **Category Spending Limits**: Configure specific spending caps per category within each budget.
+- **Budget History & Comparison**: View and compare historical performance across past periods to understand spending trends.
+- **Financial Goals & Savings**: Track progress toward long-term savings and loan payoffs.
 
-- Custom Budgets and Time Periods: Set up personalized budgets with flexible time periods, such as monthly, weekly, daily, or any custom time period that suits your financial planning needs. A custom time period is useful if you plan on setting a one-time travel budget!
-- Added Budgets: Selectively add transactions to specific budgets, allowing you to focus on specific expense categories.
-- Category Spending Limits per Budget: Set limits for each category within a budget, ensuring responsible spending.
-- Past Budget History Viewing: Analyze your spending habits over time by accessing past budget history, enabling comparison and tracking of financial progress.
-- Goals: Create spending and saving goals and put transactions towards different purchases or savings. Track your progress towards achieving your financial goals.
+### 💰 Transaction Tracking
+- **Rich Transaction Types**: Supports upcoming payments, subscriptions, repeating transactions, borrowed debts, and lent credits.
+- **Smart Auto-Categorization**: Custom transaction titles automatically map repeated entries to categories with memory-based suggestions.
+- **Fast Search & Dynamic Filters**: Filter transactions instantly by date range, category, amount, tags, and payment accounts.
+- **Batch Editing**: Long-press and multi-select transactions or budgets to edit or bulk-delete.
 
-### 💰 Transaction Management
+### 💱 Accounts & Multi-Currency
+- **Multi-Account Overview**: Organize multiple checking, savings, credit, or cash accounts.
+- **Live Currency Conversion**: Switch between accounts and foreign currencies on the fly with live exchange rate conversions.
 
-- Support for Different Transaction Types: Categorize transactions effectively based on types such as upcoming, subscription, repeating, debts (borrowed), and credit (lent). Each type behaves in certain ways in the interface. Pay your upcoming transactions when you're ready, or mark your lent out transactions as collected.
-- Custom Categories: Create personalized categories to organize transactions according to your unique spending habits. Search through multiple icons and select the default option as expenses or income when adding transactions.
-- Custom Titles: Automatically assign transactions with the same name to specific categories, saving time and ensuring consistency. These titles are stored in memory and popup when you add another transaction with a similar name.
-- Search and Filters: Easily search and filter transactions based on various criteria such as date, category, amount, or custom tags, enabling quick access to information.
-- Easy Editing: Long-press and swipe to select multiple budgets, edit accordingly as needed or delete multiple at once.
+### 🎨 Design & Customization
+- **Material You UI**: Modern, adaptive user interface with support for dynamic theming, custom accent colors, and OLED dark mode.
+- **Customizable Dashboard**: Rearrange homescreen widgets and summaries to display the financial metrics you care about most.
+- **Detailed Analytics**: Interactive charts and breakdown graphs to visualize spending categories at a glance.
 
-### 💱 Financial Flexibility
+---
 
-- Multiple Currencies and Accounts: Manage finances across different currencies and accounts with up-to-date conversion rates for accurate calculations and effortless currency conversions. The interface shows the original amount added and the converted amount to the selected account.
-- Switch Accounts and Currencies with Ease: On the homepage, easily select a different account and currency and everything will be converted automatically in an instant.
+## 🛠️ Building & Packaging
 
-### 🔒 Enhanced Security and Accessibility
+### Prerequisites
+- [Flutter SDK](https://flutter.dev) (v3.24+ recommended)
+- `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev` (for Linux builds)
+- Optional: `flatpak`, `flatpak-builder` (for Flatpak), `makepkg` (for Arch), `dpkg` or `ar` (for Debian)
 
-- Biometric Lock: Secure budget data using biometric authentication, adding an extra layer of privacy.
-- Google Login: Conveniently log in to the app using your Google account, ensuring a streamlined and hassle-free authentication process.
+### Running in Development
+```bash
+cd budget
+flutter run -d linux
+```
 
-### 🎨 User Experience and Design
+### Packaging for Linux
+All packaging scripts are located in `budget/scripts/` and output compiled binaries to `budget/dist/`:
 
-- Material You Design: Enjoy a visually appealing and modern interface, following the principles of Material You design for a delightful user experience.
-- Custom Accent Color: Personalize the app by selecting a custom accent color that suits your style, or follow that of the system.
-- Light and Dark Mode: Seamlessly switch between light and dark themes to optimize visibility and reduce eye strain.
-- Customizable Home Screen: Tailor the home screen layout and widgets to display the financial information that matters most to you, providing a personalized and efficient dashboard.
-- Detailed Graph Visuals: Gain valuable insights into spending patterns through detailed and interactive graphs, visualizing financial data at a glance.
-- Beautiful Adaptive UI: A responsive user interface that adapts flawlessly to both web and mobile platforms, providing an immersive and consistent user experience across devices.
+```bash
+cd budget
 
-### ☁ Backup and Syncing
+# 1. Build all 4 Linux formats (Flatpak, AppImage, Deb, Arch)
+./scripts/build_linux_all.sh
 
-- Cross-Device Sync: Keep budget data synchronized across all devices, ensuring access to financial information wherever you go.
-- Google Drive Backup: Safeguard budget data by utilizing Google Drive's backup functionality, allowing easy restoration of data if needed.
+# 2. Build individual formats
+./scripts/build_appimage.sh   # Produces dist/Cashon-1.0.0-x86_64.AppImage
+./scripts/build_deb.sh        # Produces dist/cashon_1.0.0_amd64.deb
+./scripts/build_aur.sh        # Produces dist/cashon-bin-1.0.0-1-x86_64.pkg.tar.zst & AUR files
+./scripts/build_flatpak.sh    # Produces dist/Cashon-1.0.0-x86_64.flatpak
+```
 
-### 💿 Smart Automation
+### Installing on Linux
 
-- Notifications: Stay informed about important financial events and receive timely reminders for budget goals, transactions, and upcoming due dates.
-- Import CSV Files: Seamlessly import financial data by uploading CSV files, facilitating a smooth transition from other applications or platforms.
-- Import Google Sheets: Seamlessly import Google Sheets tables, quickly importing many transactions from a spreadsheet.
-- App Links: Automatically create transactions with pre-filled data using app linking (documentation below)
+- **AppImage**:
+  ```bash
+  chmod +x dist/Cashon-1.0.0-x86_64.AppImage
+  ./dist/Cashon-1.0.0-x86_64.AppImage
+  ```
 
-## Automation
+- **Arch Linux / Omarchy**:
+  ```bash
+  sudo pacman -U dist/cashon-bin-1.0.0-1-x86_64.pkg.tar.zst
+  ```
 
-See the `Automation` section on the FAQ website for information on how to add transactions automatically: https://cashewapp.web.app/faq.html#automation
+- **Debian / Ubuntu**:
+  ```bash
+  sudo dpkg -i dist/cashon_1.0.0_amd64.deb
+  ```
 
-## Bundled Packages
+- **Flatpak**:
+  ```bash
+  flatpak install --user dist/Cashon-1.0.0-x86_64.flatpak
+  flatpak run com.budget.tracker_app
+  ```
 
-This repository contains, bundled in, modified versions of the discontinued packages listed below. They can be found in the folder `/budget/packages`
+---
 
-- https://pub.dev/packages/implicitly_animated_reorderable_list
-- https://pub.dev/packages/sliding_sheet
+## 📁 Project Structure
 
-## Translations
+```text
+Cashon/
+├── budget/
+│   ├── assets/              # App icon, custom fonts, and translations
+│   ├── lib/
+│   │   ├── database/        # Drift SQLite database tables & DAOs
+│   │   ├── pages/           # App screens (Home, Accounts, Budgets, Settings)
+│   │   ├── struct/          # PocketBase sync service, models, preferences
+│   │   └── widgets/         # Adaptive UI widgets, custom window decorations
+│   ├── linux/               # Native Linux GTK runner & CMake config
+│   ├── packaging/           # Packaging manifests
+│   │   ├── aur/             # Arch Linux PKGBUILD & .SRCINFO
+│   │   └── flatpak/         # Flatpak manifest, metainfo, and desktop files
+│   └── scripts/             # Automation scripts for multi-format packaging
+└── promotional/             # Promotional banners and app icons
+```
 
-The translations are available here: https://docs.google.com/spreadsheets/d/1QQqt28cmrby6JqxLm-oxUXCuM3alniLJ6IRhcPJDOtk/edit?usp=sharing. If you would like to help translate, please reach out on email: dapperappdeveloper@gmail.com
+---
 
-### To Update Translations
+## 📄 License
 
-1. Run `budget\assets\translations\generate-translations.py`
-2. Restart the application
-
-## Developer Notes
-
-### Pull Requests and Contributions
-
-Unfortunately, I am currently not accepting contributions due to licensing and credits. Since this application turns some profits, I want to avoid any muddy water when it comes to compensation for contributions. You are free to submit an [issue](https://github.com/jameskokoska/Cashew/issues) and I can consider it!
-
-### Android Release
-
-- To build an app-bundle Android release, run `flutter build appbundle --release`
-
-Note: required Android SDK.
-
-### iOS Release
-
-- To build an IPA iOS release, run `flutter build ipa`
-
-Note: requires MacOS.
-
-### Firebase Deployment
-
-- To deploy to firebase, run `firebase deploy`
-
-Note: required Firebase.
-
-### GitHub release
-
-- Create a tag for the current version specified in `pubspec.yaml`
-- `git tag <version>`
-- Push the tag
-- `git push origin <version>`
-- Create the release and upload binaries
-- https://github.com/jameskokoska/Cashew/releases/new
-
-### Scripts
-
-`deploy_and_build_windows.bat`
-
-- Deploy to Firebase and build the apk and appbundle
-
-`open_release_builds.bat`
-
-- Opens the location of the built apk and appbundle
-
-`update_translations.bat`
-
-- Downloads the latest version of Cashew translations. Runs `budget\assets\translations\generate-translations.py`
-
-### Develop Wirelessly on Android
-
-- `adb tcpip 5555`
-- `adb connect <IP>`
-- Get the phone's IP by going to `About Phone` > `Status Information` > `IP Address`
-
-### Migrate Database
-
-1. Make any database changes to the schema and tables
-2. Bump the schema version
-   - Change `int schemaVersionGlobal = ...+1` in `tables.dart`
-3. Make sure you are in application root directory
-   - `cd .\budget\`
-4. Generate database code
-   - Run `dart run build_runner build`
-5. Export the new schema
-   - Generate schema dump for the newly created schema
-   - Replace `[schemaVersion]` in the command below with the value of `schemaVersionGlobal`
-   - Run `dart run drift_dev schema dump lib\database\tables.dart drift_schemas//drift_schema_v[schemaVersion].json`
-   - Read more: https://drift.simonbinder.eu/docs/advanced-features/migrations/#exporting-the-schema
-6. Generate step-by-step migrations
-   - Run `dart run drift_dev schema steps drift_schemas/ lib\database\schema_versions.dart`
-7. Implement migration strategy
-   - Edit `await stepByStep(...)` function in `tables.dart` and add the migration strategy for the new version migration
-
-### Get Platform
-
-- Use `getPlatform()` from `functions.dart`
-- Since `Platform` is not supported on web, we must create a wrapper and always use this to determine the current platform
-
-### Push Route
-
-- If we want to navigate to a new page, stick to `pushRoute(context, page)` function from `functions.dart`
-- It handles the platform routing and `PageRouteBuilder`
-
-### Wallets vs. Accounts
-
-- `Wallets` have been been renamed to `Accounts` on the front-end but internally, the name `Wallet` is still used.
-
-### Objectives vs. Goals
-
-- `Objectives` have been been renamed to `Goals` on the front-end but internally, the name `Objectives` is still used.
-
-### Long Term Loans
-
-- Long term loans create a goal. However, the goals total is not used. Instead the total of the goal is calculated by totalling the proper polarity of transactions of the opposite type. For example, if it was a loan of 100$ lent out, the initial transaction would be 100$ of negative polarity (expense) and that would be the total of the goal. When a payment is made, it is made in the opposite (positive) polarity (income) and added to the total 'paid back'. We can easily find how much is remaining by taking the difference (or the addition including polarities).
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the `LICENSE` file for details.

@@ -1,0 +1,43 @@
+app-id: com.budget.tracker_app
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+command: cashon
+
+finish-args:
+  # Display & Wayland access
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  # Hardware acceleration
+  - --device=dri
+  # Networking for PocketBase sync
+  - --share=network
+  # File access for backups & exports
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+
+modules:
+  - name: cashon
+    buildsystem: simple
+    build-commands:
+      # Install the Flutter bundle to /app/share/cashon
+      - mkdir -p /app/share/cashon /app/bin
+      - cp -r * /app/share/cashon/
+      # Binary launcher in PATH
+      - install -Dm755 cashon.sh /app/bin/cashon
+      # Desktop launcher & icon
+      - install -Dm644 com.budget.tracker_app.desktop /app/share/applications/com.budget.tracker_app.desktop
+      - install -Dm644 icon.png /app/share/icons/hicolor/512x512/apps/com.budget.tracker_app.png
+      - install -Dm644 com.budget.tracker_app.metainfo.xml /app/share/metainfo/com.budget.tracker_app.metainfo.xml
+    sources:
+      - type: dir
+        path: ../../build/linux/x64/release/bundle
+      - type: file
+        path: cashon.sh
+      - type: file
+        path: com.budget.tracker_app.desktop
+      - type: file
+        path: ../../assets/icon/icon.png
+      - type: file
+        path: com.budget.tracker_app.metainfo.xml

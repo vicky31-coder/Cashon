@@ -62,11 +62,11 @@ void main() async {
       print("Could not determine local timezone: $e");
     }
 
-    if (!kIsWeb && Platform.isWindows) {
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
       await windowManager.ensureInitialized();
-      WindowOptions windowOptions = const WindowOptions(
-        size: Size(1280, 780),
-        minimumSize: Size(800, 600),
+      WindowOptions windowOptions = WindowOptions(
+        size: const Size(1280, 780),
+        minimumSize: const Size(800, 600),
         center: true,
         skipTaskbar: false,
         titleBarStyle: TitleBarStyle.hidden,
@@ -193,7 +193,7 @@ class App extends StatelessWidget {
         if (kIsWeb) {
           return FadeIn(
               duration: Duration(milliseconds: 1000), child: mainWidget);
-        } else if (Platform.isWindows) {
+        } else if (Platform.isWindows || Platform.isLinux) {
           return WindowsWindowFrame(child: mainWidget);
         } else {
           return mainWidget;

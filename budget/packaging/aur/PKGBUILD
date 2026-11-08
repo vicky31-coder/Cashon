@@ -1,0 +1,24 @@
+# Maintainer: Vignesh Balaji <0836balaji@gmail.com>
+pkgname=cashon-bin
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Personal finance and budget manager (Cashon)"
+arch=('x86_64')
+url="https://git.hl.rhaegarsystems.com/VigneshBalaji/Cashon"
+license=('GPL3')
+depends=('gtk3' 'glibc')
+provides=('cashon')
+conflicts=('cashon')
+source=("cashon-${pkgver}-linux-x64.tar.gz" "com.budget.tracker_app.desktop" "icon-512.png")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -d "${pkgdir}/usr/lib/cashon"
+    cp -r "${srcdir}"/{budget,data,lib} "${pkgdir}/usr/lib/cashon/"
+
+    install -d "${pkgdir}/usr/bin"
+    ln -s /usr/lib/cashon/budget "${pkgdir}/usr/bin/cashon"
+
+    install -Dm644 "${srcdir}/com.budget.tracker_app.desktop" "${pkgdir}/usr/share/applications/com.budget.tracker_app.desktop"
+    install -Dm644 "${srcdir}/icon-512.png" "${pkgdir}/usr/share/icons/hicolor/512x512/apps/com.budget.tracker_app.png"
+}

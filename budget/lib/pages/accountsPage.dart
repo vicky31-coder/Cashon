@@ -9,9 +9,7 @@ import 'package:budget/widgets/animatedExpanded.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/iconButtonScaled.dart';
-import 'package:budget/widgets/moreIcons.dart';
 import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/settingsContainers.dart';
@@ -34,31 +32,37 @@ class AccountsPage extends StatefulWidget {
 }
 
 class AccountsPageState extends State<AccountsPage> {
-  bool currentlyExporting = false;
-  bool fullSyncOption = false;
+  bool isPushing = false;
+  bool isPulling = false;
 
   void refreshState() {
     setState(() {});
   }
-  Future<void> _triggerSync({required bool forceFullSync}) async {
-    if (currentlyExporting) return;
-    setState(() {
-      currentlyExporting = true;
-      fullSyncOption = forceFullSync;
-    });
-    final res = await pocketBaseSyncEngine.syncAll(
-      forceFullSync: forceFullSync,
-    );
+
+  Future<void> _triggerPush() async {
+    if (isPushing || isPulling) return;
+    setState(() => isPushing = true);
+    final res = await pocketBaseSyncEngine.pushAll(forceFull: true);
     if (mounted) {
-      setState(() {
-        currentlyExporting = false;
-      });
+      setState(() => isPushing = false);
       openSnackbar(SnackbarMessage(
-        title: res.success
-            ? (forceFullSync ? "Full Sync completed" : "Sync completed")
-            : "Sync failed",
+        title: res.success ? "Push Completed" : "Push Failed",
         description: res.message,
-        icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
+        icon: res.success ? Icons.cloud_upload_rounded : Icons.error_outline,
+      ));
+    }
+  }
+
+  Future<void> _triggerPull() async {
+    if (isPushing || isPulling) return;
+    setState(() => isPulling = true);
+    final res = await pocketBaseSyncEngine.pullAll(forceFull: true);
+    if (mounted) {
+      setState(() => isPulling = false);
+      openSnackbar(SnackbarMessage(
+        title: res.success ? "Pull Completed" : "Pull Failed",
+        description: res.message,
+        icon: res.success ? Icons.cloud_download_rounded : Icons.error_outline,
       ));
     }
   }
@@ -206,31 +210,27 @@ class AccountsPageState extends State<AccountsPage> {
                             children: [
                               Expanded(
                                 child: _SyncActionButton(
-                                  title: "Sync Now",
-                                  subtitle: "Fast delta sync",
+                                  title: "Push",
+                                  subtitle: "Upload local changes",
                                   icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.sync_outlined
-                                      : Icons.sync_rounded,
+                                      ? Icons.cloud_upload_outlined
+                                      : Icons.cloud_upload_rounded,
                                   isPrimary: true,
-                                  isLoading:
-                                      currentlyExporting && !fullSyncOption,
-                                  onTap: () =>
-                                      _triggerSync(forceFullSync: false),
+                                  isLoading: isPushing,
+                                  onTap: _triggerPush,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _SyncActionButton(
-                                  title: "Full Sync",
-                                  subtitle: "Recheck all records",
+                                  title: "Pull",
+                                  subtitle: "Download cloud data",
                                   icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.cloud_sync_outlined
-                                      : Icons.cloud_sync_rounded,
+                                      ? Icons.cloud_download_outlined
+                                      : Icons.cloud_download_rounded,
                                   isPrimary: false,
-                                  isLoading:
-                                      currentlyExporting && fullSyncOption,
-                                  onTap: () =>
-                                      _triggerSync(forceFullSync: true),
+                                  isLoading: isPulling,
+                                  onTap: _triggerPull,
                                 ),
                               ),
                             ],
@@ -401,9 +401,7 @@ class EnableSignInWithGoogleFlyIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (appStateSettings["enableGoogleLoginFlyIn"] != true ||
-        getIsFullScreen(context) == false) return SizedBox.shrink();
-    return const SignInWithGoogleFlyIn();
+    return const SizedBox.shrink();
   }
 }
 
@@ -435,7 +433,7 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
     });
   }
 
-  bool get shouldExpand => !hide && googleUser == null;
+  bool get shouldExpand => !hide && !pocketBaseService.isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -465,10 +463,10 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                     ),
                     child: Tappable(
                       onTap: () async {
-                        await signInGoogle();
                         setState(() {
                           hide = true;
                         });
+                        await signInAndSync(context, next: () {});
                       },
                       borderRadius: 13,
                       color: dynamicPastel(
@@ -494,7 +492,7 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                                   Row(
                                     children: [
                                       Icon(
-                                        MoreIcons.google,
+                                        Icons.cloud_outlined,
                                         size: 25,
                                       ),
                                       SizedBox(width: 10),
@@ -539,12 +537,12 @@ class _SignInWithGoogleFlyInState extends State<SignInWithGoogleFlyIn> {
                             padding: const EdgeInsetsDirectional.symmetric(
                                 horizontal: 22, vertical: 12),
                             child: Button(
-                              label: "Continue with Google",
+                              label: "Continue to Cloud",
                               onTap: () async {
-                                await signInGoogle();
                                 setState(() {
                                   hide = true;
                                 });
+                                await signInAndSync(context, next: () {});
                               },
                               color: Theme.of(context).colorScheme.primary,
                               textColor:

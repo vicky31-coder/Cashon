@@ -354,10 +354,10 @@ class DebugPage extends StatelessWidget {
                 pagesNeedingRefresh: [], updateGlobalState: false);
           },
           initialValue: appStateSettings["enableGoogleLoginFlyIn"] == true,
-          title: "Google Login Flyin".tr(),
+          title: "Cloud Login Flyin",
           description:
-              "Show login with Google dropdown if not logged in and full screen",
-          icon: Icons.g_mobiledata,
+              "Show login with Cloud dropdown if not logged in and full screen",
+          icon: Icons.cloud_outlined,
         ),
         SettingsContainerSwitch(
           onSwitched: (value) async {

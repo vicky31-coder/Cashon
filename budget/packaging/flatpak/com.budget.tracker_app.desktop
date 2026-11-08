@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Cashon
+GenericName=Budget & Finance Tracker
+Comment=Personal finance, budgeting, and expense tracker
+Exec=cashon
+Icon=com.budget.tracker_app
+Terminal=false
+Type=Application
+Categories=Office;Finance;
+Keywords=budget;finance;accounting;money;expenses;
+StartupWMClass=budget
