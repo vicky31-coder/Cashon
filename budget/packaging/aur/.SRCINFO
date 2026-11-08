@@ -1,0 +1,19 @@
+pkgbase = cashon-bin
+	pkgdesc = Personal finance and budget manager (Cashon)
+	pkgver = 1.0.0
+	pkgrel = 1
+	url = https://git.hl.rhaegarsystems.com/VigneshBalaji/Cashon
+	arch = x86_64
+	license = GPL3
+	depends = gtk3
+	depends = glibc
+	provides = cashon
+	conflicts = cashon
+	source = cashon-1.0.0-linux-x64.tar.gz
+	source = com.budget.tracker_app.desktop
+	source = icon-512.png
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = cashon-bin
