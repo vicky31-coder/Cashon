@@ -45,6 +45,25 @@ class PocketBaseService extends ChangeNotifier {
   late PocketBase pb;
   late AsyncAuthStore authStore;
   bool isInitialized = false;
+  Duration serverClockOffset = Duration.zero;
+
+  DateTime get calibratedNow => DateTime.now().toUtc().add(serverClockOffset);
+
+  Future<void> calibrateClock() async {
+    if (!isInitialized || serverUrl.isEmpty) return;
+    try {
+      final res = await http.head(Uri.parse("$serverUrl/api/health"));
+      final dateHeader = res.headers['date'];
+      if (dateHeader != null) {
+        final serverTime = HttpDate.parse(dateHeader);
+        serverClockOffset = serverTime.difference(DateTime.now().toUtc());
+        debugPrint(
+            "PocketBase clock calibrated: offset is ${serverClockOffset.inMilliseconds}ms");
+      }
+    } catch (e) {
+      debugPrint("PocketBase clock calibration error: $e");
+    }
+  }
 
   PocketBase get client => pb;
 
@@ -178,6 +197,7 @@ class PocketBaseService extends ChangeNotifier {
       final authData = await pb.collection("users").authRefresh();
       debugPrint(
           "PocketBase token successfully rotated: record id=${authData.record.id}");
+      await calibrateClock();
       _safeNotifyListeners();
       return true;
     } catch (e) {

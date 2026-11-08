@@ -8,6 +8,7 @@ import 'package:budget/struct/firebaseAuthGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/shareBudget.dart';
 import 'package:budget/struct/syncClient.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/periodCyclePicker.dart';
 import 'package:budget/widgets/walletEntry.dart';
@@ -2683,6 +2684,7 @@ class FinanceDatabase extends _$FinanceDatabase {
       ),
     );
     // print((await getAllDeleteLogs()).length);
+    pocketBaseSyncEngine.triggerDebouncedSync();
     return true;
   }
 
@@ -2716,6 +2718,8 @@ class FinanceDatabase extends _$FinanceDatabase {
       batch.insertAll(deleteLogs, deleteLogsToInsert, mode: InsertMode.replace);
     });
 
+    pocketBaseSyncEngine.triggerDebouncedSync();
+
     return true;
   }
 
@@ -2743,6 +2747,10 @@ class FinanceDatabase extends _$FinanceDatabase {
         walletPk: Value.absent(),
         homePageWidgetDisplay: Value(defaultWalletHomePageWidgetDisplay),
       );
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(wallets)
@@ -2795,6 +2803,10 @@ class FinanceDatabase extends _$FinanceDatabase {
       //     );
       //   }
       // }
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(objectives)
@@ -3604,6 +3616,10 @@ class FinanceDatabase extends _$FinanceDatabase {
       companionToInsert = companionToInsert.copyWith(methodAdded: Value(null));
     }
 
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
+    }
+
     return into(transactions)
         .insert((companionToInsert), mode: InsertMode.insertOrReplace);
   }
@@ -4047,6 +4063,10 @@ class FinanceDatabase extends _$FinanceDatabase {
     int result = await into(categories)
         .insert((companionToInsert), mode: InsertMode.insertOrReplace);
 
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
+    }
+
     if (updateSharedEntry)
       updateTransactionOnServerAfterChangingCategoryInformation(category);
     return result;
@@ -4289,6 +4309,10 @@ class FinanceDatabase extends _$FinanceDatabase {
       //         updateGlobalState: false, pagesNeedingRefresh: [0]);
       //   }
       // }
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(budgets)

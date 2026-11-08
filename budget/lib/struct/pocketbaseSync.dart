@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
@@ -125,6 +126,38 @@ class PocketBaseSyncEngine {
   PocketBaseSyncEngine._internal();
 
   bool isSyncing = false;
+  Timer? _debounceTimer;
+
+  void triggerDebouncedSync({Duration delay = const Duration(seconds: 4)}) {
+    if (!pocketBaseService.isLoggedIn) return;
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(delay, () async {
+      if (!isSyncing && pocketBaseService.isLoggedIn) {
+        debugPrint("PocketBase: executing debounced auto-sync");
+        await syncAll();
+      }
+    });
+  }
+
+  bool _shouldSkipRemoteUpdate({
+    required DateTime? localDate,
+    required DateTime? remoteDate,
+    required String localPk,
+    required String remoteId,
+  }) {
+    if (localDate == null || remoteDate == null) return false;
+    final localUtc = localDate.toUtc();
+    final remoteUtc = remoteDate.toUtc();
+
+    if (localUtc.isAfter(remoteUtc)) {
+      return true; // Local is strictly newer -> keep local
+    }
+    if (localUtc.isAtSameMomentAs(remoteUtc)) {
+      // Deterministic tie-breaker: compare IDs across all 5 devices
+      return localPk.compareTo(remoteId) > 0;
+    }
+    return false; // Remote is newer -> accept remote
+  }
   List<HomePageWidgetDisplay>? _parseHomePageWidgetDisplay(
       RecordModel r, TransactionWallet? existing) {
     final dynamic raw = r.data['home_page_widget_display'];
@@ -194,7 +227,7 @@ class PocketBaseSyncEngine {
           : (DateTime.tryParse(lastPushedStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
-      final DateTime syncStartTime = DateTime.now().toUtc();
+      final DateTime syncStartTime = pocketBaseService.calibratedNow;
       pushed = await _executePush(pb: pb, userId: userId, lastSync: lastSync);
 
       await sharedPreferences.setString(
@@ -260,7 +293,7 @@ class PocketBaseSyncEngine {
           : (DateTime.tryParse(lastPulledStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
-      final DateTime syncStartTime = DateTime.now().toUtc();
+      final DateTime syncStartTime = pocketBaseService.calibratedNow;
       pulled = await _executePull(
         pb: pb,
         forceFullSync: forceFull,
@@ -340,8 +373,9 @@ class PocketBaseSyncEngine {
           : (DateTime.tryParse(lastPulledStr)?.toUtc() ??
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
-      final DateTime syncStartTime = DateTime.now().toUtc();
-      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastPush);
+      final DateTime syncStartTime = pocketBaseService.calibratedNow;
+
+      // STAGE 1: Inbound (Pull first with LWW and deterministic tie-breaker)
       pulled = await _executePull(
         pb: pb,
         forceFullSync: forceFullSync,
@@ -349,10 +383,14 @@ class PocketBaseSyncEngine {
         lastSync: lastPull,
       );
 
-      await sharedPreferences.setString(
-          "pb_last_pushed", syncStartTime.toIso8601String());
+      // STAGE 2: Outbound (Push second - remaining winning unsynced local mutations)
+      pushed = await _executePush(pb: pb, userId: userId, lastSync: lastPush);
+
+      // STAGE 3: Commit Timestamps
       await sharedPreferences.setString(
           "pb_last_pulled", syncStartTime.toIso8601String());
+      await sharedPreferences.setString(
+          "pb_last_pushed", syncStartTime.toIso8601String());
       await sharedPreferences.setString(
           "pb_last_sync", syncStartTime.toIso8601String());
 
@@ -362,13 +400,13 @@ class PocketBaseSyncEngine {
         pushedCount: pushed,
         pulledCount: pulled,
         status: "Success",
-        message: "Sync completed successfully",
+        message: "Sync completed ($pulled pulled, $pushed pushed)",
         dateTime: syncStartTime,
       ));
 
       return SyncResult(
         success: true,
-        message: "Sync completed successfully",
+        message: "Sync completed ($pulled pulled, $pushed pushed)",
         pushedCount: pushed,
         pulledCount: pulled,
       );
@@ -736,11 +774,14 @@ class PocketBaseSyncEngine {
             existing = await database.getWalletInstanceOrNull(walletPk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: walletPk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -787,11 +828,14 @@ class PocketBaseSyncEngine {
             existing = await database.getCategoryInstanceOrNull(categoryPk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: categoryPk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -846,11 +890,14 @@ class PocketBaseSyncEngine {
             existing = await database.getBudgetInstanceOrNull(budgetPk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: budgetPk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -921,11 +968,14 @@ class PocketBaseSyncEngine {
             existing = await database.getObjectiveInstanceOrNull(objectivePk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: objectivePk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -977,11 +1027,14 @@ class PocketBaseSyncEngine {
             existing = await database.tryGetTransactionFromPk(transactionPk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: transactionPk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -1083,11 +1136,14 @@ class PocketBaseSyncEngine {
             existing = await database.getCategoryLimitInstanceOrNull(categoryLimitPk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: categoryLimitPk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -1120,11 +1176,14 @@ class PocketBaseSyncEngine {
             existing = await database.getAssociatedTitleInstanceOrNull(associatedTitlePk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: associatedTitlePk,
+                remoteId: r.id,
+              )) {
             return;
           }
 
@@ -1159,11 +1218,14 @@ class PocketBaseSyncEngine {
             existing = await database.getScannerTemplateInstanceOrNull(scannerTemplatePk);
           } catch (_) {}
 
-          // Last-Write-Wins
+          // Last-Write-Wins with deterministic tie-breaker
           if (existing != null &&
-              existing.dateTimeModified != null &&
-              remoteDate != null &&
-              existing.dateTimeModified!.toUtc().isAfter(remoteDate)) {
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: scannerTemplatePk,
+                remoteId: r.id,
+              )) {
             return;
           }
 

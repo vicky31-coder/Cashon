@@ -19,6 +19,7 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/pocketbaseService.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/struct/notificationsGlobal.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/globalLoadingProgress.dart';
@@ -173,6 +174,9 @@ class App extends StatelessWidget {
             await setHighRefreshRate();
             if (pocketBaseService.isLoggedIn) {
               await pocketBaseService.refreshToken();
+              if (!pocketBaseSyncEngine.isSyncing) {
+                pocketBaseSyncEngine.syncAll();
+              }
             }
           },
           child: InitializeBiometrics(
