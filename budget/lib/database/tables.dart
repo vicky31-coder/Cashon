@@ -8,6 +8,7 @@ import 'package:budget/struct/firebaseAuthGlobal.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/shareBudget.dart';
 import 'package:budget/struct/syncClient.dart';
+import 'package:budget/struct/pocketbaseSync.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/periodCyclePicker.dart';
 import 'package:budget/widgets/walletEntry.dart';
@@ -2683,6 +2684,7 @@ class FinanceDatabase extends _$FinanceDatabase {
       ),
     );
     // print((await getAllDeleteLogs()).length);
+    pocketBaseSyncEngine.triggerDebouncedSync();
     return true;
   }
 
@@ -2716,6 +2718,8 @@ class FinanceDatabase extends _$FinanceDatabase {
       batch.insertAll(deleteLogs, deleteLogsToInsert, mode: InsertMode.replace);
     });
 
+    pocketBaseSyncEngine.triggerDebouncedSync();
+
     return true;
   }
 
@@ -2743,6 +2747,10 @@ class FinanceDatabase extends _$FinanceDatabase {
         walletPk: Value.absent(),
         homePageWidgetDisplay: Value(defaultWalletHomePageWidgetDisplay),
       );
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(wallets)
@@ -2797,15 +2805,19 @@ class FinanceDatabase extends _$FinanceDatabase {
       // }
     }
 
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
+    }
+
     return into(objectives)
         .insert((companionToInsert), mode: InsertMode.insertOrReplace);
   }
 
   //create or update a new wallet
   Future<int> createOrUpdateScannerTemplate(ScannerTemplate scannerTemplate,
-      {bool insert = false}) {
-    scannerTemplate =
-        scannerTemplate.copyWith(dateTimeModified: Value(DateTime.now()));
+      {DateTime? customDateTimeModified, bool insert = false}) {
+    scannerTemplate = scannerTemplate.copyWith(
+        dateTimeModified: Value(customDateTimeModified ?? DateTime.now()));
     ScannerTemplatesCompanion companionToInsert =
         scannerTemplate.toCompanion(true);
 
@@ -2820,15 +2832,15 @@ class FinanceDatabase extends _$FinanceDatabase {
   }
 
   Future<int> createOrUpdateCategoryLimit(CategoryBudgetLimit categoryLimit,
-      {bool insert = false}) async {
+      {DateTime? customDateTimeModified, bool insert = false}) async {
     double maxAmount = 999999999999;
     if (categoryLimit.amount >= maxAmount)
       categoryLimit = categoryLimit.copyWith(amount: maxAmount);
     else if (categoryLimit.amount <= -maxAmount)
       categoryLimit = categoryLimit.copyWith(amount: -maxAmount);
 
-    categoryLimit =
-        categoryLimit.copyWith(dateTimeModified: Value(DateTime.now()));
+    categoryLimit = categoryLimit.copyWith(
+        dateTimeModified: Value(customDateTimeModified ?? DateTime.now()));
 
     CategoryBudgetLimitsCompanion companionToInsert =
         categoryLimit.toCompanion(true);
@@ -3088,6 +3100,13 @@ class FinanceDatabase extends _$FinanceDatabase {
     return (query.watchSingle(), query.getSingle());
   }
 
+  Future<CategoryBudgetLimit?> getCategoryLimitInstanceOrNull(
+      String categoryLimitPk) {
+    return (select(categoryBudgetLimits)
+          ..where((t) => t.categoryLimitPk.equals(categoryLimitPk)))
+        .getSingleOrNull();
+  }
+
   Stream<TransactionCategory> watchCategory(String categoryPk) {
     return (select(categories)..where((t) => t.categoryPk.equals(categoryPk)))
         .watchSingle();
@@ -3113,6 +3132,13 @@ class FinanceDatabase extends _$FinanceDatabase {
     return (query.watchSingle(), query.getSingle());
   }
 
+  Future<TransactionAssociatedTitle?> getAssociatedTitleInstanceOrNull(
+      String associatedTitlePk) {
+    return (select(associatedTitles)
+          ..where((t) => t.associatedTitlePk.equals(associatedTitlePk)))
+        .getSingleOrNull();
+  }
+
   (Stream<List<CategoryBudgetLimit>>, Future<List<CategoryBudgetLimit>>)
       getCategoryLimits() {
     final SimpleSelectStatement<$CategoryBudgetLimitsTable, CategoryBudgetLimit>
@@ -3123,12 +3149,13 @@ class FinanceDatabase extends _$FinanceDatabase {
   //create or update a new associatedTitle
   Future<int> createOrUpdateAssociatedTitle(
     TransactionAssociatedTitle associatedTitle, {
+    DateTime? customDateTimeModified,
     insert = false,
   }) {
     associatedTitle =
         associatedTitle.copyWith(title: associatedTitle.title.trim());
-    associatedTitle =
-        associatedTitle.copyWith(dateTimeModified: Value(DateTime.now()));
+    associatedTitle = associatedTitle.copyWith(
+        dateTimeModified: Value(customDateTimeModified ?? DateTime.now()));
     AssociatedTitlesCompanion companionToInsert =
         associatedTitle.toCompanion(true);
 
@@ -3427,6 +3454,7 @@ class FinanceDatabase extends _$FinanceDatabase {
     Transaction transaction, {
     bool insert = false,
     bool updateSharedEntry = true,
+    DateTime? customDateTimeModified,
     Transaction? originalTransaction,
   }) async {
     if (updateSharedEntry == true && appStateSettings["sharedBudgets"] == false)
@@ -3574,7 +3602,8 @@ class FinanceDatabase extends _$FinanceDatabase {
       }
     }
 
-    transaction = transaction.copyWith(dateTimeModified: Value(DateTime.now()));
+    transaction = transaction.copyWith(
+        dateTimeModified: Value(customDateTimeModified ?? DateTime.now()));
     TransactionsCompanion companionToInsert = transaction.toCompanion(true);
 
     if (insert) {
@@ -3585,6 +3614,10 @@ class FinanceDatabase extends _$FinanceDatabase {
 
     if (insert == false && transaction.methodAdded == MethodAdded.preview) {
       companionToInsert = companionToInsert.copyWith(methodAdded: Value(null));
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(transactions)
@@ -4030,6 +4063,10 @@ class FinanceDatabase extends _$FinanceDatabase {
     int result = await into(categories)
         .insert((companionToInsert), mode: InsertMode.insertOrReplace);
 
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
+    }
+
     if (updateSharedEntry)
       updateTransactionOnServerAfterChangingCategoryInformation(category);
     return result;
@@ -4221,7 +4258,9 @@ class FinanceDatabase extends _$FinanceDatabase {
   }
 
   Future<int> createOrUpdateBudget(Budget budget,
-      {bool updateSharedEntry = true, bool insert = false}) async {
+      {bool updateSharedEntry = true,
+      DateTime? customDateTimeModified,
+      bool insert = false}) async {
     budget = limitBudgetPeriod(budget);
 
     double maxAmount = 999999999999;
@@ -4251,7 +4290,8 @@ class FinanceDatabase extends _$FinanceDatabase {
       });
     }
 
-    budget = budget.copyWith(dateTimeModified: Value(DateTime.now()));
+    budget = budget.copyWith(
+        dateTimeModified: Value(customDateTimeModified ?? DateTime.now()));
     BudgetsCompanion companionToInsert = budget.toCompanion(true);
 
     if (insert) {
@@ -4269,6 +4309,10 @@ class FinanceDatabase extends _$FinanceDatabase {
       //         updateGlobalState: false, pagesNeedingRefresh: [0]);
       //   }
       // }
+    }
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
     }
 
     return into(budgets)
@@ -4292,9 +4336,19 @@ class FinanceDatabase extends _$FinanceDatabase {
         .getSingle();
   }
 
+  Future<Budget?> getBudgetInstanceOrNull(String budgetPk) {
+    return (select(budgets)..where((t) => t.budgetPk.equals(budgetPk)))
+        .getSingleOrNull();
+  }
+
   Future<Objective> getObjectiveInstance(String objectivePk) {
     return (select(objectives)..where((t) => t.objectivePk.equals(objectivePk)))
         .getSingle();
+  }
+
+  Future<Objective?> getObjectiveInstanceOrNull(String objectivePk) {
+    return (select(objectives)..where((t) => t.objectivePk.equals(objectivePk)))
+        .getSingleOrNull();
   }
 
   // getIsDifferenceOnlyLoan(objective)
@@ -4816,6 +4870,13 @@ class FinanceDatabase extends _$FinanceDatabase {
     return (select(scannerTemplates)
           ..where((s) => s.scannerTemplatePk.equals(scannerTemplatePk)))
         .getSingle();
+  }
+
+  Future<ScannerTemplate?> getScannerTemplateInstanceOrNull(
+      String scannerTemplatePk) {
+    return (select(scannerTemplates)
+          ..where((s) => s.scannerTemplatePk.equals(scannerTemplatePk)))
+        .getSingleOrNull();
   }
 
   // delete budget given key

@@ -32,37 +32,24 @@ class AccountsPage extends StatefulWidget {
 }
 
 class AccountsPageState extends State<AccountsPage> {
-  bool isPushing = false;
-  bool isPulling = false;
+  bool isSyncing = false;
 
   void refreshState() {
     setState(() {});
   }
 
-  Future<void> _triggerPush() async {
-    if (isPushing || isPulling) return;
-    setState(() => isPushing = true);
-    final res = await pocketBaseSyncEngine.pushAll(forceFull: true);
+  Future<void> _triggerUnifiedSync({bool forceFull = false}) async {
+    if (isSyncing) return;
+    setState(() => isSyncing = true);
+    final res = await pocketBaseSyncEngine.syncAll(forceFullSync: forceFull);
     if (mounted) {
-      setState(() => isPushing = false);
+      setState(() => isSyncing = false);
       openSnackbar(SnackbarMessage(
-        title: res.success ? "Push Completed" : "Push Failed",
+        title: res.success
+            ? (forceFull ? "Full Sync Completed" : "Sync Completed")
+            : "Sync Failed",
         description: res.message,
-        icon: res.success ? Icons.cloud_upload_rounded : Icons.error_outline,
-      ));
-    }
-  }
-
-  Future<void> _triggerPull() async {
-    if (isPushing || isPulling) return;
-    setState(() => isPulling = true);
-    final res = await pocketBaseSyncEngine.pullAll(forceFull: true);
-    if (mounted) {
-      setState(() => isPulling = false);
-      openSnackbar(SnackbarMessage(
-        title: res.success ? "Pull Completed" : "Pull Failed",
-        description: res.message,
-        icon: res.success ? Icons.cloud_download_rounded : Icons.error_outline,
+        icon: res.success ? Icons.cloud_done_rounded : Icons.error_outline,
       ));
     }
   }
@@ -206,34 +193,19 @@ class AccountsPageState extends State<AccountsPage> {
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 520),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _SyncActionButton(
-                                  title: "Push",
-                                  subtitle: "Upload local changes",
-                                  icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.cloud_upload_outlined
-                                      : Icons.cloud_upload_rounded,
-                                  isPrimary: true,
-                                  isLoading: isPushing,
-                                  onTap: _triggerPush,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _SyncActionButton(
-                                  title: "Pull",
-                                  subtitle: "Download cloud data",
-                                  icon: appStateSettings["outlinedIcons"]
-                                      ? Icons.cloud_download_outlined
-                                      : Icons.cloud_download_rounded,
-                                  isPrimary: false,
-                                  isLoading: isPulling,
-                                  onTap: _triggerPull,
-                                ),
-                              ),
-                            ],
+                          child: _SyncActionButton(
+                            title: "Sync Now",
+                            subtitle: isSyncing
+                                ? "Synchronizing with cloud..."
+                                : "Pull cloud updates & push local changes",
+                            icon: appStateSettings["outlinedIcons"]
+                                ? Icons.sync_outlined
+                                : Icons.sync_rounded,
+                            isPrimary: true,
+                            isLoading: isSyncing,
+                            onTap: () => _triggerUnifiedSync(forceFull: false),
+                            onLongPress: () =>
+                                _triggerUnifiedSync(forceFull: true),
                           ),
                         ),
                       ),
@@ -246,7 +218,8 @@ class AccountsPageState extends State<AccountsPage> {
                               : DateFormat('dd MMM yyyy, hh:mm a').format(
                                   DateTime.parse(sharedPreferences
                                           .getString("pb_last_sync")!)
-                                      .toLocal())),
+                                      .toLocal())) +
+                          " • Hold for full sync",
                       fontSize: 13,
                       textColor: getColor(context, "textLight"),
                     ),
@@ -580,6 +553,7 @@ class _SyncActionButton extends StatelessWidget {
   final bool isLoading;
   final bool isPrimary;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _SyncActionButton({
     required this.title,
@@ -588,6 +562,7 @@ class _SyncActionButton extends StatelessWidget {
     required this.isLoading,
     required this.isPrimary,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -604,6 +579,7 @@ class _SyncActionButton extends StatelessWidget {
       color: bgColor,
       borderRadius: 18,
       onTap: isLoading ? () {} : onTap,
+      onLongPress: isLoading ? null : onLongPress,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
