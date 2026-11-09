@@ -319,6 +319,7 @@ List<String> _reminderStrings = [
 Future<bool> scheduleDailyNotification(
     BuildContext context, TimeOfDay timeOfDay,
     {bool scheduleNowDebug = false}) async {
+  if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return false;
   // If the app was opened on the day the notification was scheduled it will be
   // cancelled and set to the next day because of _nextInstanceOfSetTime
   // If ReminderNotificationType.Everyday is not true
@@ -393,6 +394,7 @@ Future<bool> cancelDailyNotification() async {
 }
 
 Future<bool> scheduleUpcomingTransactionsNotification(context) async {
+  if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return false;
   await cancelUpcomingTransactionsNotification();
 
   AndroidNotificationDetails androidNotificationDetails =
