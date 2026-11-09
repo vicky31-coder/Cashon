@@ -339,30 +339,6 @@ class PocketBaseSyncEngine {
     }
   }
 
-  Future<int> _healCorruptedUpcomingTransactionsLocally() async {
-    try {
-      final corrupted = await (database.select(database.transactions)
-            ..where((t) =>
-                t.type.equals(TransactionSpecialType.upcoming.index) &
-                t.paid.equals(true) &
-                t.originalDateDue.isNull()))
-          .get();
-      if (corrupted.isNotEmpty) {
-        final fixed = corrupted
-            .map((t) => t.copyWith(
-                  type: const Value(null),
-                  dateTimeModified: Value(DateTime.now()),
-                ))
-            .toList();
-        await database.updateBatchTransactionsOnly(fixed);
-        return fixed.length;
-      }
-    } catch (e) {
-      debugPrint("Error healing corrupted transactions: $e");
-    }
-    return 0;
-  }
-
   Future<SyncResult> syncAll({bool forceFullSync = false}) async {
     if (isSyncing) {
       return SyncResult(success: false, message: "Sync already in progress");
@@ -398,9 +374,6 @@ class PocketBaseSyncEngine {
               DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
 
       final DateTime syncStartTime = pocketBaseService.calibratedNow;
-
-      // STAGE 0: Auto-heal any local transactions corrupted by previous sync (paid=true, originalDateDue=null)
-      await _healCorruptedUpcomingTransactionsLocally();
 
       // STAGE 1: Inbound (Pull first with LWW and deterministic tie-breaker)
       pulled = await _executePull(
@@ -1089,24 +1062,10 @@ class PocketBaseSyncEngine {
               ? null
               : r.getIntValue("reoccurrence");
           int rawType = r.getIntValue("type", -1);
-          int? typeIdx;
-          if (rawType == -1 || r.data["type"] == null) {
-            typeIdx = null; // Default transaction
-          } else if (rawType == 0) {
-            // Disambiguate legacy corrupted 0 vs genuine upcoming:
-            final bool paid = r.getBoolValue("paid", false);
-            final String origDue = r.getStringValue("original_date_due");
-            if (paid && origDue.isEmpty) {
-              typeIdx = null; // Default transaction improperly saved as 0
-            } else {
-              typeIdx = 0; // Genuine upcoming transaction
-            }
-          } else if (rawType > 0 &&
-              rawType < TransactionSpecialType.values.length) {
-            typeIdx = rawType;
-          } else {
-            typeIdx = null;
-          }
+          int? typeIdx = (rawType >= 0 &&
+                  rawType < TransactionSpecialType.values.length)
+              ? rawType
+              : null;
           int? methodAddedIdx = r.data["method_added"] == null
               ? null
               : r.getIntValue("method_added");
