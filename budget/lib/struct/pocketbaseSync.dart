@@ -497,13 +497,13 @@ class PocketBaseSyncEngine {
       items: newWallets,
       getClientId: (w) => w.walletPk,
       getBody: (w) => {
-        "name": w.name,
+        "name": w.name.trim().isEmpty ? "Untitled" : w.name.trim(),
         "colour": w.colour ?? "",
         "icon_name": w.iconName ?? "",
         "date_created": w.dateCreated.toUtc().toIso8601String(),
         "date_time_modified":
             (w.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-        "order": w.order,
+        "order": (w.order <= 0) ? 1 : w.order,
         "currency": w.currency ?? "",
         "currency_format": w.currencyFormat ?? "",
         "decimals": w.decimals,
@@ -525,14 +525,14 @@ class PocketBaseSyncEngine {
       items: newCategories,
       getClientId: (c) => c.categoryPk,
       getBody: (c) => {
-        "name": c.name,
+        "name": c.name.trim().isEmpty ? "Untitled" : c.name.trim(),
         "colour": c.colour ?? "",
         "icon_name": c.iconName ?? "",
         "emoji_icon_name": c.emojiIconName ?? "",
         "date_created": c.dateCreated.toUtc().toIso8601String(),
         "date_time_modified":
             (c.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-        "order": c.order,
+        "order": (c.order <= 0) ? 1 : c.order,
         "income": c.income,
         "method_added": c.methodAdded?.index,
         "main_category_pk": c.mainCategoryPk ?? "",
@@ -549,7 +549,7 @@ class PocketBaseSyncEngine {
       items: newBudgets,
       getClientId: (b) => b.budgetPk,
       getBody: (b) => {
-        "name": b.name,
+        "name": b.name.trim().isEmpty ? "Untitled" : b.name.trim(),
         "amount": b.amount,
         "colour": b.colour ?? "",
         "start_date": b.startDate.toUtc().toIso8601String(),
@@ -566,7 +566,7 @@ class PocketBaseSyncEngine {
         "date_time_modified":
             (b.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
         "pinned": b.pinned,
-        "order": b.order,
+        "order": (b.order <= 0) ? 1 : b.order,
         "wallet_fk": b.walletFk,
         "budget_transaction_filters": b.budgetTransactionFilters == null
             ? null
@@ -590,9 +590,9 @@ class PocketBaseSyncEngine {
       getClientId: (o) => o.objectivePk,
       getBody: (o) => {
         "type": o.type.index,
-        "name": o.name,
+        "name": o.name.trim().isEmpty ? "Untitled" : o.name.trim(),
         "amount": o.amount,
-        "order": o.order,
+        "order": (o.order <= 0) ? 1 : o.order,
         "colour": o.colour ?? "",
         "date_created": o.dateCreated.toUtc().toIso8601String(),
         "end_date": o.endDate?.toUtc().toIso8601String(),
@@ -619,7 +619,7 @@ class PocketBaseSyncEngine {
       getClientId: (t) => t.transactionPk,
       getBody: (t) => {
         "paired_transaction_fk": t.pairedTransactionFk ?? "",
-        "name": t.name,
+        "name": t.name.trim().isEmpty ? "Untitled" : t.name.trim(),
         "amount": t.amount,
         "note": t.note,
         "category_fk": t.categoryFk,
@@ -683,11 +683,11 @@ class PocketBaseSyncEngine {
       getClientId: (a) => a.associatedTitlePk,
       getBody: (a) => {
         "category_fk": a.categoryFk,
-        "title": a.title,
+        "title": a.title.trim().isEmpty ? "Untitled" : a.title.trim(),
         "date_created": a.dateCreated.toUtc().toIso8601String(),
         "date_time_modified":
             (a.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-        "order": a.order,
+        "order": (a.order <= 0) ? 1 : a.order,
         "is_exact_match": a.isExactMatch,
       },
     );
@@ -706,7 +706,7 @@ class PocketBaseSyncEngine {
         "date_created": s.dateCreated.toUtc().toIso8601String(),
         "date_time_modified":
             (s.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-        "template_name": s.templateName,
+        "template_name": s.templateName.trim().isEmpty ? "Untitled" : s.templateName.trim(),
         "contains": s.contains,
         "title_transaction_before": s.titleTransactionBefore,
         "title_transaction_after": s.titleTransactionAfter,

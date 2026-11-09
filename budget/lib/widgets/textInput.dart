@@ -145,7 +145,9 @@ class TextInput extends StatelessWidget {
     return ResumeTextFieldFocus(
       child: Padding(
         padding: padding,
-        child: Container(
+        child: Material(
+          type: MaterialType.transparency,
+          child: Container(
           decoration: BoxDecoration(
             color: bubbly == false
                 ? Colors.transparent
@@ -308,7 +310,8 @@ class TextInput extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
