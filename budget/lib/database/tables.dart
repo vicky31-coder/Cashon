@@ -7662,6 +7662,22 @@ class FinanceDatabase extends _$FinanceDatabase {
     await updateBatchTransactionsOnly(transactionsToUpdate);
     return transactionsToUpdate.length;
   }
+
+  Future<int> resetAllUpcomingTransactionsToDefault() async {
+    List<Transaction> upcoming = await (select(transactions)
+          ..where((t) => t.type.equals(TransactionSpecialType.upcoming.index)))
+        .get();
+    if (upcoming.isEmpty) return 0;
+    List<Transaction> transactionsToUpdate = [];
+    for (Transaction t in upcoming) {
+      transactionsToUpdate.add(t.copyWith(
+        type: const Value(null),
+        dateTimeModified: Value(DateTime.now()),
+      ));
+    }
+    await updateBatchTransactionsOnly(transactionsToUpdate);
+    return transactionsToUpdate.length;
+  }
 }
 
 class TotalWithCount {

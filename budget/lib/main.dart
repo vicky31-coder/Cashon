@@ -49,6 +49,10 @@ void main() async {
     await EasyLocalization.ensureInitialized();
     sharedPreferences = await SharedPreferences.getInstance();
     database = await constructDb('db');
+    if (sharedPreferences.getBool("has_reset_upcoming_v1") != true) {
+      await database.resetAllUpcomingTransactionsToDefault();
+      await sharedPreferences.setBool("has_reset_upcoming_v1", true);
+    }
     notificationPayload = await initializeNotifications();
     entireAppLoaded = false;
     await loadCurrencyJSON();

@@ -427,6 +427,38 @@ class PocketBaseSyncEngine {
     }
   }
 
+  Future<int> _pushItemsBatch<T>({
+    required PocketBase pb,
+    required String collection,
+    required String userId,
+    required Map<String, String> existingMap,
+    required List<T> items,
+    required String Function(T item) getClientId,
+    required Map<String, dynamic> Function(T item) getBody,
+    int concurrency = 8,
+  }) async {
+    if (items.isEmpty) return 0;
+    int pushed = 0;
+    for (int i = 0; i < items.length; i += concurrency) {
+      final chunk = items.sublist(
+        i,
+        (i + concurrency > items.length) ? items.length : i + concurrency,
+      );
+      final results = await Future.wait(chunk.map((item) async {
+        return await _upsertRecord(
+          pb: pb,
+          collection: collection,
+          clientId: getClientId(item),
+          userId: userId,
+          existingMap: existingMap,
+          body: getBody(item),
+        );
+      }));
+      pushed += results.where((ok) => ok).length;
+    }
+    return pushed;
+  }
+
   Future<int> _executePush({
     required PocketBase pb,
     required String userId,
@@ -434,277 +466,257 @@ class PocketBaseSyncEngine {
   }) async {
     int pushed = 0;
 
+    // Pre-fetch all remote ID maps concurrently in a single network round-trip
+    final maps = await Future.wait([
+      _getExistingRemoteIdMap(pb, "wallets", userId),
+      _getExistingRemoteIdMap(pb, "categories", userId),
+      _getExistingRemoteIdMap(pb, "budgets", userId),
+      _getExistingRemoteIdMap(pb, "objectives", userId),
+      _getExistingRemoteIdMap(pb, "transactions", userId),
+      _getExistingRemoteIdMap(pb, "category_budget_limits", userId),
+      _getExistingRemoteIdMap(pb, "associated_titles", userId),
+      _getExistingRemoteIdMap(pb, "scanner_templates", userId),
+    ]);
+    final walletMap = maps[0];
+    final categoryMap = maps[1];
+    final budgetMap = maps[2];
+    final objectiveMap = maps[3];
+    final transactionMap = maps[4];
+    final limitMap = maps[5];
+    final titleMap = maps[6];
+    final templateMap = maps[7];
+
     // Wallets
     List<TransactionWallet> newWallets =
         await database.getAllNewWallets(lastSync);
-    if (newWallets.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "wallets", userId);
-      for (TransactionWallet w in newWallets) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "wallets",
-          clientId: w.walletPk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "name": w.name,
-            "colour": w.colour,
-            "icon_name": w.iconName,
-            "date_created": w.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (w.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "order": w.order,
-            "currency": w.currency,
-            "currency_format": w.currencyFormat,
-            "decimals": w.decimals,
-            "home_page_widget_display": w.homePageWidgetDisplay == null
-                ? null
-                : jsonEncode(w.homePageWidgetDisplay!
-                    .map((e) => e.index)
-                    .toList()),
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<TransactionWallet>(
+      pb: pb,
+      collection: "wallets",
+      userId: userId,
+      existingMap: walletMap,
+      items: newWallets,
+      getClientId: (w) => w.walletPk,
+      getBody: (w) => {
+        "name": w.name,
+        "colour": w.colour ?? "",
+        "icon_name": w.iconName ?? "",
+        "date_created": w.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (w.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "order": w.order,
+        "currency": w.currency ?? "",
+        "currency_format": w.currencyFormat ?? "",
+        "decimals": w.decimals,
+        "home_page_widget_display": w.homePageWidgetDisplay == null
+            ? null
+            : jsonEncode(
+                w.homePageWidgetDisplay!.map((e) => e.index).toList()),
+      },
+    );
 
     // Categories
     List<TransactionCategory> newCategories =
         await database.getAllNewCategories(lastSync);
-    if (newCategories.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "categories", userId);
-      for (TransactionCategory c in newCategories) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "categories",
-          clientId: c.categoryPk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "name": c.name,
-            "colour": c.colour,
-            "icon_name": c.iconName,
-            "emoji_icon_name": c.emojiIconName,
-            "date_created": c.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (c.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "order": c.order,
-            "income": c.income,
-            "method_added": c.methodAdded?.index,
-            "main_category_pk": c.mainCategoryPk,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<TransactionCategory>(
+      pb: pb,
+      collection: "categories",
+      userId: userId,
+      existingMap: categoryMap,
+      items: newCategories,
+      getClientId: (c) => c.categoryPk,
+      getBody: (c) => {
+        "name": c.name,
+        "colour": c.colour ?? "",
+        "icon_name": c.iconName ?? "",
+        "emoji_icon_name": c.emojiIconName ?? "",
+        "date_created": c.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (c.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "order": c.order,
+        "income": c.income,
+        "method_added": c.methodAdded?.index,
+        "main_category_pk": c.mainCategoryPk ?? "",
+      },
+    );
 
     // Budgets
     List<Budget> newBudgets = await database.getAllNewBudgets(lastSync);
-    if (newBudgets.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "budgets", userId);
-      for (Budget b in newBudgets) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "budgets",
-          clientId: b.budgetPk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "name": b.name,
-            "amount": b.amount,
-            "colour": b.colour,
-            "start_date": b.startDate.toUtc().toIso8601String(),
-            "end_date": b.endDate.toUtc().toIso8601String(),
-            "wallet_fks": b.walletFks,
-            "category_fks": b.categoryFks,
-            "category_fks_exclude": b.categoryFksExclude,
-            "income": b.income,
-            "archived": b.archived,
-            "added_transactions_only": b.addedTransactionsOnly,
-            "period_length": b.periodLength,
-            "reoccurrence": b.reoccurrence?.index,
-            "date_created": b.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (b.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "pinned": b.pinned,
-            "order": b.order,
-            "wallet_fk": b.walletFk,
-            "budget_transaction_filters": b.budgetTransactionFilters == null
-                ? null
-                : jsonEncode(b.budgetTransactionFilters!
-                    .map((e) => e.index)
-                    .toList()),
-            "member_transaction_filters": b.memberTransactionFilters,
-            "is_absolute_spending_limit": b.isAbsoluteSpendingLimit,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<Budget>(
+      pb: pb,
+      collection: "budgets",
+      userId: userId,
+      existingMap: budgetMap,
+      items: newBudgets,
+      getClientId: (b) => b.budgetPk,
+      getBody: (b) => {
+        "name": b.name,
+        "amount": b.amount,
+        "colour": b.colour ?? "",
+        "start_date": b.startDate.toUtc().toIso8601String(),
+        "end_date": b.endDate.toUtc().toIso8601String(),
+        "wallet_fks": b.walletFks,
+        "category_fks": b.categoryFks,
+        "category_fks_exclude": b.categoryFksExclude,
+        "income": b.income,
+        "archived": b.archived,
+        "added_transactions_only": b.addedTransactionsOnly,
+        "period_length": b.periodLength,
+        "reoccurrence": b.reoccurrence?.index,
+        "date_created": b.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (b.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "pinned": b.pinned,
+        "order": b.order,
+        "wallet_fk": b.walletFk,
+        "budget_transaction_filters": b.budgetTransactionFilters == null
+            ? null
+            : jsonEncode(b.budgetTransactionFilters!
+                .map((e) => e.index)
+                .toList()),
+        "member_transaction_filters": b.memberTransactionFilters,
+        "is_absolute_spending_limit": b.isAbsoluteSpendingLimit,
+      },
+    );
 
     // Objectives
     List<Objective> newObjectives =
         await database.getAllNewObjectives(lastSync);
-    if (newObjectives.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "objectives", userId);
-      for (Objective o in newObjectives) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "objectives",
-          clientId: o.objectivePk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "type": o.type.index,
-            "name": o.name,
-            "amount": o.amount,
-            "order": o.order,
-            "colour": o.colour,
-            "date_created": o.dateCreated.toUtc().toIso8601String(),
-            "end_date": o.endDate?.toUtc().toIso8601String(),
-            "date_time_modified":
-                (o.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "icon_name": o.iconName,
-            "emoji_icon_name": o.emojiIconName,
-            "income": o.income,
-            "pinned": o.pinned,
-            "archived": o.archived,
-            "wallet_fk": o.walletFk,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<Objective>(
+      pb: pb,
+      collection: "objectives",
+      userId: userId,
+      existingMap: objectiveMap,
+      items: newObjectives,
+      getClientId: (o) => o.objectivePk,
+      getBody: (o) => {
+        "type": o.type.index,
+        "name": o.name,
+        "amount": o.amount,
+        "order": o.order,
+        "colour": o.colour ?? "",
+        "date_created": o.dateCreated.toUtc().toIso8601String(),
+        "end_date": o.endDate?.toUtc().toIso8601String(),
+        "date_time_modified":
+            (o.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "icon_name": o.iconName ?? "",
+        "emoji_icon_name": o.emojiIconName ?? "",
+        "income": o.income,
+        "pinned": o.pinned,
+        "archived": o.archived,
+        "wallet_fk": o.walletFk,
+      },
+    );
 
     // Transactions
     List<Transaction> newTransactions =
         await database.getAllNewTransactions(lastSync);
-    if (newTransactions.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "transactions", userId);
-      for (Transaction t in newTransactions) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "transactions",
-          clientId: t.transactionPk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "paired_transaction_fk": t.pairedTransactionFk,
-            "name": t.name,
-            "amount": t.amount,
-            "note": t.note,
-            "category_fk": t.categoryFk,
-            "sub_category_fk": t.subCategoryFk,
-            "wallet_fk": t.walletFk,
-            "date_created": t.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (t.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "original_date_due": t.originalDateDue?.toUtc().toIso8601String(),
-            "income": t.income,
-            "period_length": t.periodLength,
-            "reoccurrence": t.reoccurrence?.index,
-            "end_date": t.endDate?.toUtc().toIso8601String(),
-            "upcoming_transaction_notification":
-                t.upcomingTransactionNotification,
-            "type": t.type?.index,
-            "paid": t.paid,
-            "created_another_future_transaction":
-                t.createdAnotherFutureTransaction,
-            "skip_paid": t.skipPaid,
-            "method_added": t.methodAdded?.index,
-            "transaction_owner_email": t.transactionOwnerEmail,
-            "transaction_original_owner_email":
-                t.transactionOriginalOwnerEmail,
-            "objective_fk": t.objectiveFk,
-            "objective_loan_fk": t.objectiveLoanFk,
-            "budget_fks_exclude": t.budgetFksExclude,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<Transaction>(
+      pb: pb,
+      collection: "transactions",
+      userId: userId,
+      existingMap: transactionMap,
+      items: newTransactions,
+      getClientId: (t) => t.transactionPk,
+      getBody: (t) => {
+        "paired_transaction_fk": t.pairedTransactionFk ?? "",
+        "name": t.name,
+        "amount": t.amount,
+        "note": t.note,
+        "category_fk": t.categoryFk,
+        "sub_category_fk": t.subCategoryFk ?? "",
+        "wallet_fk": t.walletFk,
+        "date_created": t.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (t.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "original_date_due": t.originalDateDue?.toUtc().toIso8601String(),
+        "income": t.income,
+        "period_length": t.periodLength,
+        "reoccurrence": t.reoccurrence?.index,
+        "end_date": t.endDate?.toUtc().toIso8601String(),
+        "upcoming_transaction_notification":
+            t.upcomingTransactionNotification,
+        // CRITICAL: Explicitly distinguish default (-1) from upcoming (0)
+        "type": t.type == null ? -1 : t.type!.index,
+        "paid": t.paid,
+        "created_another_future_transaction":
+            t.createdAnotherFutureTransaction,
+        "skip_paid": t.skipPaid,
+        "method_added": t.methodAdded?.index,
+        "transaction_owner_email": t.transactionOwnerEmail ?? "",
+        "transaction_original_owner_email":
+            t.transactionOriginalOwnerEmail ?? "",
+        "objective_fk": t.objectiveFk ?? "",
+        "objective_loan_fk": t.objectiveLoanFk ?? "",
+        "budget_fks_exclude": t.budgetFksExclude,
+      },
+    );
 
     // CategoryBudgetLimits
     List<CategoryBudgetLimit> newLimits =
         await database.getAllNewCategoryBudgetLimits(lastSync);
-    if (newLimits.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "category_budget_limits", userId);
-      for (CategoryBudgetLimit l in newLimits) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "category_budget_limits",
-          clientId: l.categoryLimitPk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "category_fk": l.categoryFk,
-            "budget_fk": l.budgetFk,
-            "amount": l.amount,
-            "date_time_modified":
-                (l.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "wallet_fk": l.walletFk,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<CategoryBudgetLimit>(
+      pb: pb,
+      collection: "category_budget_limits",
+      userId: userId,
+      existingMap: limitMap,
+      items: newLimits,
+      getClientId: (l) => l.categoryLimitPk,
+      getBody: (l) => {
+        "category_fk": l.categoryFk,
+        "budget_fk": l.budgetFk,
+        "amount": l.amount,
+        "date_time_modified":
+            (l.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "wallet_fk": l.walletFk,
+      },
+    );
 
     // AssociatedTitles
     List<TransactionAssociatedTitle> newTitles =
         await database.getAllNewAssociatedTitles(lastSync);
-    if (newTitles.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "associated_titles", userId);
-      for (TransactionAssociatedTitle a in newTitles) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "associated_titles",
-          clientId: a.associatedTitlePk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "category_fk": a.categoryFk,
-            "title": a.title,
-            "date_created": a.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (a.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "order": a.order,
-            "is_exact_match": a.isExactMatch,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<TransactionAssociatedTitle>(
+      pb: pb,
+      collection: "associated_titles",
+      userId: userId,
+      existingMap: titleMap,
+      items: newTitles,
+      getClientId: (a) => a.associatedTitlePk,
+      getBody: (a) => {
+        "category_fk": a.categoryFk,
+        "title": a.title,
+        "date_created": a.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (a.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "order": a.order,
+        "is_exact_match": a.isExactMatch,
+      },
+    );
 
     // ScannerTemplates
     List<ScannerTemplate> newTemplates =
         await database.getAllNewScannerTemplates(lastSync);
-    if (newTemplates.isNotEmpty) {
-      final existingMap = await _getExistingRemoteIdMap(pb, "scanner_templates", userId);
-      for (ScannerTemplate s in newTemplates) {
-        await _upsertRecord(
-          pb: pb,
-          collection: "scanner_templates",
-          clientId: s.scannerTemplatePk,
-          userId: userId,
-          existingMap: existingMap,
-          body: {
-            "date_created": s.dateCreated.toUtc().toIso8601String(),
-            "date_time_modified":
-                (s.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
-            "template_name": s.templateName,
-            "contains": s.contains,
-            "title_transaction_before": s.titleTransactionBefore,
-            "title_transaction_after": s.titleTransactionAfter,
-            "amount_transaction_before": s.amountTransactionBefore,
-            "amount_transaction_after": s.amountTransactionAfter,
-            "default_category_fk": s.defaultCategoryFk,
-            "wallet_fk": s.walletFk,
-            "ignore": s.ignore,
-          },
-        );
-        pushed++;
-      }
-    }
+    pushed += await _pushItemsBatch<ScannerTemplate>(
+      pb: pb,
+      collection: "scanner_templates",
+      userId: userId,
+      existingMap: templateMap,
+      items: newTemplates,
+      getClientId: (s) => s.scannerTemplatePk,
+      getBody: (s) => {
+        "date_created": s.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (s.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+        "template_name": s.templateName,
+        "contains": s.contains,
+        "title_transaction_before": s.titleTransactionBefore,
+        "title_transaction_after": s.titleTransactionAfter,
+        "amount_transaction_before": s.amountTransactionBefore,
+        "amount_transaction_after": s.amountTransactionAfter,
+        "default_category_fk": s.defaultCategoryFk,
+        "wallet_fk": s.walletFk,
+        "ignore": s.ignore,
+      },
+    );
 
     // Push Local Delete Logs to PocketBase
     List<DeleteLog> newDeleteLogs =
@@ -712,37 +724,45 @@ class PocketBaseSyncEngine {
     if (newDeleteLogs.isNotEmpty) {
       final existingDeleteLogsMap =
           await _getExistingRemoteIdMap(pb, "delete_logs", userId);
-      for (DeleteLog log in newDeleteLogs) {
-        String? targetCol = _deleteLogTypeToCollection(log.type);
-        if (targetCol != null) {
-          // Delete from PocketBase collection if exists
-          try {
-            final existing = await pb
-                .collection(targetCol)
-                .getList(perPage: 1, filter: 'client_id = "${log.entryPk}"');
-            if (existing.items.isNotEmpty) {
-              await pb.collection(targetCol).delete(existing.items.first.id);
-            }
-          } catch (e) {
-            debugPrint("Delete on PB error: $e");
+      const int concurrency = 8;
+      for (int i = 0; i < newDeleteLogs.length; i += concurrency) {
+        final chunk = newDeleteLogs.sublist(
+            i,
+            (i + concurrency > newDeleteLogs.length)
+                ? newDeleteLogs.length
+                : i + concurrency);
+        await Future.wait(chunk.map((log) async {
+          String? targetCol = _deleteLogTypeToCollection(log.type);
+          if (targetCol != null) {
+            try {
+              final remoteId = (await pb
+                      .collection(targetCol)
+                      .getList(perPage: 1, filter: 'client_id = "${log.entryPk}"'))
+                  .items
+                  .firstOrNull
+                  ?.id;
+              if (remoteId != null) {
+                await pb.collection(targetCol).delete(remoteId);
+              }
+            } catch (_) {}
           }
 
-          // Record in delete_logs if not already recorded
           if (!existingDeleteLogsMap.containsKey(log.entryPk)) {
-            try {
-              final created = await pb.collection("delete_logs").create(body: {
+            await _upsertRecord(
+              pb: pb,
+              collection: "delete_logs",
+              clientId: log.deleteLogPk,
+              userId: userId,
+              existingMap: existingDeleteLogsMap,
+              body: {
                 "client_id": log.entryPk,
-                "table_name": targetCol,
+                "table_name": targetCol ?? "",
                 "date_time_modified":
                     log.dateTimeModified.toUtc().toIso8601String(),
-                "user": userId,
-              });
-              existingDeleteLogsMap[log.entryPk] = created.id;
-            } catch (e) {
-              debugPrint("PB delete_logs create error: $e");
-            }
+              },
+            );
           }
-        }
+        }));
       }
     }
     return pushed;
@@ -1041,8 +1061,11 @@ class PocketBaseSyncEngine {
           int? reocIdx = r.data["reoccurrence"] == null
               ? null
               : r.getIntValue("reoccurrence");
-          int? typeIdx =
-              r.data["type"] == null ? null : r.getIntValue("type");
+          int rawType = r.getIntValue("type", -1);
+          int? typeIdx = (rawType >= 0 &&
+                  rawType < TransactionSpecialType.values.length)
+              ? rawType
+              : null;
           int? methodAddedIdx = r.data["method_added"] == null
               ? null
               : r.getIntValue("method_added");
@@ -1288,7 +1311,7 @@ class PocketBaseSyncEngine {
     }
   }
 
-  Future<void> _upsertRecord({
+  Future<bool> _upsertRecord({
     required PocketBase pb,
     required String collection,
     required String clientId,
@@ -1297,6 +1320,10 @@ class PocketBaseSyncEngine {
     Map<String, String>? existingMap,
   }) async {
     try {
+      final sanitizedBody = Map<String, dynamic>.from(body);
+      // Remove keys that are null to prevent PocketBase validation errors (e.g. Expected string, got null)
+      sanitizedBody.removeWhere((key, value) => value == null);
+
       String? existingId = existingMap?[clientId];
       if (existingId == null && existingMap == null) {
         final existing = await pb
@@ -1308,18 +1335,20 @@ class PocketBaseSyncEngine {
       }
 
       if (existingId != null && existingId.isNotEmpty) {
-        await pb.collection(collection).update(existingId, body: body);
+        await pb.collection(collection).update(existingId, body: sanitizedBody);
       } else {
-        final createBody = Map<String, dynamic>.from(body);
-        createBody["client_id"] = clientId;
-        createBody["user"] = userId;
-        final created = await pb.collection(collection).create(body: createBody);
+        sanitizedBody["client_id"] = clientId;
+        sanitizedBody["user"] = userId;
+        final created =
+            await pb.collection(collection).create(body: sanitizedBody);
         if (existingMap != null) {
           existingMap[clientId] = created.id;
         }
       }
+      return true;
     } catch (e) {
       debugPrint("Upsert error on $collection ($clientId): $e");
+      return false;
     }
   }
 
@@ -1342,13 +1371,17 @@ class PocketBaseSyncEngine {
               perPage: 100,
               filter: combinedFilter,
             );
-        for (RecordModel record in result.items) {
-          try {
-            await onRecord(record);
-            count++;
-          } catch (recError) {
-            debugPrint("Error applying record from $collection: $recError");
-          }
+        if (result.items.isNotEmpty) {
+          await database.transaction(() async {
+            for (RecordModel record in result.items) {
+              try {
+                await onRecord(record);
+                count++;
+              } catch (recError) {
+                debugPrint("Error applying record from $collection: $recError");
+              }
+            }
+          });
         }
         if (page >= result.totalPages) break;
         page++;
