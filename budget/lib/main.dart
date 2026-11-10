@@ -108,6 +108,16 @@ class InitializeApp extends StatefulWidget {
 }
 
 class _InitializeAppState extends State<InitializeApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (pocketBaseService.isLoggedIn && !pocketBaseSyncEngine.isSyncing) {
+        pocketBaseSyncEngine.syncAll();
+      }
+    });
+  }
+
   void refreshAppState() {
     setState(() {});
   }
@@ -178,9 +188,6 @@ class App extends StatelessWidget {
             await setHighRefreshRate();
             if (pocketBaseService.isLoggedIn) {
               await pocketBaseService.refreshToken();
-              if (!pocketBaseSyncEngine.isSyncing) {
-                pocketBaseSyncEngine.syncAll();
-              }
             }
           },
           child: InitializeBiometrics(
