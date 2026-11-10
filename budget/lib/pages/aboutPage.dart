@@ -16,7 +16,7 @@ import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
-import 'package:budget/widgets/ratingPopup.dart';
+// import 'package:budget/widgets/ratingPopup.dart';
 import 'package:budget/widgets/showChangelog.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
@@ -113,6 +113,63 @@ class AboutPageState extends State<AboutPage> {
             const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 5),
         child: Tappable(
           onTap: () {
+            openUrl('https://github.com/vicky31-coder');
+          },
+          onLongPress: () {
+            copyToClipboard("https://github.com/vicky31-coder");
+          },
+          color: containerColor,
+          borderRadius: getPlatform() == PlatformOS.isIOS ? 10 : 15,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: 13, vertical: 15),
+            child: Column(
+              children: [
+                TextFont(
+                  text: "Cashon Maintainer & Developer",
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.center,
+                  maxLines: 5,
+                ),
+                TextFont(
+                  text: "Vignesh Balaji",
+                  fontSize: 29,
+                  fontWeight: FontWeight.bold,
+                  textColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  textAlign: TextAlign.center,
+                  maxLines: 5,
+                ),
+                TextFont(
+                  text: "github.com/vicky31-coder",
+                  fontSize: 16,
+                  textAlign: TextAlign.center,
+                  maxLines: 5,
+                  textColor: getColor(context, "textLight"),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      Padding(
+        padding:
+            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 8),
+        child: Center(
+          child: TextFont(
+            text: "Original Cashew Creators",
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            textColor: getColor(context, "textLight"),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      Padding(
+        padding:
+            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 5),
+        child: Tappable(
+          onTap: () {
             openUrl('mailto:dapperappdeveloper@gmail.com');
           },
           onLongPress: () {
@@ -126,14 +183,14 @@ class AboutPageState extends State<AboutPage> {
             child: Column(
               children: [
                 TextFont(
-                  text: "lead-developer".tr(),
+                  text: "Original Creator & Lead Developer",
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
                   maxLines: 5,
                 ),
                 TextFont(
-                  text: "James",
+                  text: "James Kokoska",
                   fontSize: 29,
                   fontWeight: FontWeight.bold,
                   textColor: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -165,7 +222,7 @@ class AboutPageState extends State<AboutPage> {
             child: Column(
               children: [
                 TextFont(
-                  text: "database-designer".tr(),
+                  text: "Original Database Designer",
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
@@ -187,7 +244,7 @@ class AboutPageState extends State<AboutPage> {
       SizedBox(height: 10),
       Padding(
         padding:
-            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 7),
+            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 3),
         child: Center(
           child: TextFont(
             text: "made-in-canada".tr() + " " + "🍁",
@@ -197,20 +254,17 @@ class AboutPageState extends State<AboutPage> {
           ),
         ),
       ),
-    ];
-
-    List<Widget> graphics = [
-      AboutInfoBox(
-        title: "freepik-credit".tr(),
-        link: "https://www.flaticon.com/authors/freepik",
-      ),
-      AboutInfoBox(
-        title: "font-awesome-credit".tr(),
-        link: "https://fontawesome.com/",
-      ),
-      AboutInfoBox(
-        title: "pch-vector-credit".tr(),
-        link: "https://www.freepik.com/author/pch-vector",
+      Padding(
+        padding:
+            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 3),
+        child: Center(
+          child: TextFont(
+            text: "Redesigned in India 🇮🇳",
+            fontSize: 14,
+            textAlign: TextAlign.center,
+            maxLines: 5,
+          ),
+        ),
       ),
     ];
 
@@ -223,8 +277,15 @@ class AboutPageState extends State<AboutPage> {
             : null,
       ),
       AboutInfoBox(
-        title: "Google Cloud APIs",
-        link: "https://cloud.google.com/",
+        title: "FL Charts",
+        link: "https://github.com/imaNNeoFighT/fl_chart",
+        padding: fullScreenLayout
+            ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
+            : null,
+      ),
+      AboutInfoBox(
+        title: "PocketBase",
+        link: "https://pocketbase.io/",
         padding: fullScreenLayout
             ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
             : null,
@@ -237,15 +298,40 @@ class AboutPageState extends State<AboutPage> {
             : null,
       ),
       AboutInfoBox(
-        title: "FL Charts",
-        link: "https://github.com/imaNNeoFighT/fl_chart",
+        title: "exchange-rates-api".tr(),
+        link: "https://github.com/fawazahmed0/exchange-api",
         padding: fullScreenLayout
             ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
             : null,
       ),
       AboutInfoBox(
-        title: "exchange-rates-api".tr(),
-        link: "https://github.com/fawazahmed0/exchange-api",
+        title: "freepik-credit".tr(),
+        link: "https://www.flaticon.com/authors/freepik",
+        padding: fullScreenLayout
+            ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
+            : null,
+      ),
+      AboutInfoBox(
+        title: "font-awesome-credit".tr(),
+        link: "https://fontawesome.com/",
+        padding: fullScreenLayout
+            ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
+            : null,
+      ),
+      AboutInfoBox(
+        title: "pch-vector-credit".tr(),
+        link: "https://www.freepik.com/author/pch-vector",
+        padding: fullScreenLayout
+            ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
+            : null,
+      ),
+      AboutInfoBox(
+        title: "deep-linking".tr(),
+        link: "https://github.com/vicky31-coder/Cashon#app-links",
+        showLink: false,
+        list: [
+          "deep-linking-description".tr(),
+        ],
         padding: fullScreenLayout
             ? EdgeInsetsDirectional.symmetric(horizontal: 7.5, vertical: 5)
             : null,
@@ -535,46 +621,33 @@ class AboutPageState extends State<AboutPage> {
       ],
       listWidgets: fullScreenLayout
           ? [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Column(
-                          children: [
-                            cashonInformation,
-                            SizedBox(height: 15),
-                            AboutLinks(containerColor: containerColor),
-                            HorizontalBreak(
-                                padding: EdgeInsetsDirectional.symmetric(
-                                    horizontal: 10, vertical: 20)),
-                            AboutDeepLinking(),
-                          ],
-                        ),
-                      ),
-                      Flexible(
-                        child: Column(
-                          children: [
-                            for (Widget teamMember in developmentTeam)
-                              Row(children: [Expanded(child: teamMember)]),
-                            HorizontalBreak(
-                                padding: EdgeInsetsDirectional.symmetric(
-                                    horizontal: 10, vertical: 20)),
-                            for (Widget graphicAcknowledge in graphics)
-                              Row(children: [
-                                Expanded(child: graphicAcknowledge)
-                              ]),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: 15, vertical: 7),
+                child: cashonInformation,
               ),
+              SizedBox(height: 15),
+              AboutLinks(containerColor: containerColor),
               HorizontalBreak(
                   padding: EdgeInsetsDirectional.symmetric(
                       horizontal: 10, vertical: 20)),
+              ...developmentTeam,
+              HorizontalBreak(
+                  padding: EdgeInsetsDirectional.symmetric(
+                      horizontal: 10, vertical: 20)),
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: 15, vertical: 7),
+                child: Center(
+                  child: TextFont(
+                    text: "major-tools".tr(),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    textAlign: TextAlign.center,
+                    maxLines: 5,
+                  ),
+                ),
+              ),
               Padding(
                 padding: EdgeInsetsDirectional.symmetric(horizontal: 7.5),
                 child: SpreadExpandFlex(majorTools: majorTools, maxPerRow: 3),
@@ -596,51 +669,9 @@ class AboutPageState extends State<AboutPage> {
               HorizontalBreak(),
               SizedBox(height: 10),
               ...developmentTeam,
-              SizedBox(height: 5),
-              if (getPlatform(ignoreEmulation: true) == PlatformOS.isAndroid ||
-                  kIsWeb)
-                Padding(
-                  padding:
-                      const EdgeInsetsDirectional.only(top: 10, bottom: 10),
-                  child: HorizontalBreakAbove(
-                      child: Column(
-                    children: [
-                      SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.symmetric(
-                            horizontal: 15, vertical: 7),
-                        child: Center(
-                          child: TextFont(
-                            text: "advanced-automation".tr(),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            textAlign: TextAlign.center,
-                            maxLines: 5,
-                          ),
-                        ),
-                      ),
-                      AboutDeepLinking(),
-                      SizedBox(height: 10),
-                    ],
-                  )),
-                ),
+              SizedBox(height: 15),
               HorizontalBreak(),
               SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: 15, vertical: 7),
-                child: Center(
-                  child: TextFont(
-                    text: "graphics".tr(),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    textAlign: TextAlign.center,
-                    maxLines: 5,
-                  ),
-                ),
-              ),
-              ...graphics,
-              SizedBox(height: 15),
               Padding(
                 padding: const EdgeInsetsDirectional.symmetric(
                     horizontal: 15, vertical: 7),
@@ -855,7 +886,7 @@ class AboutLinks extends StatelessWidget {
             _buildTappable(
               context: context,
               isExternalLink: true,
-              onTap: () => openUrl("https://github.com/jameskokoska/Cashew"),
+              onTap: () => openUrl("https://github.com/vicky31-coder/Cashon"),
               icon: MoreIcons.github,
               text: "app-is-open-source".tr(namedArgs: {"app": globalAppName}),
             ),
@@ -869,17 +900,17 @@ class AboutLinks extends StatelessWidget {
                   : Icons.live_help_rounded,
               text: "guide-and-faq".tr(),
             ),
-            const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
-            _buildTappable(
-              context: context,
-              isExternalLink: false,
-              onTap: () =>
-                  openBottomSheet(context, RatingPopup(), fullSnap: true),
-              icon: appStateSettings["outlinedIcons"]
-                  ? Icons.rate_review_outlined
-                  : Icons.rate_review_rounded,
-              text: "feedback".tr(),
-            ),
+            // const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
+            // _buildTappable(
+            //   context: context,
+            //   isExternalLink: false,
+            //   onTap: () =>
+            //       openBottomSheet(context, RatingPopup(), fullSnap: true),
+            //   icon: appStateSettings["outlinedIcons"]
+            //       ? Icons.rate_review_outlined
+            //       : Icons.rate_review_rounded,
+            //   text: "feedback".tr(),
+            // ),
             const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
             _buildTappable(
               context: context,
@@ -890,16 +921,7 @@ class AboutLinks extends StatelessWidget {
                   : Icons.list_alt_rounded,
               text: "changelog".tr(),
             ),
-            const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
-            _buildTappable(
-              context: context,
-              isExternalLink: false,
-              onTap: () => openOnBoarding(context),
-              icon: appStateSettings["outlinedIcons"]
-                  ? Icons.door_front_door_outlined
-                  : Icons.door_front_door_rounded,
-              text: "view-app-intro".tr(),
-            ),
+
             const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
             _buildTappable(
               context: context,

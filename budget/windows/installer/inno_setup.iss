@@ -2,7 +2,7 @@
 ; Generated for Flutter Windows Desktop Application
 
 #define MyAppName "Cashew"
-#define MyAppVersion "5.4.3"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "Cashew"
 #define MyAppURL "https://github.com/vigneshbalaji/Cashon"
 #define MyAppExeName "budget.exe"

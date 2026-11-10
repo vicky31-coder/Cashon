@@ -26,6 +26,10 @@ import 'listItem.dart';
 
 String getChangelogString() {
   return """
+    < 1.0.0
+    Updated repository link to Cashon on GitHub
+    Removed obsolete onboarding introduction from About page
+    Updated maintainer credits to recognize Cashon maintainer alongside original Cashew creator
     < 5.3.5
     When All Spending page opened from other means, correct date range applied
     Improve performance of heatmap homepage section
@@ -2603,8 +2607,14 @@ int parseVersionInt(String versionString) {
 }
 
 String getVersionString() {
-  String version = packageInfoGlobal?.version ?? "";
-  String buildNumber = packageInfoGlobal?.buildNumber ?? "";
+  String version = "1.0.0";
+  String buildNumber = "1";
+  if (packageInfoGlobal?.version != null &&
+      packageInfoGlobal!.version.isNotEmpty &&
+      packageInfoGlobal!.version != "5.4.3") {
+    version = packageInfoGlobal!.version;
+    buildNumber = packageInfoGlobal!.buildNumber;
+  }
   return "v" +
       version +
       "+" +
