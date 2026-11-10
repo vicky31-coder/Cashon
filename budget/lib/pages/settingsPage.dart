@@ -328,9 +328,8 @@ class MorePages extends StatelessWidget {
                 ),
               ],
             ),
-          if (hasSideNavigation == false)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Expanded(
                   flex: 1,
@@ -650,11 +649,6 @@ class SettingsPageContent extends StatelessWidget {
         ExportDB(),
 
         ImportDB(),
-
-        GoogleAccountLoginButton(
-          isOutlinedButton: false,
-          forceButtonName: "google-drive".tr(),
-        ),
       ],
     );
   }

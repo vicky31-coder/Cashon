@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart';
@@ -41,6 +42,12 @@ class AccountsPageState extends State<AccountsPage> {
   Future<void> _triggerUnifiedSync({bool forceFull = false}) async {
     if (isSyncing) return;
     setState(() => isSyncing = true);
+    openSnackbar(SnackbarMessage(
+      title: forceFull ? "Full sync in progress..." : "Sync in progress...",
+      description: "Transferring changes with cloud...",
+      icon: Icons.sync,
+      timeout: const Duration(seconds: 2),
+    ));
     final res = await pocketBaseSyncEngine.syncAll(forceFullSync: forceFull);
     if (mounted) {
       setState(() => isSyncing = false);
@@ -111,6 +118,261 @@ class AccountsPageState extends State<AccountsPage> {
     );
 
     List<SyncHistoryEntry> history = getSyncHistory();
+
+    final bool isDesktop = !kIsWeb && (Platform.isLinux || Platform.isWindows);
+
+    if (isDesktop && pocketBaseService.isLoggedIn) {
+      return PageFramework(
+        horizontalPaddingConstrained: false,
+        dragDownToDismiss: true,
+        expandedHeight: 56,
+        title: "Cloud",
+        appBarBackgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        appBarBackgroundColorStart:
+            Theme.of(context).colorScheme.secondaryContainer,
+        bottomPadding: false,
+        actions: [],
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Card: Account details and sync buttons
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: getColor(context, "canvasContainer"),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withOpacity(0.18),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          profileWidget,
+                          const SizedBox(height: 14),
+                          TextFont(
+                            text: displayName,
+                            textAlign: TextAlign.center,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          if (pocketBaseService.userEmail != null) ...[
+                            const SizedBox(height: 4),
+                            TextFont(
+                              text: pocketBaseService.userEmail!,
+                              textAlign: TextAlign.center,
+                              fontSize: 14,
+                              textColor: getColor(context, "textLight"),
+                            ),
+                          ],
+                          const SizedBox(height: 16),
+                          IntrinsicWidth(
+                            child: Button(
+                              label: "logout".tr(),
+                              onTap: () async {
+                                final confirm = await openPopup(
+                                  context,
+                                  title: "logout".tr(),
+                                  description:
+                                      "Are you sure you want to sign out?",
+                                  icon: Icons.logout_rounded,
+                                  onSubmit: () => popRoute(context, true),
+                                  onCancel: () => popRoute(context, false),
+                                  onSubmitLabel: "logout".tr(),
+                                  onCancelLabel: "cancel".tr(),
+                                );
+                                if (confirm == true) {
+                                  await signOutGoogle();
+                                }
+                              },
+                              padding: const EdgeInsetsDirectional.symmetric(
+                                  horizontal: 18, vertical: 10),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Divider(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.15),
+                          ),
+                          const SizedBox(height: 20),
+                          _SyncActionButton(
+                            title: "Sync Now",
+                            subtitle: isSyncing
+                                ? "Synchronizing with cloud..."
+                                : "Pull cloud updates & push local changes",
+                            icon: appStateSettings["outlinedIcons"]
+                                ? Icons.sync_outlined
+                                : Icons.sync_rounded,
+                            isPrimary: true,
+                            isLoading: isSyncing,
+                            onTap: () => _triggerUnifiedSync(forceFull: false),
+                          ),
+                          const SizedBox(height: 12),
+                          _SyncActionButton(
+                            title: "Full Sync",
+                            subtitle: isSyncing
+                                ? "Synchronizing all records..."
+                                : "Force full bidirectional sync of all records",
+                            icon: appStateSettings["outlinedIcons"]
+                                ? Icons.cloud_sync_outlined
+                                : Icons.cloud_sync_rounded,
+                            isPrimary: false,
+                            isLoading: isSyncing,
+                            onTap: () => _triggerUnifiedSync(forceFull: true),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFont(
+                            text: "Last synced: " +
+                                (sharedPreferences.getString("pb_last_sync") ==
+                                        null
+                                    ? "Never"
+                                    : DateFormat('dd MMM yyyy, hh:mm a').format(
+                                        DateTime.parse(sharedPreferences
+                                                .getString("pb_last_sync")!)
+                                            .toLocal())),
+                            fontSize: 13,
+                            textColor: getColor(context, "textLight"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  // Right Card: Sync History
+                  Expanded(
+                    flex: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: getColor(context, "canvasContainer"),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withOpacity(0.18),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextFont(
+                                text: "Sync History",
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              if (history.isNotEmpty)
+                                Tappable(
+                                  color: Colors.transparent,
+                                  borderRadius: 10,
+                                  onTap: () async {
+                                    await clearSyncHistory();
+                                    setState(() {});
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.delete_sweep_outlined,
+                                          size: 18,
+                                          color: getColor(context, "textLight"),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        TextFont(
+                                          text: "Clear All",
+                                          fontSize: 13,
+                                          textColor:
+                                              getColor(context, "textLight"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          if (history.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 40),
+                              child: Center(
+                                child: TextFont(
+                                  text: "No sync history yet",
+                                  fontSize: 14,
+                                  textColor: getColor(context, "textLight"),
+                                ),
+                              ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount:
+                                  history.length > 20 ? 20 : history.length,
+                              itemBuilder: (context, index) {
+                                final entry = history[index];
+                                final isSuccess = entry.status == "Success";
+                                final formattedDate =
+                                    DateFormat("dd MMM yyyy, hh:mm a")
+                                        .format(entry.dateTime.toLocal());
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: SettingsContainerOutlined(
+                                    isWideOutlined: true,
+                                    title: formattedDate,
+                                    description:
+                                        "${entry.syncType} • Pushed: ${entry.pushedCount}, Pulled: ${entry.pulledCount}",
+                                    icon: isSuccess
+                                        ? Icons.cloud_done_rounded
+                                        : Icons.cloud_off_rounded,
+                                    onTap: () {
+                                      openPopup(
+                                        context,
+                                        title: formattedDate,
+                                        icon: isSuccess
+                                            ? Icons.cloud_done_rounded
+                                            : Icons.cloud_off_rounded,
+                                        description:
+                                            "Type: ${entry.syncType}\nStatus: ${entry.status}\nPushed records: ${entry.pushedCount}\nPulled records: ${entry.pulledCount}\nDetails: ${entry.message}",
+                                        onSubmit: () => popRoute(context),
+                                        onSubmitLabel: "Close",
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        ],
+      );
+    }
 
     return PageFramework(
       horizontalPaddingConstrained: true,

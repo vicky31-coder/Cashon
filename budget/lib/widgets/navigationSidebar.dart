@@ -310,7 +310,6 @@ class NavigationSidebarState extends State<NavigationSidebar> {
                                 navBarIconDataKey: "allSpending",
                                 currentPageIndex: selectedIndex,
                               ),
-                              EditDataButtons(selectedIndex: selectedIndex),
                             ],
                           ),
                           Spacer(),
@@ -463,6 +462,12 @@ class _SyncButtonState extends State<SyncButton> {
       if (runningCloudFunctions == false && !pocketBaseSyncEngine.isSyncing) {
         refreshButtonKey.currentState?.startAnimation();
         if (pocketBaseService.isLoggedIn) {
+          openSnackbar(SnackbarMessage(
+            title: "Syncing with cloud...",
+            description: "Transferring changes...",
+            icon: Icons.sync,
+            timeout: const Duration(seconds: 2),
+          ));
           final res = await pocketBaseSyncEngine.syncAll();
           openSnackbar(SnackbarMessage(
             title: res.success ? "Sync completed" : "Sync failed",
