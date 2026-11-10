@@ -404,11 +404,9 @@ ColorScheme getColorScheme(Brightness brightness) {
       brightness: Brightness.dark,
       background: appStateSettings["forceFullDarkBackground"] == true
           ? Colors.black
-          : appStateSettings["materialYou"]
-              ? darkenPastel(
-                  getSettingConstants(appStateSettings)["accentColor"],
-                  amount: 0.92)
-              : Colors.black,
+          : darkenPastel(
+              getSettingConstants(appStateSettings)["accentColor"],
+              amount: 0.92),
     );
   }
 }
@@ -472,9 +470,7 @@ ColorScheme getGrayScaleColorScheme(Brightness brightness) {
       onSurface: Colors.white,
       background: appStateSettings["forceFullDarkBackground"] == true
           ? Colors.black
-          : appStateSettings["materialYou"]
-              ? Color(0xFF0F0F0F)
-              : Colors.black,
+          : const Color(0xFF141414),
       onBackground: Colors.white,
       surfaceVariant: Colors.grey[800]!,
       onSurfaceVariant: Colors.white,
@@ -571,9 +567,7 @@ class CustomColorTheme extends StatelessWidget {
       background: determineBrightnessTheme(context) == Brightness.dark
           ? (appStateSettings["forceFullDarkBackground"] == true
               ? Colors.black
-              : appStateSettings["materialYou"]
-                  ? darkenPastel(accentColor!, amount: 0.92)
-                  : Colors.black)
+              : darkenPastel(accentColor!, amount: 0.92))
           : appStateSettings["materialYou"]
               ? lightenPastel(accentColor!, amount: 0.91)
               : Colors.white,
@@ -584,6 +578,7 @@ class CustomColorTheme extends StatelessWidget {
         brightness: Theme.of(context).brightness,
         themeData: Theme.of(context).copyWith(
           colorScheme: colorScheme,
+          scaffoldBackgroundColor: colorScheme.background,
         ),
       ),
       child: child,
@@ -611,7 +606,9 @@ ThemeData generateThemeDataWithExtension(
 
 ThemeData getLightTheme() {
   Brightness brightness = Brightness.light;
+  ColorScheme colorScheme = getColorScheme(brightness);
   ThemeData themeData = ThemeData(
+    scaffoldBackgroundColor: colorScheme.background,
     // pageTransitionsTheme: PageTransitionsTheme(builders: {
     //   // the page route animation is set in pushRoute() - functions.dart
     //   TargetPlatform.android: appStateSettings["iOSNavigation"]
@@ -621,7 +618,7 @@ ThemeData getLightTheme() {
     // }),
     fontFamily: appStateSettings["font"],
     fontFamilyFallback: ['Inter'],
-    colorScheme: getColorScheme(brightness),
+    colorScheme: colorScheme,
     useMaterial3: true,
     applyElevationOverlayColor: false,
     typography: Typography.material2014(),
@@ -645,7 +642,9 @@ ThemeData getLightTheme() {
 
 ThemeData getDarkTheme() {
   Brightness brightness = Brightness.dark;
+  ColorScheme colorScheme = getColorScheme(brightness);
   ThemeData themeData = ThemeData(
+    scaffoldBackgroundColor: colorScheme.background,
     // pageTransitionsTheme: PageTransitionsTheme(builders: {
     //   // the page route animation is set in pushRoute() - functions.dart
     //   TargetPlatform.android: appStateSettings["iOSNavigation"]
@@ -655,7 +654,7 @@ ThemeData getDarkTheme() {
     // }),
     fontFamily: appStateSettings["font"],
     fontFamilyFallback: ['Inter'],
-    colorScheme: getColorScheme(brightness),
+    colorScheme: colorScheme,
     useMaterial3: true,
     typography: Typography.material2014(),
     splashColor: getPlatform() == PlatformOS.isIOS
