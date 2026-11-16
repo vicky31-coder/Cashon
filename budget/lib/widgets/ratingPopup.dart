@@ -56,11 +56,51 @@ class _RatingPopupState extends State<RatingPopup> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return PopupFramework(
-      title: "rate-app".tr(namedArgs: {"app": globalAppName}),
-      subtitle: "rate-app-subtitle".tr(namedArgs: {"app": globalAppName}),
+      title: "feedback".tr(),
+      // title: "rate-app".tr(namedArgs: {"app": globalAppName}),
+      // subtitle: "rate-app-subtitle".tr(namedArgs: {"app": globalAppName}),
       child: Column(
         children: [
+          const SizedBox(height: 10),
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.secondary.withOpacity(0.14),
+            ),
+            child: Icon(
+              appStateSettings["outlinedIcons"]
+                  ? Icons.rate_review_outlined
+                  : Icons.rate_review_rounded,
+              size: 32,
+              color: theme.colorScheme.secondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextFont(
+            text: "Coming Soon",
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          TextFont(
+            text:
+                "Feedback and ratings are currently under development and will be available in a future update.",
+            fontSize: 14,
+            maxLines: 4,
+            textAlign: TextAlign.center,
+            textColor: getColor(context, "textLight"),
+          ),
+          const SizedBox(height: 20),
+          Button(
+            label: "Close",
+            onTap: () => maybePopRoute(context),
+          ),
+          /*
           ScalingStars(
             selectedStars: selectedStars,
             onTap: (i) {
@@ -98,34 +138,6 @@ class _RatingPopupState extends State<RatingPopup> {
                     }
                   },
                 ),
-                if (appStateSettings["showFAQAndHelpLink"] == true)
-                  HorizontalBreak(
-                    padding: EdgeInsetsDirectional.zero,
-                    color: appStateSettings["materialYou"]
-                        ? dynamicPastel(
-                            context,
-                            Theme.of(context).colorScheme.secondaryContainer,
-                            amount: 0.1,
-                            inverse: true,
-                          )
-                        : getColor(context, "lightDarkAccent"),
-                  ),
-                if (appStateSettings["showFAQAndHelpLink"] == true)
-                  LinkInNotes(
-                    color: (appStateSettings["materialYou"]
-                        ? Theme.of(context).colorScheme.secondaryContainer
-                        : getColor(context, "canvasContainer")),
-                    link: "guide-and-faq".tr(),
-                    iconData: appStateSettings["outlinedIcons"]
-                        ? Icons.live_help_outlined
-                        : Icons.live_help_rounded,
-                    iconDataAfter: appStateSettings["outlinedIcons"]
-                        ? Icons.open_in_new_outlined
-                        : Icons.open_in_new_rounded,
-                    onTap: () async {
-                      openUrl("https://cashewapp.web.app/faq.html");
-                    },
-                  ),
               ],
             ),
           ),
@@ -194,6 +206,7 @@ class _RatingPopupState extends State<RatingPopup> {
             },
             disabled: selectedStars == null,
           )
+          */
         ],
       ),
     );

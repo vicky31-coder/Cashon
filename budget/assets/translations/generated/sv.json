@@ -472,7 +472,7 @@
   "error-getting-products": "Fel att få produkter",
   "error-getting-products-description": "Det fanns ett fel som ansluter till App Store. Vänligen försök igen senare.",
   "error-processing-order": "Det var ett felbehandling av ditt köp. Var god försök igen.",
-  "order-confirmation": "Tack för att du stöder cashew!",
+  "order-confirmation": "Tack för att du stöder Cashon!",
   "any-previous-purchases-restored": "Eventuella tidigare inköp återställdes",
   "already-purchased": "Redan köpt",
   "current-plan": "Aktuell plan",
@@ -1178,7 +1178,7 @@
   "loans-details": "Lånedetaljer",
   "set-details": "Ställ in detaljer",
   "import-warning": "Importvarning",
-  "import-warning-description": "Importen kan misslyckas! Se till att du har valt en giltig backupfil för Cashew [.sqlite] eller [.sql]",
+  "import-warning-description": "Importen kan misslyckas! Se till att du har valt en giltig backupfil för Cashon [.sqlite] eller [.sql]",
   "duplicate-budget-question": "Duplicera budget?",
   "duplicate-budget": "Duplicera budget"
 }
