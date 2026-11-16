@@ -1,0 +1,63 @@
+name: Build Linux AUR Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux-aur:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: budget
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev libsqlite3-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux release bundle
+        run: flutter build linux --release
+
+      - name: Build Arch Linux package in Arch container
+        run: |
+          docker run --rm \
+            -e HOST_UID="$(id -u)" \
+            -e HOST_GID="$(id -g)" \
+            -v "$PWD:/work" \
+            archlinux:base-devel \
+            bash -lc '
+              set -e
+              useradd -m -u "$HOST_UID" builder || useradd -m builder
+              chown -R builder /work/packaging/aur
+              mkdir -p /work/dist
+              chown -R builder /work/dist
+              su - builder -c "cd /work && ./scripts/build_aur.sh --skip-flutter"
+            '
+
+      - name: Upload AUR package and metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: cashon-linux-aur
+          path: |
+            budget/dist/*.pkg.tar.zst
+            budget/packaging/aur/PKGBUILD
+            budget/packaging/aur/.SRCINFO
+          if-no-files-found: error

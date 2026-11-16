@@ -213,3 +213,13 @@ flutter:
     - family: Icons
       fonts:
         - asset: assets/icons/Icons.ttf
+
+msix_config:
+  display_name: Cashon
+  publisher_display_name: Vignesh Balaji
+  identity_name: com.budget.trackerapp
+  msix_version: 1.0.0.0
+  logo_path: assets/icon/icon.png
+  capabilities: internetClient
+  install_certificate: false
+  sign_msix: false

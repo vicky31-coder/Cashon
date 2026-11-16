@@ -1,0 +1,49 @@
+name: Build Windows NSIS Installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows-nsis:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: budget
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows release binary
+        run: flutter build windows --release
+
+      - name: Compile NSIS installer
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $makensis = (Get-Command makensis.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)
+          if (-not $makensis) { $makensis = "C:\Program Files (x86)\NSIS\makensis.exe" }
+          & $makensis "windows\installer\cashon.nsi"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload NSIS installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cashon-windows-nsis
+          path: budget/dist/*.exe
+          if-no-files-found: error

@@ -1,0 +1,55 @@
+name: Build Linux Multiple (AppImage & Portable)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux-appimage:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: budget
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev libsqlite3-dev \
+            curl desktop-file-utils
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux release bundle
+        run: flutter build linux --release
+
+      - name: Create portable Linux tar.gz archive
+        run: |
+          mkdir -p dist
+          tar -czf dist/Cashon-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Package AppImage
+        run: ./scripts/build_appimage.sh --skip-flutter
+
+      - name: Upload Linux AppImage & Portable Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: cashon-linux-appimage-portable
+          path: |
+            budget/dist/*.AppImage
+            budget/dist/*.tar.gz
+          if-no-files-found: error
