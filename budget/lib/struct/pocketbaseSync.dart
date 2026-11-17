@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
+import 'package:http/http.dart' as http;
 import 'package:pocketbase/pocketbase.dart';
 import 'package:budget/database/tables.dart';
+import 'package:budget/struct/attachmentStorage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/pocketbaseService.dart';
 
@@ -476,6 +478,7 @@ class PocketBaseSyncEngine {
       _getExistingRemoteIdMap(pb, "category_budget_limits", userId),
       _getExistingRemoteIdMap(pb, "associated_titles", userId),
       _getExistingRemoteIdMap(pb, "scanner_templates", userId),
+      _getExistingRemoteIdMap(pb, "attachments", userId),
     ]);
     final walletMap = maps[0];
     final categoryMap = maps[1];
@@ -485,6 +488,7 @@ class PocketBaseSyncEngine {
     final limitMap = maps[5];
     final titleMap = maps[6];
     final templateMap = maps[7];
+    final attachmentMap = maps[8];
 
     // Wallets
     List<TransactionWallet> newWallets =
@@ -717,6 +721,30 @@ class PocketBaseSyncEngine {
         "ignore": s.ignore,
       },
     );
+
+    // Attachments (upload binary file on first push, update metadata if already uploaded)
+    List<TransactionAttachment> newAttachments =
+        await database.getAllNewAttachments(lastSync);
+    if (newAttachments.isNotEmpty) {
+      const int attachConcurrency = 4;
+      for (int i = 0; i < newAttachments.length; i += attachConcurrency) {
+        final chunk = newAttachments.sublist(
+          i,
+          (i + attachConcurrency > newAttachments.length)
+              ? newAttachments.length
+              : i + attachConcurrency,
+        );
+        final results = await Future.wait(chunk.map((att) async {
+          return await _pushAttachmentRecord(
+            pb: pb,
+            userId: userId,
+            att: att,
+            existingMap: attachmentMap,
+          );
+        }));
+        pushed += results.where((ok) => ok).length;
+      }
+    }
 
     // Push Local Delete Logs to PocketBase
     List<DeleteLog> newDeleteLogs =
@@ -1278,6 +1306,60 @@ class PocketBaseSyncEngine {
         },
       );
 
+      // Pull Attachments (metadata only; actual binary is fetched lazily on view/open)
+      pulled += await _pullCollection(
+        pb: pb,
+        collection: "attachments",
+        filter: dateFilter,
+        onRecord: (r) async {
+          final String attachmentPk = r.getStringValue("client_id");
+          final DateTime? remoteDate =
+              DateTime.tryParse(r.getStringValue("date_time_modified"))?.toUtc();
+          TransactionAttachment? existing;
+          try {
+            existing = await database.getAttachmentInstanceOrNull(attachmentPk);
+          } catch (_) {}
+
+          if (existing != null &&
+              _shouldSkipRemoteUpdate(
+                localDate: existing.dateTimeModified,
+                remoteDate: remoteDate,
+                localPk: attachmentPk,
+                remoteId: r.id,
+              )) {
+            return;
+          }
+
+          final remoteFile = r.getStringValue("file");
+          final originalName = r.getStringValue("original_name");
+          final mimeType = r.getStringValue("mime_type");
+          final fileSize = r.getIntValue("file_size");
+
+          await database.createOrUpdateAttachment(
+            TransactionAttachment(
+              attachmentPk: attachmentPk,
+              transactionFk: r.getStringValue("transaction_fk"),
+              originalName: originalName.isNotEmpty
+                  ? originalName
+                  : (remoteFile.isNotEmpty ? remoteFile : "attachment"),
+              mimeType: mimeType.isEmpty ? null : mimeType,
+              fileSize: fileSize <= 0 ? null : fileSize,
+              localFileName: existing?.localFileName,
+              remoteRecordId: r.id,
+              remoteFileName:
+                  remoteFile.isEmpty ? existing?.remoteFileName : remoteFile,
+              isUploaded: true,
+              dateCreated:
+                  DateTime.tryParse(r.getStringValue("date_created")) ??
+                      DateTime.now(),
+              dateTimeModified: remoteDate?.toLocal(),
+            ),
+            customDateTimeModified: remoteDate?.toLocal(),
+            insert: false,
+          );
+        },
+      );
+
       // Pull Remote Deletions -> Purge Local Records safely
       await _pullCollection(
         pb: pb,
@@ -1308,6 +1390,71 @@ class PocketBaseSyncEngine {
     } catch (e) {
       debugPrint("Error fetching existing id map for $collection: $e");
       return {};
+    }
+  }
+
+  Future<bool> _pushAttachmentRecord({
+    required PocketBase pb,
+    required String userId,
+    required TransactionAttachment att,
+    required Map<String, String> existingMap,
+  }) async {
+    try {
+      final metadataBody = <String, dynamic>{
+        "transaction_fk": att.transactionFk,
+        "original_name":
+            att.originalName.trim().isEmpty ? "attachment" : att.originalName.trim(),
+        "mime_type": att.mimeType ?? "",
+        "file_size": att.fileSize ?? 0,
+        "date_created": att.dateCreated.toUtc().toIso8601String(),
+        "date_time_modified":
+            (att.dateTimeModified ?? DateTime.now()).toUtc().toIso8601String(),
+      };
+
+      final existingId = existingMap[att.attachmentPk];
+      if (existingId != null && existingId.isNotEmpty) {
+        final updated = await pb
+            .collection("attachments")
+            .update(existingId, body: metadataBody);
+        if (!att.isUploaded) {
+          await database.markAttachmentUploaded(
+            att.attachmentPk,
+            updated.id,
+            updated.getStringValue("file"),
+          );
+        }
+        return true;
+      }
+
+      final localFile = await getLocalAttachmentFileIfExists(att.localFileName);
+      if (localFile == null) {
+        debugPrint(
+            "Skipping attachment upload (${att.attachmentPk}): local file missing (${att.localFileName})");
+        return false;
+      }
+
+      metadataBody["client_id"] = att.attachmentPk;
+      metadataBody["user"] = userId;
+      final created = await pb.collection("attachments").create(
+        body: metadataBody,
+        files: [
+          await http.MultipartFile.fromPath(
+            "file",
+            localFile.path,
+            filename: att.originalName,
+          ),
+        ],
+      );
+      existingMap[att.attachmentPk] = created.id;
+      await database.markAttachmentUploaded(
+        att.attachmentPk,
+        created.id,
+        created.getStringValue("file"),
+      );
+      return true;
+    } catch (e) {
+      debugPrint("Attachment upload error (${att.attachmentPk}): $e");
+      return false;
     }
   }
 
@@ -1419,7 +1566,7 @@ class PocketBaseSyncEngine {
             .go();
         break;
       case "transactions":
-        await (database.delete(database.transactions)
+        final deletedTxCount = await (database.delete(database.transactions)
               ..where((t) =>
                   t.transactionPk.equals(clientId) &
                   (remoteDeletedAt == null
@@ -1428,6 +1575,16 @@ class PocketBaseSyncEngine {
                               .isSmallerThanValue(remoteDeletedAt.toLocal()) |
                           t.dateTimeModified.isNull()))))
             .go();
+        if (deletedTxCount > 0) {
+          final orphanedAttachments =
+              await database.getAttachmentsForTransaction(clientId);
+          for (final att in orphanedAttachments) {
+            await deleteLocalAttachmentFileByName(att.localFileName);
+          }
+          await (database.delete(database.attachments)
+                ..where((a) => a.transactionFk.equals(clientId)))
+              .go();
+        }
         break;
       case "budgets":
         await (database.delete(database.budgets)
@@ -1484,6 +1641,21 @@ class PocketBaseSyncEngine {
                           t.dateTimeModified.isNull()))))
             .go();
         break;
+      case "attachments":
+        final existingAtt = await database.getAttachmentInstanceOrNull(clientId);
+        final deletedCount = await (database.delete(database.attachments)
+              ..where((t) =>
+                  t.attachmentPk.equals(clientId) &
+                  (remoteDeletedAt == null
+                      ? const Constant(true)
+                      : (t.dateTimeModified
+                              .isSmallerThanValue(remoteDeletedAt.toLocal()) |
+                          t.dateTimeModified.isNull()))))
+            .go();
+        if (deletedCount > 0 && existingAtt != null) {
+          await deleteLocalAttachmentFileByName(existingAtt.localFileName);
+        }
+        break;
     }
   }
 
@@ -1505,6 +1677,8 @@ class PocketBaseSyncEngine {
         return "scanner_templates";
       case DeleteLogType.Objective:
         return "objectives";
+      case DeleteLogType.Attachment:
+        return "attachments";
       case DeleteLogType.Unused:
         return null;
     }

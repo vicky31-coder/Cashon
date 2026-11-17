@@ -31,7 +31,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide TextInput;
-import 'package:path_provider/path_provider.dart';
+import 'package:budget/struct/attachmentStorage.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
@@ -301,9 +301,11 @@ Future forceDeleteDB() async {
     final html.Storage localStorage = html.window.localStorage;
     localStorage.clear();
   } else {
-    final dbFolder = await getApplicationDocumentsDirectory();
+    final dbFolder = await getAppDataDirectory();
     final dbFile = File(p.join(dbFolder.path, 'db.sqlite'));
-    await dbFile.delete();
+    if (await dbFile.exists()) {
+      await dbFile.delete();
+    }
   }
 }
 

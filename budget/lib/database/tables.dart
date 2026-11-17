@@ -9,6 +9,7 @@ import 'package:budget/struct/settings.dart';
 import 'package:budget/struct/shareBudget.dart';
 import 'package:budget/struct/syncClient.dart';
 import 'package:budget/struct/pocketbaseSync.dart';
+import 'package:budget/struct/attachmentStorage.dart';
 import 'package:budget/widgets/navigationFramework.dart';
 import 'package:budget/widgets/periodCyclePicker.dart';
 import 'package:budget/widgets/walletEntry.dart';
@@ -26,7 +27,7 @@ import 'package:budget/pages/activityPage.dart';
 import 'package:flutter/material.dart' show RangeValues;
 part 'tables.g.dart';
 
-int schemaVersionGlobal = 46;
+int schemaVersionGlobal = 47;
 
 // To update and migrate the database, check the README
 
@@ -221,6 +222,7 @@ enum DeleteLogType {
   ScannerTemplate,
   Objective,
   Unused, // Was for the scanner template, but is now unused
+  Attachment,
 }
 
 enum UpdateLogType {
@@ -233,6 +235,7 @@ enum UpdateLogType {
   ScannerTemplate,
   Objective,
   Unused, // Was for the scanner template, but is now unused
+  Attachment,
 }
 
 @DataClassName('DeleteLog')
@@ -538,6 +541,26 @@ class Objectives extends Table {
   Set<Column> get primaryKey => {objectivePk};
 }
 
+@DataClassName('TransactionAttachment')
+class Attachments extends Table {
+  TextColumn get attachmentPk => text().clientDefault(() => uuid.v4())();
+  TextColumn get transactionFk => text()();
+  TextColumn get originalName => text()();
+  TextColumn get mimeType => text().nullable()();
+  IntColumn get fileSize => integer().nullable()();
+  TextColumn get localFileName => text().nullable()();
+  TextColumn get remoteRecordId => text().nullable()();
+  TextColumn get remoteFileName => text().nullable()();
+  BoolColumn get isUploaded => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get dateCreated =>
+      dateTime().clientDefault(() => new DateTime.now())();
+  DateTimeColumn get dateTimeModified =>
+      dateTime().withDefault(Constant(DateTime.now())).nullable()();
+
+  @override
+  Set<Column> get primaryKey => {attachmentPk};
+}
+
 class TransactionWithCategory {
   final TransactionCategory category;
   final Transaction transaction;
@@ -688,6 +711,7 @@ class CategoryWithTotal {
   ScannerTemplates,
   DeleteLogs,
   Objectives,
+  Attachments,
 ])
 class FinanceDatabase extends _$FinanceDatabase {
   // FinanceDatabase() : super(_openConnection());
@@ -1162,6 +1186,14 @@ class FinanceDatabase extends _$FinanceDatabase {
                 print(
                     "Migration Error: Error creating column objectives.type " +
                         e.toString());
+              }
+            },
+            from46To47: (m, schema) async {
+              try {
+                await m.createTable(schema.attachments);
+              } catch (e) {
+                print("Migration Error: Error creating table attachments " +
+                    e.toString());
               }
             },
           ),
@@ -2581,6 +2613,121 @@ class FinanceDatabase extends _$FinanceDatabase {
               tbl.dateTimeModified.isBiggerOrEqualValue(lastSynced) |
               tbl.dateTimeModified.isNull()))
         .get();
+  }
+
+  Future<List<TransactionAttachment>> getAllNewAttachments(
+      DateTime lastSynced) {
+    return (select(attachments)
+          ..where((tbl) =>
+              tbl.dateTimeModified.isBiggerOrEqualValue(lastSynced) |
+              tbl.dateTimeModified.isNull() |
+              tbl.isUploaded.equals(false)))
+        .get();
+  }
+
+  Future<TransactionAttachment?> getAttachmentInstanceOrNull(
+      String attachmentPk) {
+    return (select(attachments)
+          ..where((a) => a.attachmentPk.equals(attachmentPk)))
+        .getSingleOrNull();
+  }
+
+  Stream<List<TransactionAttachment>> watchAttachmentsForTransaction(
+      String transactionPk) {
+    return (select(attachments)
+          ..where((a) => a.transactionFk.equals(transactionPk))
+          ..orderBy([(a) => OrderingTerm.asc(a.dateCreated)]))
+        .watch();
+  }
+
+  Future<List<TransactionAttachment>> getAttachmentsForTransaction(
+      String transactionPk) {
+    return (select(attachments)
+          ..where((a) => a.transactionFk.equals(transactionPk))
+          ..orderBy([(a) => OrderingTerm.asc(a.dateCreated)]))
+        .get();
+  }
+
+  Future<int> createOrUpdateAttachment(
+    TransactionAttachment attachment, {
+    DateTime? customDateTimeModified,
+    bool insert = false,
+  }) async {
+    attachment = attachment.copyWith(
+      dateTimeModified: Value(customDateTimeModified ?? DateTime.now()),
+    );
+    AttachmentsCompanion companionToInsert = attachment.toCompanion(true);
+    if (insert && attachment.attachmentPk == "-1") {
+      companionToInsert = companionToInsert.copyWith(
+        attachmentPk: Value.absent(),
+      );
+    }
+
+    final result = await into(attachments)
+        .insert(companionToInsert, mode: InsertMode.insertOrReplace);
+
+    if (customDateTimeModified == null) {
+      pocketBaseSyncEngine.triggerDebouncedSync();
+    }
+    return result;
+  }
+
+  Future<void> markAttachmentUploaded(
+    String attachmentPk,
+    String remoteRecordId,
+    String remoteFileName,
+  ) async {
+    await (update(attachments)
+          ..where((a) => a.attachmentPk.equals(attachmentPk)))
+        .write(
+      AttachmentsCompanion(
+        isUploaded: Value(true),
+        remoteRecordId: Value(remoteRecordId),
+        remoteFileName: Value(remoteFileName),
+      ),
+    );
+  }
+
+  Future<void> updateAttachmentLocalFileName(
+    String attachmentPk,
+    String? localFileName,
+  ) async {
+    await (update(attachments)
+          ..where((a) => a.attachmentPk.equals(attachmentPk)))
+        .write(
+      AttachmentsCompanion(
+        localFileName: Value(localFileName),
+      ),
+    );
+  }
+
+  Future<int> deleteAttachment(String attachmentPk) async {
+    final existing = await getAttachmentInstanceOrNull(attachmentPk);
+    if (existing != null) {
+      await deleteLocalAttachmentFileByName(existing.localFileName);
+    }
+    await createDeleteLog(DeleteLogType.Attachment, attachmentPk);
+    return (delete(attachments)
+          ..where((a) => a.attachmentPk.equals(attachmentPk)))
+        .go();
+  }
+
+  Future<void> deleteAttachmentsForTransactions(
+      List<String> transactionPks) async {
+    if (transactionPks.isEmpty) return;
+    final matching = await (select(attachments)
+          ..where((a) => a.transactionFk.isIn(transactionPks)))
+        .get();
+    if (matching.isEmpty) return;
+    final attachmentPks = <String>[];
+    for (final att in matching) {
+      attachmentPks.add(att.attachmentPk);
+      await deleteLocalAttachmentFileByName(att.localFileName);
+    }
+    await createDeleteLogs(DeleteLogType.Attachment, attachmentPks);
+    await (delete(attachments)
+          ..where((a) => a.attachmentPk.isIn(attachmentPks)))
+        .go();
   }
 
   Future getAmountOfWallets() async {
@@ -4952,6 +5099,7 @@ class FinanceDatabase extends _$FinanceDatabase {
         sendTransactionDelete(transactionToDelete, budget);
       }
     }
+    await deleteAttachmentsForTransactions([transactionPk]);
     await createDeleteLog(DeleteLogType.Transaction, transactionPk);
     return (delete(transactions)
           ..where((t) => t.transactionPk.equals(transactionPk)))
@@ -4976,6 +5124,7 @@ class FinanceDatabase extends _$FinanceDatabase {
       }
     }
 
+    await deleteAttachmentsForTransactions(transactionPks);
     await createDeleteLogs(DeleteLogType.Transaction, transactionPks);
     return (delete(transactions)
           ..where((t) => t.transactionPk.isIn(transactionPks)))
@@ -5068,6 +5217,7 @@ class FinanceDatabase extends _$FinanceDatabase {
     List<String> transactionPks = transactionsToDelete
         .map((transaction) => transaction.transactionPk)
         .toList();
+    await deleteAttachmentsForTransactions(transactionPks);
     await createDeleteLogs(DeleteLogType.Transaction, transactionPks);
     return (delete(transactions)..where((t) => t.categoryFk.equals(categoryPk)))
         .go();
@@ -5342,6 +5492,7 @@ class FinanceDatabase extends _$FinanceDatabase {
         .get();
     List<String> transactionPks =
         transactionPkForDelete.map((t) => t.transactionPk).toList();
+    await deleteAttachmentsForTransactions(transactionPks);
     await createDeleteLogs(DeleteLogType.Transaction, transactionPks);
     return (delete(transactions)..where((t) => t.walletFk.equals(walletPk)))
         .go();

@@ -262,9 +262,9 @@ class TransactionWallet extends DataClass
     }
     map['decimals'] = Variable<int>(decimals);
     if (!nullToAbsent || homePageWidgetDisplay != null) {
-      final converter = $WalletsTable.$converterhomePageWidgetDisplayn;
-      map['home_page_widget_display'] =
-          Variable<String>(converter.toSql(homePageWidgetDisplay));
+      map['home_page_widget_display'] = Variable<String>($WalletsTable
+          .$converterhomePageWidgetDisplayn
+          .toSql(homePageWidgetDisplay));
     }
     return map;
   }
@@ -365,6 +365,29 @@ class TransactionWallet extends DataClass
             ? homePageWidgetDisplay.value
             : this.homePageWidgetDisplay,
       );
+  TransactionWallet copyWithCompanion(WalletsCompanion data) {
+    return TransactionWallet(
+      walletPk: data.walletPk.present ? data.walletPk.value : this.walletPk,
+      name: data.name.present ? data.name.value : this.name,
+      colour: data.colour.present ? data.colour.value : this.colour,
+      iconName: data.iconName.present ? data.iconName.value : this.iconName,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      order: data.order.present ? data.order.value : this.order,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      currencyFormat: data.currencyFormat.present
+          ? data.currencyFormat.value
+          : this.currencyFormat,
+      decimals: data.decimals.present ? data.decimals.value : this.decimals,
+      homePageWidgetDisplay: data.homePageWidgetDisplay.present
+          ? data.homePageWidgetDisplay.value
+          : this.homePageWidgetDisplay,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TransactionWallet(')
@@ -550,10 +573,9 @@ class WalletsCompanion extends UpdateCompanion<TransactionWallet> {
       map['decimals'] = Variable<int>(decimals.value);
     }
     if (homePageWidgetDisplay.present) {
-      final converter = $WalletsTable.$converterhomePageWidgetDisplayn;
-
-      map['home_page_widget_display'] =
-          Variable<String>(converter.toSql(homePageWidgetDisplay.value));
+      map['home_page_widget_display'] = Variable<String>($WalletsTable
+          .$converterhomePageWidgetDisplayn
+          .toSql(homePageWidgetDisplay.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -840,8 +862,8 @@ class TransactionCategory extends DataClass
     map['order'] = Variable<int>(order);
     map['income'] = Variable<bool>(income);
     if (!nullToAbsent || methodAdded != null) {
-      final converter = $CategoriesTable.$convertermethodAddedn;
-      map['method_added'] = Variable<int>(converter.toSql(methodAdded));
+      map['method_added'] = Variable<int>(
+          $CategoriesTable.$convertermethodAddedn.toSql(methodAdded));
     }
     if (!nullToAbsent || mainCategoryPk != null) {
       map['main_category_pk'] = Variable<String>(mainCategoryPk);
@@ -943,6 +965,31 @@ class TransactionCategory extends DataClass
         mainCategoryPk:
             mainCategoryPk.present ? mainCategoryPk.value : this.mainCategoryPk,
       );
+  TransactionCategory copyWithCompanion(CategoriesCompanion data) {
+    return TransactionCategory(
+      categoryPk:
+          data.categoryPk.present ? data.categoryPk.value : this.categoryPk,
+      name: data.name.present ? data.name.value : this.name,
+      colour: data.colour.present ? data.colour.value : this.colour,
+      iconName: data.iconName.present ? data.iconName.value : this.iconName,
+      emojiIconName: data.emojiIconName.present
+          ? data.emojiIconName.value
+          : this.emojiIconName,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      order: data.order.present ? data.order.value : this.order,
+      income: data.income.present ? data.income.value : this.income,
+      methodAdded:
+          data.methodAdded.present ? data.methodAdded.value : this.methodAdded,
+      mainCategoryPk: data.mainCategoryPk.present
+          ? data.mainCategoryPk.value
+          : this.mainCategoryPk,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TransactionCategory(')
@@ -1123,9 +1170,8 @@ class CategoriesCompanion extends UpdateCompanion<TransactionCategory> {
       map['income'] = Variable<bool>(income.value);
     }
     if (methodAdded.present) {
-      final converter = $CategoriesTable.$convertermethodAddedn;
-
-      map['method_added'] = Variable<int>(converter.toSql(methodAdded.value));
+      map['method_added'] = Variable<int>(
+          $CategoriesTable.$convertermethodAddedn.toSql(methodAdded.value));
     }
     if (mainCategoryPk.present) {
       map['main_category_pk'] = Variable<String>(mainCategoryPk.value);
@@ -1461,8 +1507,7 @@ class Objective extends DataClass implements Insertable<Objective> {
     final map = <String, Expression>{};
     map['objective_pk'] = Variable<String>(objectivePk);
     {
-      final converter = $ObjectivesTable.$convertertype;
-      map['type'] = Variable<int>(converter.toSql(type));
+      map['type'] = Variable<int>($ObjectivesTable.$convertertype.toSql(type));
     }
     map['name'] = Variable<String>(name);
     map['amount'] = Variable<double>(amount);
@@ -1601,6 +1646,32 @@ class Objective extends DataClass implements Insertable<Objective> {
         archived: archived ?? this.archived,
         walletFk: walletFk ?? this.walletFk,
       );
+  Objective copyWithCompanion(ObjectivesCompanion data) {
+    return Objective(
+      objectivePk:
+          data.objectivePk.present ? data.objectivePk.value : this.objectivePk,
+      type: data.type.present ? data.type.value : this.type,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      order: data.order.present ? data.order.value : this.order,
+      colour: data.colour.present ? data.colour.value : this.colour,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      iconName: data.iconName.present ? data.iconName.value : this.iconName,
+      emojiIconName: data.emojiIconName.present
+          ? data.emojiIconName.value
+          : this.emojiIconName,
+      income: data.income.present ? data.income.value : this.income,
+      pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      archived: data.archived.present ? data.archived.value : this.archived,
+      walletFk: data.walletFk.present ? data.walletFk.value : this.walletFk,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Objective(')
@@ -1798,9 +1869,8 @@ class ObjectivesCompanion extends UpdateCompanion<Objective> {
       map['objective_pk'] = Variable<String>(objectivePk.value);
     }
     if (type.present) {
-      final converter = $ObjectivesTable.$convertertype;
-
-      map['type'] = Variable<int>(converter.toSql(type.value));
+      map['type'] =
+          Variable<int>($ObjectivesTable.$convertertype.toSql(type.value));
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -2528,8 +2598,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       map['period_length'] = Variable<int>(periodLength);
     }
     if (!nullToAbsent || reoccurrence != null) {
-      final converter = $TransactionsTable.$converterreoccurrencen;
-      map['reoccurrence'] = Variable<int>(converter.toSql(reoccurrence));
+      map['reoccurrence'] = Variable<int>(
+          $TransactionsTable.$converterreoccurrencen.toSql(reoccurrence));
     }
     if (!nullToAbsent || endDate != null) {
       map['end_date'] = Variable<DateTime>(endDate);
@@ -2539,8 +2609,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           Variable<bool>(upcomingTransactionNotification);
     }
     if (!nullToAbsent || type != null) {
-      final converter = $TransactionsTable.$convertertypen;
-      map['type'] = Variable<int>(converter.toSql(type));
+      map['type'] =
+          Variable<int>($TransactionsTable.$convertertypen.toSql(type));
     }
     map['paid'] = Variable<bool>(paid);
     if (!nullToAbsent || createdAnotherFutureTransaction != null) {
@@ -2549,8 +2619,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     }
     map['skip_paid'] = Variable<bool>(skipPaid);
     if (!nullToAbsent || methodAdded != null) {
-      final converter = $TransactionsTable.$convertermethodAddedn;
-      map['method_added'] = Variable<int>(converter.toSql(methodAdded));
+      map['method_added'] = Variable<int>(
+          $TransactionsTable.$convertermethodAddedn.toSql(methodAdded));
     }
     if (!nullToAbsent || transactionOwnerEmail != null) {
       map['transaction_owner_email'] = Variable<String>(transactionOwnerEmail);
@@ -2566,8 +2636,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       map['shared_old_key'] = Variable<String>(sharedOldKey);
     }
     if (!nullToAbsent || sharedStatus != null) {
-      final converter = $TransactionsTable.$convertersharedStatusn;
-      map['shared_status'] = Variable<int>(converter.toSql(sharedStatus));
+      map['shared_status'] = Variable<int>(
+          $TransactionsTable.$convertersharedStatusn.toSql(sharedStatus));
     }
     if (!nullToAbsent || sharedDateUpdated != null) {
       map['shared_date_updated'] = Variable<DateTime>(sharedDateUpdated);
@@ -2583,9 +2653,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       map['objective_loan_fk'] = Variable<String>(objectiveLoanFk);
     }
     if (!nullToAbsent || budgetFksExclude != null) {
-      final converter = $TransactionsTable.$converterbudgetFksExcluden;
-      map['budget_fks_exclude'] =
-          Variable<String>(converter.toSql(budgetFksExclude));
+      map['budget_fks_exclude'] = Variable<String>($TransactionsTable
+          .$converterbudgetFksExcluden
+          .toSql(budgetFksExclude));
     }
     return map;
   }
@@ -2858,6 +2928,82 @@ class Transaction extends DataClass implements Insertable<Transaction> {
             ? budgetFksExclude.value
             : this.budgetFksExclude,
       );
+  Transaction copyWithCompanion(TransactionsCompanion data) {
+    return Transaction(
+      transactionPk: data.transactionPk.present
+          ? data.transactionPk.value
+          : this.transactionPk,
+      pairedTransactionFk: data.pairedTransactionFk.present
+          ? data.pairedTransactionFk.value
+          : this.pairedTransactionFk,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      note: data.note.present ? data.note.value : this.note,
+      categoryFk:
+          data.categoryFk.present ? data.categoryFk.value : this.categoryFk,
+      subCategoryFk: data.subCategoryFk.present
+          ? data.subCategoryFk.value
+          : this.subCategoryFk,
+      walletFk: data.walletFk.present ? data.walletFk.value : this.walletFk,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      originalDateDue: data.originalDateDue.present
+          ? data.originalDateDue.value
+          : this.originalDateDue,
+      income: data.income.present ? data.income.value : this.income,
+      periodLength: data.periodLength.present
+          ? data.periodLength.value
+          : this.periodLength,
+      reoccurrence: data.reoccurrence.present
+          ? data.reoccurrence.value
+          : this.reoccurrence,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      upcomingTransactionNotification:
+          data.upcomingTransactionNotification.present
+              ? data.upcomingTransactionNotification.value
+              : this.upcomingTransactionNotification,
+      type: data.type.present ? data.type.value : this.type,
+      paid: data.paid.present ? data.paid.value : this.paid,
+      createdAnotherFutureTransaction:
+          data.createdAnotherFutureTransaction.present
+              ? data.createdAnotherFutureTransaction.value
+              : this.createdAnotherFutureTransaction,
+      skipPaid: data.skipPaid.present ? data.skipPaid.value : this.skipPaid,
+      methodAdded:
+          data.methodAdded.present ? data.methodAdded.value : this.methodAdded,
+      transactionOwnerEmail: data.transactionOwnerEmail.present
+          ? data.transactionOwnerEmail.value
+          : this.transactionOwnerEmail,
+      transactionOriginalOwnerEmail: data.transactionOriginalOwnerEmail.present
+          ? data.transactionOriginalOwnerEmail.value
+          : this.transactionOriginalOwnerEmail,
+      sharedKey: data.sharedKey.present ? data.sharedKey.value : this.sharedKey,
+      sharedOldKey: data.sharedOldKey.present
+          ? data.sharedOldKey.value
+          : this.sharedOldKey,
+      sharedStatus: data.sharedStatus.present
+          ? data.sharedStatus.value
+          : this.sharedStatus,
+      sharedDateUpdated: data.sharedDateUpdated.present
+          ? data.sharedDateUpdated.value
+          : this.sharedDateUpdated,
+      sharedReferenceBudgetPk: data.sharedReferenceBudgetPk.present
+          ? data.sharedReferenceBudgetPk.value
+          : this.sharedReferenceBudgetPk,
+      objectiveFk:
+          data.objectiveFk.present ? data.objectiveFk.value : this.objectiveFk,
+      objectiveLoanFk: data.objectiveLoanFk.present
+          ? data.objectiveLoanFk.value
+          : this.objectiveLoanFk,
+      budgetFksExclude: data.budgetFksExclude.present
+          ? data.budgetFksExclude.value
+          : this.budgetFksExclude,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Transaction(')
@@ -3271,9 +3417,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       map['period_length'] = Variable<int>(periodLength.value);
     }
     if (reoccurrence.present) {
-      final converter = $TransactionsTable.$converterreoccurrencen;
-
-      map['reoccurrence'] = Variable<int>(converter.toSql(reoccurrence.value));
+      map['reoccurrence'] = Variable<int>(
+          $TransactionsTable.$converterreoccurrencen.toSql(reoccurrence.value));
     }
     if (endDate.present) {
       map['end_date'] = Variable<DateTime>(endDate.value);
@@ -3283,9 +3428,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           Variable<bool>(upcomingTransactionNotification.value);
     }
     if (type.present) {
-      final converter = $TransactionsTable.$convertertypen;
-
-      map['type'] = Variable<int>(converter.toSql(type.value));
+      map['type'] =
+          Variable<int>($TransactionsTable.$convertertypen.toSql(type.value));
     }
     if (paid.present) {
       map['paid'] = Variable<bool>(paid.value);
@@ -3298,9 +3442,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       map['skip_paid'] = Variable<bool>(skipPaid.value);
     }
     if (methodAdded.present) {
-      final converter = $TransactionsTable.$convertermethodAddedn;
-
-      map['method_added'] = Variable<int>(converter.toSql(methodAdded.value));
+      map['method_added'] = Variable<int>(
+          $TransactionsTable.$convertermethodAddedn.toSql(methodAdded.value));
     }
     if (transactionOwnerEmail.present) {
       map['transaction_owner_email'] =
@@ -3317,9 +3460,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       map['shared_old_key'] = Variable<String>(sharedOldKey.value);
     }
     if (sharedStatus.present) {
-      final converter = $TransactionsTable.$convertersharedStatusn;
-
-      map['shared_status'] = Variable<int>(converter.toSql(sharedStatus.value));
+      map['shared_status'] = Variable<int>(
+          $TransactionsTable.$convertersharedStatusn.toSql(sharedStatus.value));
     }
     if (sharedDateUpdated.present) {
       map['shared_date_updated'] = Variable<DateTime>(sharedDateUpdated.value);
@@ -3335,10 +3477,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       map['objective_loan_fk'] = Variable<String>(objectiveLoanFk.value);
     }
     if (budgetFksExclude.present) {
-      final converter = $TransactionsTable.$converterbudgetFksExcluden;
-
-      map['budget_fks_exclude'] =
-          Variable<String>(converter.toSql(budgetFksExclude.value));
+      map['budget_fks_exclude'] = Variable<String>($TransactionsTable
+          .$converterbudgetFksExcluden
+          .toSql(budgetFksExclude.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -3955,25 +4096,25 @@ class Budget extends DataClass implements Insertable<Budget> {
     map['start_date'] = Variable<DateTime>(startDate);
     map['end_date'] = Variable<DateTime>(endDate);
     if (!nullToAbsent || walletFks != null) {
-      final converter = $BudgetsTable.$converterwalletFksn;
-      map['wallet_fks'] = Variable<String>(converter.toSql(walletFks));
+      map['wallet_fks'] =
+          Variable<String>($BudgetsTable.$converterwalletFksn.toSql(walletFks));
     }
     if (!nullToAbsent || categoryFks != null) {
-      final converter = $BudgetsTable.$convertercategoryFksn;
-      map['category_fks'] = Variable<String>(converter.toSql(categoryFks));
+      map['category_fks'] = Variable<String>(
+          $BudgetsTable.$convertercategoryFksn.toSql(categoryFks));
     }
     if (!nullToAbsent || categoryFksExclude != null) {
-      final converter = $BudgetsTable.$convertercategoryFksExcluden;
-      map['category_fks_exclude'] =
-          Variable<String>(converter.toSql(categoryFksExclude));
+      map['category_fks_exclude'] = Variable<String>($BudgetsTable
+          .$convertercategoryFksExcluden
+          .toSql(categoryFksExclude));
     }
     map['income'] = Variable<bool>(income);
     map['archived'] = Variable<bool>(archived);
     map['added_transactions_only'] = Variable<bool>(addedTransactionsOnly);
     map['period_length'] = Variable<int>(periodLength);
     if (!nullToAbsent || reoccurrence != null) {
-      final converter = $BudgetsTable.$converterreoccurrencen;
-      map['reoccurrence'] = Variable<int>(converter.toSql(reoccurrence));
+      map['reoccurrence'] = Variable<int>(
+          $BudgetsTable.$converterreoccurrencen.toSql(reoccurrence));
     }
     map['date_created'] = Variable<DateTime>(dateCreated);
     if (!nullToAbsent || dateTimeModified != null) {
@@ -3983,34 +4124,33 @@ class Budget extends DataClass implements Insertable<Budget> {
     map['order'] = Variable<int>(order);
     map['wallet_fk'] = Variable<String>(walletFk);
     if (!nullToAbsent || budgetTransactionFilters != null) {
-      final converter = $BudgetsTable.$converterbudgetTransactionFiltersn;
-      map['budget_transaction_filters'] =
-          Variable<String>(converter.toSql(budgetTransactionFilters));
+      map['budget_transaction_filters'] = Variable<String>($BudgetsTable
+          .$converterbudgetTransactionFiltersn
+          .toSql(budgetTransactionFilters));
     }
     if (!nullToAbsent || memberTransactionFilters != null) {
-      final converter = $BudgetsTable.$convertermemberTransactionFiltersn;
-      map['member_transaction_filters'] =
-          Variable<String>(converter.toSql(memberTransactionFilters));
+      map['member_transaction_filters'] = Variable<String>($BudgetsTable
+          .$convertermemberTransactionFiltersn
+          .toSql(memberTransactionFilters));
     }
     if (!nullToAbsent || sharedKey != null) {
       map['shared_key'] = Variable<String>(sharedKey);
     }
     if (!nullToAbsent || sharedOwnerMember != null) {
-      final converter = $BudgetsTable.$convertersharedOwnerMembern;
-      map['shared_owner_member'] =
-          Variable<int>(converter.toSql(sharedOwnerMember));
+      map['shared_owner_member'] = Variable<int>(
+          $BudgetsTable.$convertersharedOwnerMembern.toSql(sharedOwnerMember));
     }
     if (!nullToAbsent || sharedDateUpdated != null) {
       map['shared_date_updated'] = Variable<DateTime>(sharedDateUpdated);
     }
     if (!nullToAbsent || sharedMembers != null) {
-      final converter = $BudgetsTable.$convertersharedMembersn;
-      map['shared_members'] = Variable<String>(converter.toSql(sharedMembers));
+      map['shared_members'] = Variable<String>(
+          $BudgetsTable.$convertersharedMembersn.toSql(sharedMembers));
     }
     if (!nullToAbsent || sharedAllMembersEver != null) {
-      final converter = $BudgetsTable.$convertersharedAllMembersEvern;
-      map['shared_all_members_ever'] =
-          Variable<String>(converter.toSql(sharedAllMembersEver));
+      map['shared_all_members_ever'] = Variable<String>($BudgetsTable
+          .$convertersharedAllMembersEvern
+          .toSql(sharedAllMembersEver));
     }
     map['is_absolute_spending_limit'] = Variable<bool>(isAbsoluteSpendingLimit);
     return map;
@@ -4234,6 +4374,64 @@ class Budget extends DataClass implements Insertable<Budget> {
         isAbsoluteSpendingLimit:
             isAbsoluteSpendingLimit ?? this.isAbsoluteSpendingLimit,
       );
+  Budget copyWithCompanion(BudgetsCompanion data) {
+    return Budget(
+      budgetPk: data.budgetPk.present ? data.budgetPk.value : this.budgetPk,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      colour: data.colour.present ? data.colour.value : this.colour,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      walletFks: data.walletFks.present ? data.walletFks.value : this.walletFks,
+      categoryFks:
+          data.categoryFks.present ? data.categoryFks.value : this.categoryFks,
+      categoryFksExclude: data.categoryFksExclude.present
+          ? data.categoryFksExclude.value
+          : this.categoryFksExclude,
+      income: data.income.present ? data.income.value : this.income,
+      archived: data.archived.present ? data.archived.value : this.archived,
+      addedTransactionsOnly: data.addedTransactionsOnly.present
+          ? data.addedTransactionsOnly.value
+          : this.addedTransactionsOnly,
+      periodLength: data.periodLength.present
+          ? data.periodLength.value
+          : this.periodLength,
+      reoccurrence: data.reoccurrence.present
+          ? data.reoccurrence.value
+          : this.reoccurrence,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      order: data.order.present ? data.order.value : this.order,
+      walletFk: data.walletFk.present ? data.walletFk.value : this.walletFk,
+      budgetTransactionFilters: data.budgetTransactionFilters.present
+          ? data.budgetTransactionFilters.value
+          : this.budgetTransactionFilters,
+      memberTransactionFilters: data.memberTransactionFilters.present
+          ? data.memberTransactionFilters.value
+          : this.memberTransactionFilters,
+      sharedKey: data.sharedKey.present ? data.sharedKey.value : this.sharedKey,
+      sharedOwnerMember: data.sharedOwnerMember.present
+          ? data.sharedOwnerMember.value
+          : this.sharedOwnerMember,
+      sharedDateUpdated: data.sharedDateUpdated.present
+          ? data.sharedDateUpdated.value
+          : this.sharedDateUpdated,
+      sharedMembers: data.sharedMembers.present
+          ? data.sharedMembers.value
+          : this.sharedMembers,
+      sharedAllMembersEver: data.sharedAllMembersEver.present
+          ? data.sharedAllMembersEver.value
+          : this.sharedAllMembersEver,
+      isAbsoluteSpendingLimit: data.isAbsoluteSpendingLimit.present
+          ? data.isAbsoluteSpendingLimit.value
+          : this.isAbsoluteSpendingLimit,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Budget(')
@@ -4580,21 +4778,17 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       map['end_date'] = Variable<DateTime>(endDate.value);
     }
     if (walletFks.present) {
-      final converter = $BudgetsTable.$converterwalletFksn;
-
-      map['wallet_fks'] = Variable<String>(converter.toSql(walletFks.value));
+      map['wallet_fks'] = Variable<String>(
+          $BudgetsTable.$converterwalletFksn.toSql(walletFks.value));
     }
     if (categoryFks.present) {
-      final converter = $BudgetsTable.$convertercategoryFksn;
-
-      map['category_fks'] =
-          Variable<String>(converter.toSql(categoryFks.value));
+      map['category_fks'] = Variable<String>(
+          $BudgetsTable.$convertercategoryFksn.toSql(categoryFks.value));
     }
     if (categoryFksExclude.present) {
-      final converter = $BudgetsTable.$convertercategoryFksExcluden;
-
-      map['category_fks_exclude'] =
-          Variable<String>(converter.toSql(categoryFksExclude.value));
+      map['category_fks_exclude'] = Variable<String>($BudgetsTable
+          .$convertercategoryFksExcluden
+          .toSql(categoryFksExclude.value));
     }
     if (income.present) {
       map['income'] = Variable<bool>(income.value);
@@ -4610,9 +4804,8 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       map['period_length'] = Variable<int>(periodLength.value);
     }
     if (reoccurrence.present) {
-      final converter = $BudgetsTable.$converterreoccurrencen;
-
-      map['reoccurrence'] = Variable<int>(converter.toSql(reoccurrence.value));
+      map['reoccurrence'] = Variable<int>(
+          $BudgetsTable.$converterreoccurrencen.toSql(reoccurrence.value));
     }
     if (dateCreated.present) {
       map['date_created'] = Variable<DateTime>(dateCreated.value);
@@ -4630,40 +4823,34 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       map['wallet_fk'] = Variable<String>(walletFk.value);
     }
     if (budgetTransactionFilters.present) {
-      final converter = $BudgetsTable.$converterbudgetTransactionFiltersn;
-
-      map['budget_transaction_filters'] =
-          Variable<String>(converter.toSql(budgetTransactionFilters.value));
+      map['budget_transaction_filters'] = Variable<String>($BudgetsTable
+          .$converterbudgetTransactionFiltersn
+          .toSql(budgetTransactionFilters.value));
     }
     if (memberTransactionFilters.present) {
-      final converter = $BudgetsTable.$convertermemberTransactionFiltersn;
-
-      map['member_transaction_filters'] =
-          Variable<String>(converter.toSql(memberTransactionFilters.value));
+      map['member_transaction_filters'] = Variable<String>($BudgetsTable
+          .$convertermemberTransactionFiltersn
+          .toSql(memberTransactionFilters.value));
     }
     if (sharedKey.present) {
       map['shared_key'] = Variable<String>(sharedKey.value);
     }
     if (sharedOwnerMember.present) {
-      final converter = $BudgetsTable.$convertersharedOwnerMembern;
-
-      map['shared_owner_member'] =
-          Variable<int>(converter.toSql(sharedOwnerMember.value));
+      map['shared_owner_member'] = Variable<int>($BudgetsTable
+          .$convertersharedOwnerMembern
+          .toSql(sharedOwnerMember.value));
     }
     if (sharedDateUpdated.present) {
       map['shared_date_updated'] = Variable<DateTime>(sharedDateUpdated.value);
     }
     if (sharedMembers.present) {
-      final converter = $BudgetsTable.$convertersharedMembersn;
-
-      map['shared_members'] =
-          Variable<String>(converter.toSql(sharedMembers.value));
+      map['shared_members'] = Variable<String>(
+          $BudgetsTable.$convertersharedMembersn.toSql(sharedMembers.value));
     }
     if (sharedAllMembersEver.present) {
-      final converter = $BudgetsTable.$convertersharedAllMembersEvern;
-
-      map['shared_all_members_ever'] =
-          Variable<String>(converter.toSql(sharedAllMembersEver.value));
+      map['shared_all_members_ever'] = Variable<String>($BudgetsTable
+          .$convertersharedAllMembersEvern
+          .toSql(sharedAllMembersEver.value));
     }
     if (isAbsoluteSpendingLimit.present) {
       map['is_absolute_spending_limit'] =
@@ -4937,6 +5124,22 @@ class CategoryBudgetLimit extends DataClass
             : this.dateTimeModified,
         walletFk: walletFk ?? this.walletFk,
       );
+  CategoryBudgetLimit copyWithCompanion(CategoryBudgetLimitsCompanion data) {
+    return CategoryBudgetLimit(
+      categoryLimitPk: data.categoryLimitPk.present
+          ? data.categoryLimitPk.value
+          : this.categoryLimitPk,
+      categoryFk:
+          data.categoryFk.present ? data.categoryFk.value : this.categoryFk,
+      budgetFk: data.budgetFk.present ? data.budgetFk.value : this.budgetFk,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      walletFk: data.walletFk.present ? data.walletFk.value : this.walletFk,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('CategoryBudgetLimit(')
@@ -5327,6 +5530,26 @@ class TransactionAssociatedTitle extends DataClass
         order: order ?? this.order,
         isExactMatch: isExactMatch ?? this.isExactMatch,
       );
+  TransactionAssociatedTitle copyWithCompanion(AssociatedTitlesCompanion data) {
+    return TransactionAssociatedTitle(
+      associatedTitlePk: data.associatedTitlePk.present
+          ? data.associatedTitlePk.value
+          : this.associatedTitlePk,
+      categoryFk:
+          data.categoryFk.present ? data.categoryFk.value : this.categoryFk,
+      title: data.title.present ? data.title.value : this.title,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      order: data.order.present ? data.order.value : this.order,
+      isExactMatch: data.isExactMatch.present
+          ? data.isExactMatch.value
+          : this.isExactMatch,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TransactionAssociatedTitle(')
@@ -5615,6 +5838,18 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         settingsJSON: settingsJSON ?? this.settingsJSON,
         dateUpdated: dateUpdated ?? this.dateUpdated,
       );
+  AppSetting copyWithCompanion(AppSettingsCompanion data) {
+    return AppSetting(
+      settingsPk:
+          data.settingsPk.present ? data.settingsPk.value : this.settingsPk,
+      settingsJSON: data.settingsJSON.present
+          ? data.settingsJSON.value
+          : this.settingsJSON,
+      dateUpdated:
+          data.dateUpdated.present ? data.dateUpdated.value : this.dateUpdated,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('AppSetting(')
@@ -6101,6 +6336,40 @@ class ScannerTemplate extends DataClass implements Insertable<ScannerTemplate> {
         walletFk: walletFk ?? this.walletFk,
         ignore: ignore ?? this.ignore,
       );
+  ScannerTemplate copyWithCompanion(ScannerTemplatesCompanion data) {
+    return ScannerTemplate(
+      scannerTemplatePk: data.scannerTemplatePk.present
+          ? data.scannerTemplatePk.value
+          : this.scannerTemplatePk,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+      templateName: data.templateName.present
+          ? data.templateName.value
+          : this.templateName,
+      contains: data.contains.present ? data.contains.value : this.contains,
+      titleTransactionBefore: data.titleTransactionBefore.present
+          ? data.titleTransactionBefore.value
+          : this.titleTransactionBefore,
+      titleTransactionAfter: data.titleTransactionAfter.present
+          ? data.titleTransactionAfter.value
+          : this.titleTransactionAfter,
+      amountTransactionBefore: data.amountTransactionBefore.present
+          ? data.amountTransactionBefore.value
+          : this.amountTransactionBefore,
+      amountTransactionAfter: data.amountTransactionAfter.present
+          ? data.amountTransactionAfter.value
+          : this.amountTransactionAfter,
+      defaultCategoryFk: data.defaultCategoryFk.present
+          ? data.defaultCategoryFk.value
+          : this.defaultCategoryFk,
+      walletFk: data.walletFk.present ? data.walletFk.value : this.walletFk,
+      ignore: data.ignore.present ? data.ignore.value : this.ignore,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ScannerTemplate(')
@@ -6454,8 +6723,7 @@ class DeleteLog extends DataClass implements Insertable<DeleteLog> {
     map['delete_log_pk'] = Variable<String>(deleteLogPk);
     map['entry_pk'] = Variable<String>(entryPk);
     {
-      final converter = $DeleteLogsTable.$convertertype;
-      map['type'] = Variable<int>(converter.toSql(type));
+      map['type'] = Variable<int>($DeleteLogsTable.$convertertype.toSql(type));
     }
     map['date_time_modified'] = Variable<DateTime>(dateTimeModified);
     return map;
@@ -6504,6 +6772,18 @@ class DeleteLog extends DataClass implements Insertable<DeleteLog> {
         type: type ?? this.type,
         dateTimeModified: dateTimeModified ?? this.dateTimeModified,
       );
+  DeleteLog copyWithCompanion(DeleteLogsCompanion data) {
+    return DeleteLog(
+      deleteLogPk:
+          data.deleteLogPk.present ? data.deleteLogPk.value : this.deleteLogPk,
+      entryPk: data.entryPk.present ? data.entryPk.value : this.entryPk,
+      type: data.type.present ? data.type.value : this.type,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('DeleteLog(')
@@ -6589,9 +6869,8 @@ class DeleteLogsCompanion extends UpdateCompanion<DeleteLog> {
       map['entry_pk'] = Variable<String>(entryPk.value);
     }
     if (type.present) {
-      final converter = $DeleteLogsTable.$convertertype;
-
-      map['type'] = Variable<int>(converter.toSql(type.value));
+      map['type'] =
+          Variable<int>($DeleteLogsTable.$convertertype.toSql(type.value));
     }
     if (dateTimeModified.present) {
       map['date_time_modified'] = Variable<DateTime>(dateTimeModified.value);
@@ -6615,8 +6894,613 @@ class DeleteLogsCompanion extends UpdateCompanion<DeleteLog> {
   }
 }
 
+class $AttachmentsTable extends Attachments
+    with TableInfo<$AttachmentsTable, TransactionAttachment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AttachmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _attachmentPkMeta =
+      const VerificationMeta('attachmentPk');
+  @override
+  late final GeneratedColumn<String> attachmentPk = GeneratedColumn<String>(
+      'attachment_pk', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => uuid.v4());
+  static const VerificationMeta _transactionFkMeta =
+      const VerificationMeta('transactionFk');
+  @override
+  late final GeneratedColumn<String> transactionFk = GeneratedColumn<String>(
+      'transaction_fk', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _originalNameMeta =
+      const VerificationMeta('originalName');
+  @override
+  late final GeneratedColumn<String> originalName = GeneratedColumn<String>(
+      'original_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _mimeTypeMeta =
+      const VerificationMeta('mimeType');
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+      'mime_type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _fileSizeMeta =
+      const VerificationMeta('fileSize');
+  @override
+  late final GeneratedColumn<int> fileSize = GeneratedColumn<int>(
+      'file_size', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _localFileNameMeta =
+      const VerificationMeta('localFileName');
+  @override
+  late final GeneratedColumn<String> localFileName = GeneratedColumn<String>(
+      'local_file_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteRecordIdMeta =
+      const VerificationMeta('remoteRecordId');
+  @override
+  late final GeneratedColumn<String> remoteRecordId = GeneratedColumn<String>(
+      'remote_record_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteFileNameMeta =
+      const VerificationMeta('remoteFileName');
+  @override
+  late final GeneratedColumn<String> remoteFileName = GeneratedColumn<String>(
+      'remote_file_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isUploadedMeta =
+      const VerificationMeta('isUploaded');
+  @override
+  late final GeneratedColumn<bool> isUploaded = GeneratedColumn<bool>(
+      'is_uploaded', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_uploaded" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _dateCreatedMeta =
+      const VerificationMeta('dateCreated');
+  @override
+  late final GeneratedColumn<DateTime> dateCreated = GeneratedColumn<DateTime>(
+      'date_created', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      clientDefault: () => new DateTime.now());
+  static const VerificationMeta _dateTimeModifiedMeta =
+      const VerificationMeta('dateTimeModified');
+  @override
+  late final GeneratedColumn<DateTime> dateTimeModified =
+      GeneratedColumn<DateTime>('date_time_modified', aliasedName, true,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: Constant(DateTime.now()));
+  @override
+  List<GeneratedColumn> get $columns => [
+        attachmentPk,
+        transactionFk,
+        originalName,
+        mimeType,
+        fileSize,
+        localFileName,
+        remoteRecordId,
+        remoteFileName,
+        isUploaded,
+        dateCreated,
+        dateTimeModified
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'attachments';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TransactionAttachment> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('attachment_pk')) {
+      context.handle(
+          _attachmentPkMeta,
+          attachmentPk.isAcceptableOrUnknown(
+              data['attachment_pk']!, _attachmentPkMeta));
+    }
+    if (data.containsKey('transaction_fk')) {
+      context.handle(
+          _transactionFkMeta,
+          transactionFk.isAcceptableOrUnknown(
+              data['transaction_fk']!, _transactionFkMeta));
+    } else if (isInserting) {
+      context.missing(_transactionFkMeta);
+    }
+    if (data.containsKey('original_name')) {
+      context.handle(
+          _originalNameMeta,
+          originalName.isAcceptableOrUnknown(
+              data['original_name']!, _originalNameMeta));
+    } else if (isInserting) {
+      context.missing(_originalNameMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(_mimeTypeMeta,
+          mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta));
+    }
+    if (data.containsKey('file_size')) {
+      context.handle(_fileSizeMeta,
+          fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta));
+    }
+    if (data.containsKey('local_file_name')) {
+      context.handle(
+          _localFileNameMeta,
+          localFileName.isAcceptableOrUnknown(
+              data['local_file_name']!, _localFileNameMeta));
+    }
+    if (data.containsKey('remote_record_id')) {
+      context.handle(
+          _remoteRecordIdMeta,
+          remoteRecordId.isAcceptableOrUnknown(
+              data['remote_record_id']!, _remoteRecordIdMeta));
+    }
+    if (data.containsKey('remote_file_name')) {
+      context.handle(
+          _remoteFileNameMeta,
+          remoteFileName.isAcceptableOrUnknown(
+              data['remote_file_name']!, _remoteFileNameMeta));
+    }
+    if (data.containsKey('is_uploaded')) {
+      context.handle(
+          _isUploadedMeta,
+          isUploaded.isAcceptableOrUnknown(
+              data['is_uploaded']!, _isUploadedMeta));
+    }
+    if (data.containsKey('date_created')) {
+      context.handle(
+          _dateCreatedMeta,
+          dateCreated.isAcceptableOrUnknown(
+              data['date_created']!, _dateCreatedMeta));
+    }
+    if (data.containsKey('date_time_modified')) {
+      context.handle(
+          _dateTimeModifiedMeta,
+          dateTimeModified.isAcceptableOrUnknown(
+              data['date_time_modified']!, _dateTimeModifiedMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {attachmentPk};
+  @override
+  TransactionAttachment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionAttachment(
+      attachmentPk: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}attachment_pk'])!,
+      transactionFk: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}transaction_fk'])!,
+      originalName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}original_name'])!,
+      mimeType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mime_type']),
+      fileSize: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}file_size']),
+      localFileName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local_file_name']),
+      remoteRecordId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}remote_record_id']),
+      remoteFileName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}remote_file_name']),
+      isUploaded: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_uploaded'])!,
+      dateCreated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date_created'])!,
+      dateTimeModified: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}date_time_modified']),
+    );
+  }
+
+  @override
+  $AttachmentsTable createAlias(String alias) {
+    return $AttachmentsTable(attachedDatabase, alias);
+  }
+}
+
+class TransactionAttachment extends DataClass
+    implements Insertable<TransactionAttachment> {
+  final String attachmentPk;
+  final String transactionFk;
+  final String originalName;
+  final String? mimeType;
+  final int? fileSize;
+  final String? localFileName;
+  final String? remoteRecordId;
+  final String? remoteFileName;
+  final bool isUploaded;
+  final DateTime dateCreated;
+  final DateTime? dateTimeModified;
+  const TransactionAttachment(
+      {required this.attachmentPk,
+      required this.transactionFk,
+      required this.originalName,
+      this.mimeType,
+      this.fileSize,
+      this.localFileName,
+      this.remoteRecordId,
+      this.remoteFileName,
+      required this.isUploaded,
+      required this.dateCreated,
+      this.dateTimeModified});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['attachment_pk'] = Variable<String>(attachmentPk);
+    map['transaction_fk'] = Variable<String>(transactionFk);
+    map['original_name'] = Variable<String>(originalName);
+    if (!nullToAbsent || mimeType != null) {
+      map['mime_type'] = Variable<String>(mimeType);
+    }
+    if (!nullToAbsent || fileSize != null) {
+      map['file_size'] = Variable<int>(fileSize);
+    }
+    if (!nullToAbsent || localFileName != null) {
+      map['local_file_name'] = Variable<String>(localFileName);
+    }
+    if (!nullToAbsent || remoteRecordId != null) {
+      map['remote_record_id'] = Variable<String>(remoteRecordId);
+    }
+    if (!nullToAbsent || remoteFileName != null) {
+      map['remote_file_name'] = Variable<String>(remoteFileName);
+    }
+    map['is_uploaded'] = Variable<bool>(isUploaded);
+    map['date_created'] = Variable<DateTime>(dateCreated);
+    if (!nullToAbsent || dateTimeModified != null) {
+      map['date_time_modified'] = Variable<DateTime>(dateTimeModified);
+    }
+    return map;
+  }
+
+  AttachmentsCompanion toCompanion(bool nullToAbsent) {
+    return AttachmentsCompanion(
+      attachmentPk: Value(attachmentPk),
+      transactionFk: Value(transactionFk),
+      originalName: Value(originalName),
+      mimeType: mimeType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mimeType),
+      fileSize: fileSize == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fileSize),
+      localFileName: localFileName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localFileName),
+      remoteRecordId: remoteRecordId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteRecordId),
+      remoteFileName: remoteFileName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteFileName),
+      isUploaded: Value(isUploaded),
+      dateCreated: Value(dateCreated),
+      dateTimeModified: dateTimeModified == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateTimeModified),
+    );
+  }
+
+  factory TransactionAttachment.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionAttachment(
+      attachmentPk: serializer.fromJson<String>(json['attachmentPk']),
+      transactionFk: serializer.fromJson<String>(json['transactionFk']),
+      originalName: serializer.fromJson<String>(json['originalName']),
+      mimeType: serializer.fromJson<String?>(json['mimeType']),
+      fileSize: serializer.fromJson<int?>(json['fileSize']),
+      localFileName: serializer.fromJson<String?>(json['localFileName']),
+      remoteRecordId: serializer.fromJson<String?>(json['remoteRecordId']),
+      remoteFileName: serializer.fromJson<String?>(json['remoteFileName']),
+      isUploaded: serializer.fromJson<bool>(json['isUploaded']),
+      dateCreated: serializer.fromJson<DateTime>(json['dateCreated']),
+      dateTimeModified:
+          serializer.fromJson<DateTime?>(json['dateTimeModified']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'attachmentPk': serializer.toJson<String>(attachmentPk),
+      'transactionFk': serializer.toJson<String>(transactionFk),
+      'originalName': serializer.toJson<String>(originalName),
+      'mimeType': serializer.toJson<String?>(mimeType),
+      'fileSize': serializer.toJson<int?>(fileSize),
+      'localFileName': serializer.toJson<String?>(localFileName),
+      'remoteRecordId': serializer.toJson<String?>(remoteRecordId),
+      'remoteFileName': serializer.toJson<String?>(remoteFileName),
+      'isUploaded': serializer.toJson<bool>(isUploaded),
+      'dateCreated': serializer.toJson<DateTime>(dateCreated),
+      'dateTimeModified': serializer.toJson<DateTime?>(dateTimeModified),
+    };
+  }
+
+  TransactionAttachment copyWith(
+          {String? attachmentPk,
+          String? transactionFk,
+          String? originalName,
+          Value<String?> mimeType = const Value.absent(),
+          Value<int?> fileSize = const Value.absent(),
+          Value<String?> localFileName = const Value.absent(),
+          Value<String?> remoteRecordId = const Value.absent(),
+          Value<String?> remoteFileName = const Value.absent(),
+          bool? isUploaded,
+          DateTime? dateCreated,
+          Value<DateTime?> dateTimeModified = const Value.absent()}) =>
+      TransactionAttachment(
+        attachmentPk: attachmentPk ?? this.attachmentPk,
+        transactionFk: transactionFk ?? this.transactionFk,
+        originalName: originalName ?? this.originalName,
+        mimeType: mimeType.present ? mimeType.value : this.mimeType,
+        fileSize: fileSize.present ? fileSize.value : this.fileSize,
+        localFileName:
+            localFileName.present ? localFileName.value : this.localFileName,
+        remoteRecordId:
+            remoteRecordId.present ? remoteRecordId.value : this.remoteRecordId,
+        remoteFileName:
+            remoteFileName.present ? remoteFileName.value : this.remoteFileName,
+        isUploaded: isUploaded ?? this.isUploaded,
+        dateCreated: dateCreated ?? this.dateCreated,
+        dateTimeModified: dateTimeModified.present
+            ? dateTimeModified.value
+            : this.dateTimeModified,
+      );
+  TransactionAttachment copyWithCompanion(AttachmentsCompanion data) {
+    return TransactionAttachment(
+      attachmentPk: data.attachmentPk.present
+          ? data.attachmentPk.value
+          : this.attachmentPk,
+      transactionFk: data.transactionFk.present
+          ? data.transactionFk.value
+          : this.transactionFk,
+      originalName: data.originalName.present
+          ? data.originalName.value
+          : this.originalName,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
+      localFileName: data.localFileName.present
+          ? data.localFileName.value
+          : this.localFileName,
+      remoteRecordId: data.remoteRecordId.present
+          ? data.remoteRecordId.value
+          : this.remoteRecordId,
+      remoteFileName: data.remoteFileName.present
+          ? data.remoteFileName.value
+          : this.remoteFileName,
+      isUploaded:
+          data.isUploaded.present ? data.isUploaded.value : this.isUploaded,
+      dateCreated:
+          data.dateCreated.present ? data.dateCreated.value : this.dateCreated,
+      dateTimeModified: data.dateTimeModified.present
+          ? data.dateTimeModified.value
+          : this.dateTimeModified,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionAttachment(')
+          ..write('attachmentPk: $attachmentPk, ')
+          ..write('transactionFk: $transactionFk, ')
+          ..write('originalName: $originalName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('localFileName: $localFileName, ')
+          ..write('remoteRecordId: $remoteRecordId, ')
+          ..write('remoteFileName: $remoteFileName, ')
+          ..write('isUploaded: $isUploaded, ')
+          ..write('dateCreated: $dateCreated, ')
+          ..write('dateTimeModified: $dateTimeModified')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      attachmentPk,
+      transactionFk,
+      originalName,
+      mimeType,
+      fileSize,
+      localFileName,
+      remoteRecordId,
+      remoteFileName,
+      isUploaded,
+      dateCreated,
+      dateTimeModified);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionAttachment &&
+          other.attachmentPk == this.attachmentPk &&
+          other.transactionFk == this.transactionFk &&
+          other.originalName == this.originalName &&
+          other.mimeType == this.mimeType &&
+          other.fileSize == this.fileSize &&
+          other.localFileName == this.localFileName &&
+          other.remoteRecordId == this.remoteRecordId &&
+          other.remoteFileName == this.remoteFileName &&
+          other.isUploaded == this.isUploaded &&
+          other.dateCreated == this.dateCreated &&
+          other.dateTimeModified == this.dateTimeModified);
+}
+
+class AttachmentsCompanion extends UpdateCompanion<TransactionAttachment> {
+  final Value<String> attachmentPk;
+  final Value<String> transactionFk;
+  final Value<String> originalName;
+  final Value<String?> mimeType;
+  final Value<int?> fileSize;
+  final Value<String?> localFileName;
+  final Value<String?> remoteRecordId;
+  final Value<String?> remoteFileName;
+  final Value<bool> isUploaded;
+  final Value<DateTime> dateCreated;
+  final Value<DateTime?> dateTimeModified;
+  final Value<int> rowid;
+  const AttachmentsCompanion({
+    this.attachmentPk = const Value.absent(),
+    this.transactionFk = const Value.absent(),
+    this.originalName = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.localFileName = const Value.absent(),
+    this.remoteRecordId = const Value.absent(),
+    this.remoteFileName = const Value.absent(),
+    this.isUploaded = const Value.absent(),
+    this.dateCreated = const Value.absent(),
+    this.dateTimeModified = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AttachmentsCompanion.insert({
+    this.attachmentPk = const Value.absent(),
+    required String transactionFk,
+    required String originalName,
+    this.mimeType = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.localFileName = const Value.absent(),
+    this.remoteRecordId = const Value.absent(),
+    this.remoteFileName = const Value.absent(),
+    this.isUploaded = const Value.absent(),
+    this.dateCreated = const Value.absent(),
+    this.dateTimeModified = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : transactionFk = Value(transactionFk),
+        originalName = Value(originalName);
+  static Insertable<TransactionAttachment> custom({
+    Expression<String>? attachmentPk,
+    Expression<String>? transactionFk,
+    Expression<String>? originalName,
+    Expression<String>? mimeType,
+    Expression<int>? fileSize,
+    Expression<String>? localFileName,
+    Expression<String>? remoteRecordId,
+    Expression<String>? remoteFileName,
+    Expression<bool>? isUploaded,
+    Expression<DateTime>? dateCreated,
+    Expression<DateTime>? dateTimeModified,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (attachmentPk != null) 'attachment_pk': attachmentPk,
+      if (transactionFk != null) 'transaction_fk': transactionFk,
+      if (originalName != null) 'original_name': originalName,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (fileSize != null) 'file_size': fileSize,
+      if (localFileName != null) 'local_file_name': localFileName,
+      if (remoteRecordId != null) 'remote_record_id': remoteRecordId,
+      if (remoteFileName != null) 'remote_file_name': remoteFileName,
+      if (isUploaded != null) 'is_uploaded': isUploaded,
+      if (dateCreated != null) 'date_created': dateCreated,
+      if (dateTimeModified != null) 'date_time_modified': dateTimeModified,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AttachmentsCompanion copyWith(
+      {Value<String>? attachmentPk,
+      Value<String>? transactionFk,
+      Value<String>? originalName,
+      Value<String?>? mimeType,
+      Value<int?>? fileSize,
+      Value<String?>? localFileName,
+      Value<String?>? remoteRecordId,
+      Value<String?>? remoteFileName,
+      Value<bool>? isUploaded,
+      Value<DateTime>? dateCreated,
+      Value<DateTime?>? dateTimeModified,
+      Value<int>? rowid}) {
+    return AttachmentsCompanion(
+      attachmentPk: attachmentPk ?? this.attachmentPk,
+      transactionFk: transactionFk ?? this.transactionFk,
+      originalName: originalName ?? this.originalName,
+      mimeType: mimeType ?? this.mimeType,
+      fileSize: fileSize ?? this.fileSize,
+      localFileName: localFileName ?? this.localFileName,
+      remoteRecordId: remoteRecordId ?? this.remoteRecordId,
+      remoteFileName: remoteFileName ?? this.remoteFileName,
+      isUploaded: isUploaded ?? this.isUploaded,
+      dateCreated: dateCreated ?? this.dateCreated,
+      dateTimeModified: dateTimeModified ?? this.dateTimeModified,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (attachmentPk.present) {
+      map['attachment_pk'] = Variable<String>(attachmentPk.value);
+    }
+    if (transactionFk.present) {
+      map['transaction_fk'] = Variable<String>(transactionFk.value);
+    }
+    if (originalName.present) {
+      map['original_name'] = Variable<String>(originalName.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (fileSize.present) {
+      map['file_size'] = Variable<int>(fileSize.value);
+    }
+    if (localFileName.present) {
+      map['local_file_name'] = Variable<String>(localFileName.value);
+    }
+    if (remoteRecordId.present) {
+      map['remote_record_id'] = Variable<String>(remoteRecordId.value);
+    }
+    if (remoteFileName.present) {
+      map['remote_file_name'] = Variable<String>(remoteFileName.value);
+    }
+    if (isUploaded.present) {
+      map['is_uploaded'] = Variable<bool>(isUploaded.value);
+    }
+    if (dateCreated.present) {
+      map['date_created'] = Variable<DateTime>(dateCreated.value);
+    }
+    if (dateTimeModified.present) {
+      map['date_time_modified'] = Variable<DateTime>(dateTimeModified.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AttachmentsCompanion(')
+          ..write('attachmentPk: $attachmentPk, ')
+          ..write('transactionFk: $transactionFk, ')
+          ..write('originalName: $originalName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('localFileName: $localFileName, ')
+          ..write('remoteRecordId: $remoteRecordId, ')
+          ..write('remoteFileName: $remoteFileName, ')
+          ..write('isUploaded: $isUploaded, ')
+          ..write('dateCreated: $dateCreated, ')
+          ..write('dateTimeModified: $dateTimeModified, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FinanceDatabase extends GeneratedDatabase {
   _$FinanceDatabase(QueryExecutor e) : super(e);
+  $FinanceDatabaseManager get managers => $FinanceDatabaseManager(this);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $ObjectivesTable objectives = $ObjectivesTable(this);
@@ -6630,6 +7514,7 @@ abstract class _$FinanceDatabase extends GeneratedDatabase {
   late final $ScannerTemplatesTable scannerTemplates =
       $ScannerTemplatesTable(this);
   late final $DeleteLogsTable deleteLogs = $DeleteLogsTable(this);
+  late final $AttachmentsTable attachments = $AttachmentsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6644,6 +7529,5364 @@ abstract class _$FinanceDatabase extends GeneratedDatabase {
         associatedTitles,
         appSettings,
         scannerTemplates,
-        deleteLogs
+        deleteLogs,
+        attachments
       ];
+}
+
+typedef $$WalletsTableCreateCompanionBuilder = WalletsCompanion Function({
+  Value<String> walletPk,
+  required String name,
+  Value<String?> colour,
+  Value<String?> iconName,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  required int order,
+  Value<String?> currency,
+  Value<String?> currencyFormat,
+  Value<int> decimals,
+  Value<List<HomePageWidgetDisplay>?> homePageWidgetDisplay,
+  Value<int> rowid,
+});
+typedef $$WalletsTableUpdateCompanionBuilder = WalletsCompanion Function({
+  Value<String> walletPk,
+  Value<String> name,
+  Value<String?> colour,
+  Value<String?> iconName,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<int> order,
+  Value<String?> currency,
+  Value<String?> currencyFormat,
+  Value<int> decimals,
+  Value<List<HomePageWidgetDisplay>?> homePageWidgetDisplay,
+  Value<int> rowid,
+});
+
+final class $$WalletsTableReferences extends BaseReferences<_$FinanceDatabase,
+    $WalletsTable, TransactionWallet> {
+  $$WalletsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ObjectivesTable, List<Objective>>
+      _objectivesRefsTable(_$FinanceDatabase db) =>
+          MultiTypedResultKey.fromTable(db.objectives,
+              aliasName: $_aliasNameGenerator(
+                  db.wallets.walletPk, db.objectives.walletFk));
+
+  $$ObjectivesTableProcessedTableManager get objectivesRefs {
+    final manager = $$ObjectivesTableTableManager($_db, $_db.objectives)
+        .filter((f) => f.walletFk.walletPk($_item.walletPk));
+
+    final cache = $_typedResult.readTableOrNull(_objectivesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
+      _transactionsRefsTable(_$FinanceDatabase db) =>
+          MultiTypedResultKey.fromTable(db.transactions,
+              aliasName: $_aliasNameGenerator(
+                  db.wallets.walletPk, db.transactions.walletFk));
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter((f) => f.walletFk.walletPk($_item.walletPk));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$BudgetsTable, List<Budget>> _budgetsRefsTable(
+          _$FinanceDatabase db) =>
+      MultiTypedResultKey.fromTable(db.budgets,
+          aliasName:
+              $_aliasNameGenerator(db.wallets.walletPk, db.budgets.walletFk));
+
+  $$BudgetsTableProcessedTableManager get budgetsRefs {
+    final manager = $$BudgetsTableTableManager($_db, $_db.budgets)
+        .filter((f) => f.walletFk.walletPk($_item.walletPk));
+
+    final cache = $_typedResult.readTableOrNull(_budgetsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$CategoryBudgetLimitsTable,
+      List<CategoryBudgetLimit>> _categoryBudgetLimitsRefsTable(
+          _$FinanceDatabase db) =>
+      MultiTypedResultKey.fromTable(db.categoryBudgetLimits,
+          aliasName: $_aliasNameGenerator(
+              db.wallets.walletPk, db.categoryBudgetLimits.walletFk));
+
+  $$CategoryBudgetLimitsTableProcessedTableManager
+      get categoryBudgetLimitsRefs {
+    final manager =
+        $$CategoryBudgetLimitsTableTableManager($_db, $_db.categoryBudgetLimits)
+            .filter((f) => f.walletFk.walletPk($_item.walletPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_categoryBudgetLimitsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ScannerTemplatesTable, List<ScannerTemplate>>
+      _scannerTemplatesRefsTable(_$FinanceDatabase db) =>
+          MultiTypedResultKey.fromTable(db.scannerTemplates,
+              aliasName: $_aliasNameGenerator(
+                  db.wallets.walletPk, db.scannerTemplates.walletFk));
+
+  $$ScannerTemplatesTableProcessedTableManager get scannerTemplatesRefs {
+    final manager =
+        $$ScannerTemplatesTableTableManager($_db, $_db.scannerTemplates)
+            .filter((f) => f.walletFk.walletPk($_item.walletPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_scannerTemplatesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$WalletsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $WalletsTable> {
+  $$WalletsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get walletPk => $composableBuilder(
+      column: $table.walletPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currencyFormat => $composableBuilder(
+      column: $table.currencyFormat,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get decimals => $composableBuilder(
+      column: $table.decimals, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<List<HomePageWidgetDisplay>?,
+          List<HomePageWidgetDisplay>, String>
+      get homePageWidgetDisplay => $composableBuilder(
+          column: $table.homePageWidgetDisplay,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  Expression<bool> objectivesRefs(
+      Expression<bool> Function($$ObjectivesTableFilterComposer f) f) {
+    final $$ObjectivesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableFilterComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> transactionsRefs(
+      Expression<bool> Function($$TransactionsTableFilterComposer f) f) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> budgetsRefs(
+      Expression<bool> Function($$BudgetsTableFilterComposer f) f) {
+    final $$BudgetsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.budgets,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BudgetsTableFilterComposer(
+              $db: $db,
+              $table: $db.budgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> categoryBudgetLimitsRefs(
+      Expression<bool> Function($$CategoryBudgetLimitsTableFilterComposer f)
+          f) {
+    final $$CategoryBudgetLimitsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.categoryBudgetLimits,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoryBudgetLimitsTableFilterComposer(
+              $db: $db,
+              $table: $db.categoryBudgetLimits,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> scannerTemplatesRefs(
+      Expression<bool> Function($$ScannerTemplatesTableFilterComposer f) f) {
+    final $$ScannerTemplatesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.scannerTemplates,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ScannerTemplatesTableFilterComposer(
+              $db: $db,
+              $table: $db.scannerTemplates,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$WalletsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $WalletsTable> {
+  $$WalletsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get walletPk => $composableBuilder(
+      column: $table.walletPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get currencyFormat => $composableBuilder(
+      column: $table.currencyFormat,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get decimals => $composableBuilder(
+      column: $table.decimals, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get homePageWidgetDisplay => $composableBuilder(
+      column: $table.homePageWidgetDisplay,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$WalletsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $WalletsTable> {
+  $$WalletsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get walletPk =>
+      $composableBuilder(column: $table.walletPk, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get colour =>
+      $composableBuilder(column: $table.colour, builder: (column) => column);
+
+  GeneratedColumn<String> get iconName =>
+      $composableBuilder(column: $table.iconName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyFormat => $composableBuilder(
+      column: $table.currencyFormat, builder: (column) => column);
+
+  GeneratedColumn<int> get decimals =>
+      $composableBuilder(column: $table.decimals, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<HomePageWidgetDisplay>?, String>
+      get homePageWidgetDisplay => $composableBuilder(
+          column: $table.homePageWidgetDisplay, builder: (column) => column);
+
+  Expression<T> objectivesRefs<T extends Object>(
+      Expression<T> Function($$ObjectivesTableAnnotationComposer a) f) {
+    final $$ObjectivesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> transactionsRefs<T extends Object>(
+      Expression<T> Function($$TransactionsTableAnnotationComposer a) f) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> budgetsRefs<T extends Object>(
+      Expression<T> Function($$BudgetsTableAnnotationComposer a) f) {
+    final $$BudgetsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.budgets,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BudgetsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.budgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> categoryBudgetLimitsRefs<T extends Object>(
+      Expression<T> Function($$CategoryBudgetLimitsTableAnnotationComposer a)
+          f) {
+    final $$CategoryBudgetLimitsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.walletPk,
+            referencedTable: $db.categoryBudgetLimits,
+            getReferencedColumn: (t) => t.walletFk,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CategoryBudgetLimitsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.categoryBudgetLimits,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> scannerTemplatesRefs<T extends Object>(
+      Expression<T> Function($$ScannerTemplatesTableAnnotationComposer a) f) {
+    final $$ScannerTemplatesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletPk,
+        referencedTable: $db.scannerTemplates,
+        getReferencedColumn: (t) => t.walletFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ScannerTemplatesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.scannerTemplates,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$WalletsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $WalletsTable,
+    TransactionWallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (TransactionWallet, $$WalletsTableReferences),
+    TransactionWallet,
+    PrefetchHooks Function(
+        {bool objectivesRefs,
+        bool transactionsRefs,
+        bool budgetsRefs,
+        bool categoryBudgetLimitsRefs,
+        bool scannerTemplatesRefs})> {
+  $$WalletsTableTableManager(_$FinanceDatabase db, $WalletsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WalletsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WalletsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> walletPk = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> colour = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<int> order = const Value.absent(),
+            Value<String?> currency = const Value.absent(),
+            Value<String?> currencyFormat = const Value.absent(),
+            Value<int> decimals = const Value.absent(),
+            Value<List<HomePageWidgetDisplay>?> homePageWidgetDisplay =
+                const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletsCompanion(
+            walletPk: walletPk,
+            name: name,
+            colour: colour,
+            iconName: iconName,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            currency: currency,
+            currencyFormat: currencyFormat,
+            decimals: decimals,
+            homePageWidgetDisplay: homePageWidgetDisplay,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> walletPk = const Value.absent(),
+            required String name,
+            Value<String?> colour = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            required int order,
+            Value<String?> currency = const Value.absent(),
+            Value<String?> currencyFormat = const Value.absent(),
+            Value<int> decimals = const Value.absent(),
+            Value<List<HomePageWidgetDisplay>?> homePageWidgetDisplay =
+                const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WalletsCompanion.insert(
+            walletPk: walletPk,
+            name: name,
+            colour: colour,
+            iconName: iconName,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            currency: currency,
+            currencyFormat: currencyFormat,
+            decimals: decimals,
+            homePageWidgetDisplay: homePageWidgetDisplay,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$WalletsTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {objectivesRefs = false,
+              transactionsRefs = false,
+              budgetsRefs = false,
+              categoryBudgetLimitsRefs = false,
+              scannerTemplatesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (objectivesRefs) db.objectives,
+                if (transactionsRefs) db.transactions,
+                if (budgetsRefs) db.budgets,
+                if (categoryBudgetLimitsRefs) db.categoryBudgetLimits,
+                if (scannerTemplatesRefs) db.scannerTemplates
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (objectivesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$WalletsTableReferences._objectivesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WalletsTableReferences(db, table, p0)
+                                .objectivesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.walletFk == item.walletPk),
+                        typedResults: items),
+                  if (transactionsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$WalletsTableReferences._transactionsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WalletsTableReferences(db, table, p0)
+                                .transactionsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.walletFk == item.walletPk),
+                        typedResults: items),
+                  if (budgetsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$WalletsTableReferences._budgetsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WalletsTableReferences(db, table, p0).budgetsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.walletFk == item.walletPk),
+                        typedResults: items),
+                  if (categoryBudgetLimitsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$WalletsTableReferences
+                            ._categoryBudgetLimitsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WalletsTableReferences(db, table, p0)
+                                .categoryBudgetLimitsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.walletFk == item.walletPk),
+                        typedResults: items),
+                  if (scannerTemplatesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$WalletsTableReferences
+                            ._scannerTemplatesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WalletsTableReferences(db, table, p0)
+                                .scannerTemplatesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.walletFk == item.walletPk),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WalletsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $WalletsTable,
+    TransactionWallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (TransactionWallet, $$WalletsTableReferences),
+    TransactionWallet,
+    PrefetchHooks Function(
+        {bool objectivesRefs,
+        bool transactionsRefs,
+        bool budgetsRefs,
+        bool categoryBudgetLimitsRefs,
+        bool scannerTemplatesRefs})>;
+typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
+  Value<String> categoryPk,
+  required String name,
+  Value<String?> colour,
+  Value<String?> iconName,
+  Value<String?> emojiIconName,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  required int order,
+  Value<bool> income,
+  Value<MethodAdded?> methodAdded,
+  Value<String?> mainCategoryPk,
+  Value<int> rowid,
+});
+typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
+  Value<String> categoryPk,
+  Value<String> name,
+  Value<String?> colour,
+  Value<String?> iconName,
+  Value<String?> emojiIconName,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<int> order,
+  Value<bool> income,
+  Value<MethodAdded?> methodAdded,
+  Value<String?> mainCategoryPk,
+  Value<int> rowid,
+});
+
+final class $$CategoriesTableReferences extends BaseReferences<
+    _$FinanceDatabase, $CategoriesTable, TransactionCategory> {
+  $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CategoriesTable _mainCategoryPkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.categories.mainCategoryPk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get mainCategoryPk {
+    if ($_item.mainCategoryPk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.mainCategoryPk!));
+    final item = $_typedResult.readTableOrNull(_mainCategoryPkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$CategoryBudgetLimitsTable,
+      List<CategoryBudgetLimit>> _categoryBudgetLimitsRefsTable(
+          _$FinanceDatabase db) =>
+      MultiTypedResultKey.fromTable(db.categoryBudgetLimits,
+          aliasName: $_aliasNameGenerator(
+              db.categories.categoryPk, db.categoryBudgetLimits.categoryFk));
+
+  $$CategoryBudgetLimitsTableProcessedTableManager
+      get categoryBudgetLimitsRefs {
+    final manager =
+        $$CategoryBudgetLimitsTableTableManager($_db, $_db.categoryBudgetLimits)
+            .filter((f) => f.categoryFk.categoryPk($_item.categoryPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_categoryBudgetLimitsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$AssociatedTitlesTable,
+      List<TransactionAssociatedTitle>> _associatedTitlesRefsTable(
+          _$FinanceDatabase db) =>
+      MultiTypedResultKey.fromTable(db.associatedTitles,
+          aliasName: $_aliasNameGenerator(
+              db.categories.categoryPk, db.associatedTitles.categoryFk));
+
+  $$AssociatedTitlesTableProcessedTableManager get associatedTitlesRefs {
+    final manager =
+        $$AssociatedTitlesTableTableManager($_db, $_db.associatedTitles)
+            .filter((f) => f.categoryFk.categoryPk($_item.categoryPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_associatedTitlesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ScannerTemplatesTable, List<ScannerTemplate>>
+      _scannerTemplatesRefsTable(_$FinanceDatabase db) =>
+          MultiTypedResultKey.fromTable(db.scannerTemplates,
+              aliasName: $_aliasNameGenerator(db.categories.categoryPk,
+                  db.scannerTemplates.defaultCategoryFk));
+
+  $$ScannerTemplatesTableProcessedTableManager get scannerTemplatesRefs {
+    final manager =
+        $$ScannerTemplatesTableTableManager($_db, $_db.scannerTemplates)
+            .filter((f) => f.defaultCategoryFk.categoryPk($_item.categoryPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_scannerTemplatesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$CategoriesTableFilterComposer
+    extends Composer<_$FinanceDatabase, $CategoriesTable> {
+  $$CategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get categoryPk => $composableBuilder(
+      column: $table.categoryPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<MethodAdded?, MethodAdded, int>
+      get methodAdded => $composableBuilder(
+          column: $table.methodAdded,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  $$CategoriesTableFilterComposer get mainCategoryPk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.mainCategoryPk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<bool> categoryBudgetLimitsRefs(
+      Expression<bool> Function($$CategoryBudgetLimitsTableFilterComposer f)
+          f) {
+    final $$CategoryBudgetLimitsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryPk,
+        referencedTable: $db.categoryBudgetLimits,
+        getReferencedColumn: (t) => t.categoryFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoryBudgetLimitsTableFilterComposer(
+              $db: $db,
+              $table: $db.categoryBudgetLimits,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> associatedTitlesRefs(
+      Expression<bool> Function($$AssociatedTitlesTableFilterComposer f) f) {
+    final $$AssociatedTitlesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryPk,
+        referencedTable: $db.associatedTitles,
+        getReferencedColumn: (t) => t.categoryFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AssociatedTitlesTableFilterComposer(
+              $db: $db,
+              $table: $db.associatedTitles,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> scannerTemplatesRefs(
+      Expression<bool> Function($$ScannerTemplatesTableFilterComposer f) f) {
+    final $$ScannerTemplatesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryPk,
+        referencedTable: $db.scannerTemplates,
+        getReferencedColumn: (t) => t.defaultCategoryFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ScannerTemplatesTableFilterComposer(
+              $db: $db,
+              $table: $db.scannerTemplates,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CategoriesTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $CategoriesTable> {
+  $$CategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get categoryPk => $composableBuilder(
+      column: $table.categoryPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get methodAdded => $composableBuilder(
+      column: $table.methodAdded, builder: (column) => ColumnOrderings(column));
+
+  $$CategoriesTableOrderingComposer get mainCategoryPk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.mainCategoryPk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CategoriesTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $CategoriesTable> {
+  $$CategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get categoryPk => $composableBuilder(
+      column: $table.categoryPk, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get colour =>
+      $composableBuilder(column: $table.colour, builder: (column) => column);
+
+  GeneratedColumn<String> get iconName =>
+      $composableBuilder(column: $table.iconName, builder: (column) => column);
+
+  GeneratedColumn<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<bool> get income =>
+      $composableBuilder(column: $table.income, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<MethodAdded?, int> get methodAdded =>
+      $composableBuilder(
+          column: $table.methodAdded, builder: (column) => column);
+
+  $$CategoriesTableAnnotationComposer get mainCategoryPk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.mainCategoryPk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<T> categoryBudgetLimitsRefs<T extends Object>(
+      Expression<T> Function($$CategoryBudgetLimitsTableAnnotationComposer a)
+          f) {
+    final $$CategoryBudgetLimitsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.categoryPk,
+            referencedTable: $db.categoryBudgetLimits,
+            getReferencedColumn: (t) => t.categoryFk,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CategoryBudgetLimitsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.categoryBudgetLimits,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> associatedTitlesRefs<T extends Object>(
+      Expression<T> Function($$AssociatedTitlesTableAnnotationComposer a) f) {
+    final $$AssociatedTitlesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryPk,
+        referencedTable: $db.associatedTitles,
+        getReferencedColumn: (t) => t.categoryFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AssociatedTitlesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.associatedTitles,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> scannerTemplatesRefs<T extends Object>(
+      Expression<T> Function($$ScannerTemplatesTableAnnotationComposer a) f) {
+    final $$ScannerTemplatesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryPk,
+        referencedTable: $db.scannerTemplates,
+        getReferencedColumn: (t) => t.defaultCategoryFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ScannerTemplatesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.scannerTemplates,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CategoriesTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $CategoriesTable,
+    TransactionCategory,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableAnnotationComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (TransactionCategory, $$CategoriesTableReferences),
+    TransactionCategory,
+    PrefetchHooks Function(
+        {bool mainCategoryPk,
+        bool categoryBudgetLimitsRefs,
+        bool associatedTitlesRefs,
+        bool scannerTemplatesRefs})> {
+  $$CategoriesTableTableManager(_$FinanceDatabase db, $CategoriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> categoryPk = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> colour = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<String?> emojiIconName = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<int> order = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<MethodAdded?> methodAdded = const Value.absent(),
+            Value<String?> mainCategoryPk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoriesCompanion(
+            categoryPk: categoryPk,
+            name: name,
+            colour: colour,
+            iconName: iconName,
+            emojiIconName: emojiIconName,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            income: income,
+            methodAdded: methodAdded,
+            mainCategoryPk: mainCategoryPk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> categoryPk = const Value.absent(),
+            required String name,
+            Value<String?> colour = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<String?> emojiIconName = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            required int order,
+            Value<bool> income = const Value.absent(),
+            Value<MethodAdded?> methodAdded = const Value.absent(),
+            Value<String?> mainCategoryPk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoriesCompanion.insert(
+            categoryPk: categoryPk,
+            name: name,
+            colour: colour,
+            iconName: iconName,
+            emojiIconName: emojiIconName,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            income: income,
+            methodAdded: methodAdded,
+            mainCategoryPk: mainCategoryPk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CategoriesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {mainCategoryPk = false,
+              categoryBudgetLimitsRefs = false,
+              associatedTitlesRefs = false,
+              scannerTemplatesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (categoryBudgetLimitsRefs) db.categoryBudgetLimits,
+                if (associatedTitlesRefs) db.associatedTitles,
+                if (scannerTemplatesRefs) db.scannerTemplates
+              ],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (mainCategoryPk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.mainCategoryPk,
+                    referencedTable:
+                        $$CategoriesTableReferences._mainCategoryPkTable(db),
+                    referencedColumn: $$CategoriesTableReferences
+                        ._mainCategoryPkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (categoryBudgetLimitsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$CategoriesTableReferences
+                            ._categoryBudgetLimitsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CategoriesTableReferences(db, table, p0)
+                                .categoryBudgetLimitsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.categoryFk == item.categoryPk),
+                        typedResults: items),
+                  if (associatedTitlesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$CategoriesTableReferences
+                            ._associatedTitlesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CategoriesTableReferences(db, table, p0)
+                                .associatedTitlesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.categoryFk == item.categoryPk),
+                        typedResults: items),
+                  if (scannerTemplatesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$CategoriesTableReferences
+                            ._scannerTemplatesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CategoriesTableReferences(db, table, p0)
+                                .scannerTemplatesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems.where(
+                                (e) => e.defaultCategoryFk == item.categoryPk),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $CategoriesTable,
+    TransactionCategory,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableAnnotationComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (TransactionCategory, $$CategoriesTableReferences),
+    TransactionCategory,
+    PrefetchHooks Function(
+        {bool mainCategoryPk,
+        bool categoryBudgetLimitsRefs,
+        bool associatedTitlesRefs,
+        bool scannerTemplatesRefs})>;
+typedef $$ObjectivesTableCreateCompanionBuilder = ObjectivesCompanion Function({
+  Value<String> objectivePk,
+  Value<ObjectiveType> type,
+  required String name,
+  required double amount,
+  required int order,
+  Value<String?> colour,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> endDate,
+  Value<DateTime?> dateTimeModified,
+  Value<String?> iconName,
+  Value<String?> emojiIconName,
+  Value<bool> income,
+  Value<bool> pinned,
+  Value<bool> archived,
+  Value<String> walletFk,
+  Value<int> rowid,
+});
+typedef $$ObjectivesTableUpdateCompanionBuilder = ObjectivesCompanion Function({
+  Value<String> objectivePk,
+  Value<ObjectiveType> type,
+  Value<String> name,
+  Value<double> amount,
+  Value<int> order,
+  Value<String?> colour,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> endDate,
+  Value<DateTime?> dateTimeModified,
+  Value<String?> iconName,
+  Value<String?> emojiIconName,
+  Value<bool> income,
+  Value<bool> pinned,
+  Value<bool> archived,
+  Value<String> walletFk,
+  Value<int> rowid,
+});
+
+final class $$ObjectivesTableReferences
+    extends BaseReferences<_$FinanceDatabase, $ObjectivesTable, Objective> {
+  $$ObjectivesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletFkTable(_$FinanceDatabase db) =>
+      db.wallets.createAlias(
+          $_aliasNameGenerator(db.objectives.walletFk, db.wallets.walletPk));
+
+  $$WalletsTableProcessedTableManager? get walletFk {
+    if ($_item.walletFk == null) return null;
+    final manager = $$WalletsTableTableManager($_db, $_db.wallets)
+        .filter((f) => f.walletPk($_item.walletFk!));
+    final item = $_typedResult.readTableOrNull(_walletFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ObjectivesTableFilterComposer
+    extends Composer<_$FinanceDatabase, $ObjectivesTable> {
+  $$ObjectivesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get objectivePk => $composableBuilder(
+      column: $table.objectivePk, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<ObjectiveType, ObjectiveType, int> get type =>
+      $composableBuilder(
+          column: $table.type,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get pinned => $composableBuilder(
+      column: $table.pinned, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get archived => $composableBuilder(
+      column: $table.archived, builder: (column) => ColumnFilters(column));
+
+  $$WalletsTableFilterComposer get walletFk {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ObjectivesTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $ObjectivesTable> {
+  $$ObjectivesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get objectivePk => $composableBuilder(
+      column: $table.objectivePk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get iconName => $composableBuilder(
+      column: $table.iconName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get pinned => $composableBuilder(
+      column: $table.pinned, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get archived => $composableBuilder(
+      column: $table.archived, builder: (column) => ColumnOrderings(column));
+
+  $$WalletsTableOrderingComposer get walletFk {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ObjectivesTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $ObjectivesTable> {
+  $$ObjectivesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get objectivePk => $composableBuilder(
+      column: $table.objectivePk, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ObjectiveType, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get colour =>
+      $composableBuilder(column: $table.colour, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<String> get iconName =>
+      $composableBuilder(column: $table.iconName, builder: (column) => column);
+
+  GeneratedColumn<String> get emojiIconName => $composableBuilder(
+      column: $table.emojiIconName, builder: (column) => column);
+
+  GeneratedColumn<bool> get income =>
+      $composableBuilder(column: $table.income, builder: (column) => column);
+
+  GeneratedColumn<bool> get pinned =>
+      $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<bool> get archived =>
+      $composableBuilder(column: $table.archived, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletFk {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ObjectivesTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $ObjectivesTable,
+    Objective,
+    $$ObjectivesTableFilterComposer,
+    $$ObjectivesTableOrderingComposer,
+    $$ObjectivesTableAnnotationComposer,
+    $$ObjectivesTableCreateCompanionBuilder,
+    $$ObjectivesTableUpdateCompanionBuilder,
+    (Objective, $$ObjectivesTableReferences),
+    Objective,
+    PrefetchHooks Function({bool walletFk})> {
+  $$ObjectivesTableTableManager(_$FinanceDatabase db, $ObjectivesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ObjectivesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ObjectivesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ObjectivesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> objectivePk = const Value.absent(),
+            Value<ObjectiveType> type = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<int> order = const Value.absent(),
+            Value<String?> colour = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<String?> emojiIconName = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<bool> pinned = const Value.absent(),
+            Value<bool> archived = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ObjectivesCompanion(
+            objectivePk: objectivePk,
+            type: type,
+            name: name,
+            amount: amount,
+            order: order,
+            colour: colour,
+            dateCreated: dateCreated,
+            endDate: endDate,
+            dateTimeModified: dateTimeModified,
+            iconName: iconName,
+            emojiIconName: emojiIconName,
+            income: income,
+            pinned: pinned,
+            archived: archived,
+            walletFk: walletFk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> objectivePk = const Value.absent(),
+            Value<ObjectiveType> type = const Value.absent(),
+            required String name,
+            required double amount,
+            required int order,
+            Value<String?> colour = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<String?> iconName = const Value.absent(),
+            Value<String?> emojiIconName = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<bool> pinned = const Value.absent(),
+            Value<bool> archived = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ObjectivesCompanion.insert(
+            objectivePk: objectivePk,
+            type: type,
+            name: name,
+            amount: amount,
+            order: order,
+            colour: colour,
+            dateCreated: dateCreated,
+            endDate: endDate,
+            dateTimeModified: dateTimeModified,
+            iconName: iconName,
+            emojiIconName: emojiIconName,
+            income: income,
+            pinned: pinned,
+            archived: archived,
+            walletFk: walletFk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ObjectivesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({walletFk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (walletFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletFk,
+                    referencedTable:
+                        $$ObjectivesTableReferences._walletFkTable(db),
+                    referencedColumn:
+                        $$ObjectivesTableReferences._walletFkTable(db).walletPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ObjectivesTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $ObjectivesTable,
+    Objective,
+    $$ObjectivesTableFilterComposer,
+    $$ObjectivesTableOrderingComposer,
+    $$ObjectivesTableAnnotationComposer,
+    $$ObjectivesTableCreateCompanionBuilder,
+    $$ObjectivesTableUpdateCompanionBuilder,
+    (Objective, $$ObjectivesTableReferences),
+    Objective,
+    PrefetchHooks Function({bool walletFk})>;
+typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
+    Function({
+  Value<String> transactionPk,
+  Value<String?> pairedTransactionFk,
+  required String name,
+  required double amount,
+  required String note,
+  required String categoryFk,
+  Value<String?> subCategoryFk,
+  Value<String> walletFk,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<DateTime?> originalDateDue,
+  Value<bool> income,
+  Value<int?> periodLength,
+  Value<BudgetReoccurence?> reoccurrence,
+  Value<DateTime?> endDate,
+  Value<bool?> upcomingTransactionNotification,
+  Value<TransactionSpecialType?> type,
+  Value<bool> paid,
+  Value<bool?> createdAnotherFutureTransaction,
+  Value<bool> skipPaid,
+  Value<MethodAdded?> methodAdded,
+  Value<String?> transactionOwnerEmail,
+  Value<String?> transactionOriginalOwnerEmail,
+  Value<String?> sharedKey,
+  Value<String?> sharedOldKey,
+  Value<SharedStatus?> sharedStatus,
+  Value<DateTime?> sharedDateUpdated,
+  Value<String?> sharedReferenceBudgetPk,
+  Value<String?> objectiveFk,
+  Value<String?> objectiveLoanFk,
+  Value<List<String>?> budgetFksExclude,
+  Value<int> rowid,
+});
+typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
+    Function({
+  Value<String> transactionPk,
+  Value<String?> pairedTransactionFk,
+  Value<String> name,
+  Value<double> amount,
+  Value<String> note,
+  Value<String> categoryFk,
+  Value<String?> subCategoryFk,
+  Value<String> walletFk,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<DateTime?> originalDateDue,
+  Value<bool> income,
+  Value<int?> periodLength,
+  Value<BudgetReoccurence?> reoccurrence,
+  Value<DateTime?> endDate,
+  Value<bool?> upcomingTransactionNotification,
+  Value<TransactionSpecialType?> type,
+  Value<bool> paid,
+  Value<bool?> createdAnotherFutureTransaction,
+  Value<bool> skipPaid,
+  Value<MethodAdded?> methodAdded,
+  Value<String?> transactionOwnerEmail,
+  Value<String?> transactionOriginalOwnerEmail,
+  Value<String?> sharedKey,
+  Value<String?> sharedOldKey,
+  Value<SharedStatus?> sharedStatus,
+  Value<DateTime?> sharedDateUpdated,
+  Value<String?> sharedReferenceBudgetPk,
+  Value<String?> objectiveFk,
+  Value<String?> objectiveLoanFk,
+  Value<List<String>?> budgetFksExclude,
+  Value<int> rowid,
+});
+
+final class $$TransactionsTableReferences
+    extends BaseReferences<_$FinanceDatabase, $TransactionsTable, Transaction> {
+  $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TransactionsTable _pairedTransactionFkTable(_$FinanceDatabase db) =>
+      db.transactions.createAlias($_aliasNameGenerator(
+          db.transactions.pairedTransactionFk, db.transactions.transactionPk));
+
+  $$TransactionsTableProcessedTableManager? get pairedTransactionFk {
+    if ($_item.pairedTransactionFk == null) return null;
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter((f) => f.transactionPk($_item.pairedTransactionFk!));
+    final item = $_typedResult.readTableOrNull(_pairedTransactionFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CategoriesTable _categoryFkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.transactions.categoryFk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get categoryFk {
+    if ($_item.categoryFk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.categoryFk!));
+    final item = $_typedResult.readTableOrNull(_categoryFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CategoriesTable _subCategoryFkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.transactions.subCategoryFk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get subCategoryFk {
+    if ($_item.subCategoryFk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.subCategoryFk!));
+    final item = $_typedResult.readTableOrNull(_subCategoryFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $WalletsTable _walletFkTable(_$FinanceDatabase db) =>
+      db.wallets.createAlias(
+          $_aliasNameGenerator(db.transactions.walletFk, db.wallets.walletPk));
+
+  $$WalletsTableProcessedTableManager? get walletFk {
+    if ($_item.walletFk == null) return null;
+    final manager = $$WalletsTableTableManager($_db, $_db.wallets)
+        .filter((f) => f.walletPk($_item.walletFk!));
+    final item = $_typedResult.readTableOrNull(_walletFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ObjectivesTable _objectiveFkTable(_$FinanceDatabase db) =>
+      db.objectives.createAlias($_aliasNameGenerator(
+          db.transactions.objectiveFk, db.objectives.objectivePk));
+
+  $$ObjectivesTableProcessedTableManager? get objectiveFk {
+    if ($_item.objectiveFk == null) return null;
+    final manager = $$ObjectivesTableTableManager($_db, $_db.objectives)
+        .filter((f) => f.objectivePk($_item.objectiveFk!));
+    final item = $_typedResult.readTableOrNull(_objectiveFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ObjectivesTable _objectiveLoanFkTable(_$FinanceDatabase db) =>
+      db.objectives.createAlias($_aliasNameGenerator(
+          db.transactions.objectiveLoanFk, db.objectives.objectivePk));
+
+  $$ObjectivesTableProcessedTableManager? get objectiveLoanFk {
+    if ($_item.objectiveLoanFk == null) return null;
+    final manager = $$ObjectivesTableTableManager($_db, $_db.objectives)
+        .filter((f) => f.objectivePk($_item.objectiveLoanFk!));
+    final item = $_typedResult.readTableOrNull(_objectiveLoanFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$TransactionsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $TransactionsTable> {
+  $$TransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get transactionPk => $composableBuilder(
+      column: $table.transactionPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<BudgetReoccurence?, BudgetReoccurence, int>
+      get reoccurrence => $composableBuilder(
+          column: $table.reoccurrence,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get upcomingTransactionNotification => $composableBuilder(
+      column: $table.upcomingTransactionNotification,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<TransactionSpecialType?,
+          TransactionSpecialType, int>
+      get type => $composableBuilder(
+          column: $table.type,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<bool> get paid => $composableBuilder(
+      column: $table.paid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get createdAnotherFutureTransaction => $composableBuilder(
+      column: $table.createdAnotherFutureTransaction,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get skipPaid => $composableBuilder(
+      column: $table.skipPaid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<MethodAdded?, MethodAdded, int>
+      get methodAdded => $composableBuilder(
+          column: $table.methodAdded,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get transactionOwnerEmail => $composableBuilder(
+      column: $table.transactionOwnerEmail,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get transactionOriginalOwnerEmail => $composableBuilder(
+      column: $table.transactionOriginalOwnerEmail,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sharedKey => $composableBuilder(
+      column: $table.sharedKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sharedOldKey => $composableBuilder(
+      column: $table.sharedOldKey, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SharedStatus?, SharedStatus, int>
+      get sharedStatus => $composableBuilder(
+          column: $table.sharedStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get budgetFksExclude => $composableBuilder(
+          column: $table.budgetFksExclude,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  $$TransactionsTableFilterComposer get pairedTransactionFk {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.pairedTransactionFk,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.transactionPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryFk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get subCategoryFk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableFilterComposer get walletFk {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableFilterComposer get objectiveFk {
+    final $$ObjectivesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableFilterComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableFilterComposer get objectiveLoanFk {
+    final $$ObjectivesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveLoanFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableFilterComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $TransactionsTable> {
+  $$TransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get transactionPk => $composableBuilder(
+      column: $table.transactionPk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get periodLength => $composableBuilder(
+      column: $table.periodLength,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get reoccurrence => $composableBuilder(
+      column: $table.reoccurrence,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get upcomingTransactionNotification =>
+      $composableBuilder(
+          column: $table.upcomingTransactionNotification,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get paid => $composableBuilder(
+      column: $table.paid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get createdAnotherFutureTransaction =>
+      $composableBuilder(
+          column: $table.createdAnotherFutureTransaction,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get skipPaid => $composableBuilder(
+      column: $table.skipPaid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get methodAdded => $composableBuilder(
+      column: $table.methodAdded, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get transactionOwnerEmail => $composableBuilder(
+      column: $table.transactionOwnerEmail,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get transactionOriginalOwnerEmail =>
+      $composableBuilder(
+          column: $table.transactionOriginalOwnerEmail,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedKey => $composableBuilder(
+      column: $table.sharedKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedOldKey => $composableBuilder(
+      column: $table.sharedOldKey,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sharedStatus => $composableBuilder(
+      column: $table.sharedStatus,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get budgetFksExclude => $composableBuilder(
+      column: $table.budgetFksExclude,
+      builder: (column) => ColumnOrderings(column));
+
+  $$TransactionsTableOrderingComposer get pairedTransactionFk {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.pairedTransactionFk,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.transactionPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryFk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get subCategoryFk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableOrderingComposer get walletFk {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableOrderingComposer get objectiveFk {
+    final $$ObjectivesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableOrderingComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableOrderingComposer get objectiveLoanFk {
+    final $$ObjectivesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveLoanFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableOrderingComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $TransactionsTable> {
+  $$TransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get transactionPk => $composableBuilder(
+      column: $table.transactionPk, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue, builder: (column) => column);
+
+  GeneratedColumn<bool> get income =>
+      $composableBuilder(column: $table.income, builder: (column) => column);
+
+  GeneratedColumn<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BudgetReoccurence?, int> get reoccurrence =>
+      $composableBuilder(
+          column: $table.reoccurrence, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<bool> get upcomingTransactionNotification =>
+      $composableBuilder(
+          column: $table.upcomingTransactionNotification,
+          builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TransactionSpecialType?, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<bool> get paid =>
+      $composableBuilder(column: $table.paid, builder: (column) => column);
+
+  GeneratedColumn<bool> get createdAnotherFutureTransaction =>
+      $composableBuilder(
+          column: $table.createdAnotherFutureTransaction,
+          builder: (column) => column);
+
+  GeneratedColumn<bool> get skipPaid =>
+      $composableBuilder(column: $table.skipPaid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<MethodAdded?, int> get methodAdded =>
+      $composableBuilder(
+          column: $table.methodAdded, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionOwnerEmail => $composableBuilder(
+      column: $table.transactionOwnerEmail, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionOriginalOwnerEmail =>
+      $composableBuilder(
+          column: $table.transactionOriginalOwnerEmail,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get sharedKey =>
+      $composableBuilder(column: $table.sharedKey, builder: (column) => column);
+
+  GeneratedColumn<String> get sharedOldKey => $composableBuilder(
+      column: $table.sharedOldKey, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SharedStatus?, int> get sharedStatus =>
+      $composableBuilder(
+          column: $table.sharedStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated, builder: (column) => column);
+
+  GeneratedColumn<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String>
+      get budgetFksExclude => $composableBuilder(
+          column: $table.budgetFksExclude, builder: (column) => column);
+
+  $$TransactionsTableAnnotationComposer get pairedTransactionFk {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.pairedTransactionFk,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.transactionPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryFk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get subCategoryFk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.subCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableAnnotationComposer get walletFk {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableAnnotationComposer get objectiveFk {
+    final $$ObjectivesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ObjectivesTableAnnotationComposer get objectiveLoanFk {
+    final $$ObjectivesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.objectiveLoanFk,
+        referencedTable: $db.objectives,
+        getReferencedColumn: (t) => t.objectivePk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ObjectivesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.objectives,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $TransactionsTable,
+    Transaction,
+    $$TransactionsTableFilterComposer,
+    $$TransactionsTableOrderingComposer,
+    $$TransactionsTableAnnotationComposer,
+    $$TransactionsTableCreateCompanionBuilder,
+    $$TransactionsTableUpdateCompanionBuilder,
+    (Transaction, $$TransactionsTableReferences),
+    Transaction,
+    PrefetchHooks Function(
+        {bool pairedTransactionFk,
+        bool categoryFk,
+        bool subCategoryFk,
+        bool walletFk,
+        bool objectiveFk,
+        bool objectiveLoanFk})> {
+  $$TransactionsTableTableManager(
+      _$FinanceDatabase db, $TransactionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> transactionPk = const Value.absent(),
+            Value<String?> pairedTransactionFk = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<String> note = const Value.absent(),
+            Value<String> categoryFk = const Value.absent(),
+            Value<String?> subCategoryFk = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<DateTime?> originalDateDue = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<int?> periodLength = const Value.absent(),
+            Value<BudgetReoccurence?> reoccurrence = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<bool?> upcomingTransactionNotification = const Value.absent(),
+            Value<TransactionSpecialType?> type = const Value.absent(),
+            Value<bool> paid = const Value.absent(),
+            Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
+            Value<bool> skipPaid = const Value.absent(),
+            Value<MethodAdded?> methodAdded = const Value.absent(),
+            Value<String?> transactionOwnerEmail = const Value.absent(),
+            Value<String?> transactionOriginalOwnerEmail = const Value.absent(),
+            Value<String?> sharedKey = const Value.absent(),
+            Value<String?> sharedOldKey = const Value.absent(),
+            Value<SharedStatus?> sharedStatus = const Value.absent(),
+            Value<DateTime?> sharedDateUpdated = const Value.absent(),
+            Value<String?> sharedReferenceBudgetPk = const Value.absent(),
+            Value<String?> objectiveFk = const Value.absent(),
+            Value<String?> objectiveLoanFk = const Value.absent(),
+            Value<List<String>?> budgetFksExclude = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TransactionsCompanion(
+            transactionPk: transactionPk,
+            pairedTransactionFk: pairedTransactionFk,
+            name: name,
+            amount: amount,
+            note: note,
+            categoryFk: categoryFk,
+            subCategoryFk: subCategoryFk,
+            walletFk: walletFk,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            originalDateDue: originalDateDue,
+            income: income,
+            periodLength: periodLength,
+            reoccurrence: reoccurrence,
+            endDate: endDate,
+            upcomingTransactionNotification: upcomingTransactionNotification,
+            type: type,
+            paid: paid,
+            createdAnotherFutureTransaction: createdAnotherFutureTransaction,
+            skipPaid: skipPaid,
+            methodAdded: methodAdded,
+            transactionOwnerEmail: transactionOwnerEmail,
+            transactionOriginalOwnerEmail: transactionOriginalOwnerEmail,
+            sharedKey: sharedKey,
+            sharedOldKey: sharedOldKey,
+            sharedStatus: sharedStatus,
+            sharedDateUpdated: sharedDateUpdated,
+            sharedReferenceBudgetPk: sharedReferenceBudgetPk,
+            objectiveFk: objectiveFk,
+            objectiveLoanFk: objectiveLoanFk,
+            budgetFksExclude: budgetFksExclude,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> transactionPk = const Value.absent(),
+            Value<String?> pairedTransactionFk = const Value.absent(),
+            required String name,
+            required double amount,
+            required String note,
+            required String categoryFk,
+            Value<String?> subCategoryFk = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<DateTime?> originalDateDue = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<int?> periodLength = const Value.absent(),
+            Value<BudgetReoccurence?> reoccurrence = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<bool?> upcomingTransactionNotification = const Value.absent(),
+            Value<TransactionSpecialType?> type = const Value.absent(),
+            Value<bool> paid = const Value.absent(),
+            Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
+            Value<bool> skipPaid = const Value.absent(),
+            Value<MethodAdded?> methodAdded = const Value.absent(),
+            Value<String?> transactionOwnerEmail = const Value.absent(),
+            Value<String?> transactionOriginalOwnerEmail = const Value.absent(),
+            Value<String?> sharedKey = const Value.absent(),
+            Value<String?> sharedOldKey = const Value.absent(),
+            Value<SharedStatus?> sharedStatus = const Value.absent(),
+            Value<DateTime?> sharedDateUpdated = const Value.absent(),
+            Value<String?> sharedReferenceBudgetPk = const Value.absent(),
+            Value<String?> objectiveFk = const Value.absent(),
+            Value<String?> objectiveLoanFk = const Value.absent(),
+            Value<List<String>?> budgetFksExclude = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TransactionsCompanion.insert(
+            transactionPk: transactionPk,
+            pairedTransactionFk: pairedTransactionFk,
+            name: name,
+            amount: amount,
+            note: note,
+            categoryFk: categoryFk,
+            subCategoryFk: subCategoryFk,
+            walletFk: walletFk,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            originalDateDue: originalDateDue,
+            income: income,
+            periodLength: periodLength,
+            reoccurrence: reoccurrence,
+            endDate: endDate,
+            upcomingTransactionNotification: upcomingTransactionNotification,
+            type: type,
+            paid: paid,
+            createdAnotherFutureTransaction: createdAnotherFutureTransaction,
+            skipPaid: skipPaid,
+            methodAdded: methodAdded,
+            transactionOwnerEmail: transactionOwnerEmail,
+            transactionOriginalOwnerEmail: transactionOriginalOwnerEmail,
+            sharedKey: sharedKey,
+            sharedOldKey: sharedOldKey,
+            sharedStatus: sharedStatus,
+            sharedDateUpdated: sharedDateUpdated,
+            sharedReferenceBudgetPk: sharedReferenceBudgetPk,
+            objectiveFk: objectiveFk,
+            objectiveLoanFk: objectiveLoanFk,
+            budgetFksExclude: budgetFksExclude,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$TransactionsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {pairedTransactionFk = false,
+              categoryFk = false,
+              subCategoryFk = false,
+              walletFk = false,
+              objectiveFk = false,
+              objectiveLoanFk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (pairedTransactionFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.pairedTransactionFk,
+                    referencedTable: $$TransactionsTableReferences
+                        ._pairedTransactionFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._pairedTransactionFkTable(db)
+                        .transactionPk,
+                  ) as T;
+                }
+                if (categoryFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.categoryFk,
+                    referencedTable:
+                        $$TransactionsTableReferences._categoryFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._categoryFkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+                if (subCategoryFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.subCategoryFk,
+                    referencedTable:
+                        $$TransactionsTableReferences._subCategoryFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._subCategoryFkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+                if (walletFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletFk,
+                    referencedTable:
+                        $$TransactionsTableReferences._walletFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._walletFkTable(db)
+                        .walletPk,
+                  ) as T;
+                }
+                if (objectiveFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.objectiveFk,
+                    referencedTable:
+                        $$TransactionsTableReferences._objectiveFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._objectiveFkTable(db)
+                        .objectivePk,
+                  ) as T;
+                }
+                if (objectiveLoanFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.objectiveLoanFk,
+                    referencedTable:
+                        $$TransactionsTableReferences._objectiveLoanFkTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._objectiveLoanFkTable(db)
+                        .objectivePk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $TransactionsTable,
+    Transaction,
+    $$TransactionsTableFilterComposer,
+    $$TransactionsTableOrderingComposer,
+    $$TransactionsTableAnnotationComposer,
+    $$TransactionsTableCreateCompanionBuilder,
+    $$TransactionsTableUpdateCompanionBuilder,
+    (Transaction, $$TransactionsTableReferences),
+    Transaction,
+    PrefetchHooks Function(
+        {bool pairedTransactionFk,
+        bool categoryFk,
+        bool subCategoryFk,
+        bool walletFk,
+        bool objectiveFk,
+        bool objectiveLoanFk})>;
+typedef $$BudgetsTableCreateCompanionBuilder = BudgetsCompanion Function({
+  Value<String> budgetPk,
+  required String name,
+  required double amount,
+  Value<String?> colour,
+  required DateTime startDate,
+  required DateTime endDate,
+  Value<List<String>?> walletFks,
+  Value<List<String>?> categoryFks,
+  Value<List<String>?> categoryFksExclude,
+  Value<bool> income,
+  Value<bool> archived,
+  Value<bool> addedTransactionsOnly,
+  required int periodLength,
+  Value<BudgetReoccurence?> reoccurrence,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<bool> pinned,
+  required int order,
+  Value<String> walletFk,
+  Value<List<BudgetTransactionFilters>?> budgetTransactionFilters,
+  Value<List<String>?> memberTransactionFilters,
+  Value<String?> sharedKey,
+  Value<SharedOwnerMember?> sharedOwnerMember,
+  Value<DateTime?> sharedDateUpdated,
+  Value<List<String>?> sharedMembers,
+  Value<List<String>?> sharedAllMembersEver,
+  Value<bool> isAbsoluteSpendingLimit,
+  Value<int> rowid,
+});
+typedef $$BudgetsTableUpdateCompanionBuilder = BudgetsCompanion Function({
+  Value<String> budgetPk,
+  Value<String> name,
+  Value<double> amount,
+  Value<String?> colour,
+  Value<DateTime> startDate,
+  Value<DateTime> endDate,
+  Value<List<String>?> walletFks,
+  Value<List<String>?> categoryFks,
+  Value<List<String>?> categoryFksExclude,
+  Value<bool> income,
+  Value<bool> archived,
+  Value<bool> addedTransactionsOnly,
+  Value<int> periodLength,
+  Value<BudgetReoccurence?> reoccurrence,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<bool> pinned,
+  Value<int> order,
+  Value<String> walletFk,
+  Value<List<BudgetTransactionFilters>?> budgetTransactionFilters,
+  Value<List<String>?> memberTransactionFilters,
+  Value<String?> sharedKey,
+  Value<SharedOwnerMember?> sharedOwnerMember,
+  Value<DateTime?> sharedDateUpdated,
+  Value<List<String>?> sharedMembers,
+  Value<List<String>?> sharedAllMembersEver,
+  Value<bool> isAbsoluteSpendingLimit,
+  Value<int> rowid,
+});
+
+final class $$BudgetsTableReferences
+    extends BaseReferences<_$FinanceDatabase, $BudgetsTable, Budget> {
+  $$BudgetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletFkTable(_$FinanceDatabase db) =>
+      db.wallets.createAlias(
+          $_aliasNameGenerator(db.budgets.walletFk, db.wallets.walletPk));
+
+  $$WalletsTableProcessedTableManager? get walletFk {
+    if ($_item.walletFk == null) return null;
+    final manager = $$WalletsTableTableManager($_db, $_db.wallets)
+        .filter((f) => f.walletPk($_item.walletFk!));
+    final item = $_typedResult.readTableOrNull(_walletFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$CategoryBudgetLimitsTable,
+      List<CategoryBudgetLimit>> _categoryBudgetLimitsRefsTable(
+          _$FinanceDatabase db) =>
+      MultiTypedResultKey.fromTable(db.categoryBudgetLimits,
+          aliasName: $_aliasNameGenerator(
+              db.budgets.budgetPk, db.categoryBudgetLimits.budgetFk));
+
+  $$CategoryBudgetLimitsTableProcessedTableManager
+      get categoryBudgetLimitsRefs {
+    final manager =
+        $$CategoryBudgetLimitsTableTableManager($_db, $_db.categoryBudgetLimits)
+            .filter((f) => f.budgetFk.budgetPk($_item.budgetPk));
+
+    final cache =
+        $_typedResult.readTableOrNull(_categoryBudgetLimitsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$BudgetsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $BudgetsTable> {
+  $$BudgetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get budgetPk => $composableBuilder(
+      column: $table.budgetPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+      column: $table.startDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get walletFks => $composableBuilder(
+          column: $table.walletFks,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get categoryFks => $composableBuilder(
+          column: $table.categoryFks,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get categoryFksExclude => $composableBuilder(
+          column: $table.categoryFksExclude,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get archived => $composableBuilder(
+      column: $table.archived, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get addedTransactionsOnly => $composableBuilder(
+      column: $table.addedTransactionsOnly,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<BudgetReoccurence?, BudgetReoccurence, int>
+      get reoccurrence => $composableBuilder(
+          column: $table.reoccurrence,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get pinned => $composableBuilder(
+      column: $table.pinned, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<List<BudgetTransactionFilters>?,
+          List<BudgetTransactionFilters>, String>
+      get budgetTransactionFilters => $composableBuilder(
+          column: $table.budgetTransactionFilters,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get memberTransactionFilters => $composableBuilder(
+          column: $table.memberTransactionFilters,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get sharedKey => $composableBuilder(
+      column: $table.sharedKey, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SharedOwnerMember?, SharedOwnerMember, int>
+      get sharedOwnerMember => $composableBuilder(
+          column: $table.sharedOwnerMember,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get sharedMembers => $composableBuilder(
+          column: $table.sharedMembers,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
+      get sharedAllMembersEver => $composableBuilder(
+          column: $table.sharedAllMembersEver,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<bool> get isAbsoluteSpendingLimit => $composableBuilder(
+      column: $table.isAbsoluteSpendingLimit,
+      builder: (column) => ColumnFilters(column));
+
+  $$WalletsTableFilterComposer get walletFk {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<bool> categoryBudgetLimitsRefs(
+      Expression<bool> Function($$CategoryBudgetLimitsTableFilterComposer f)
+          f) {
+    final $$CategoryBudgetLimitsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.budgetPk,
+        referencedTable: $db.categoryBudgetLimits,
+        getReferencedColumn: (t) => t.budgetFk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoryBudgetLimitsTableFilterComposer(
+              $db: $db,
+              $table: $db.categoryBudgetLimits,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$BudgetsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $BudgetsTable> {
+  $$BudgetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get budgetPk => $composableBuilder(
+      column: $table.budgetPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+      column: $table.startDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get walletFks => $composableBuilder(
+      column: $table.walletFks, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoryFks => $composableBuilder(
+      column: $table.categoryFks, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoryFksExclude => $composableBuilder(
+      column: $table.categoryFksExclude,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get income => $composableBuilder(
+      column: $table.income, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get archived => $composableBuilder(
+      column: $table.archived, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get addedTransactionsOnly => $composableBuilder(
+      column: $table.addedTransactionsOnly,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get periodLength => $composableBuilder(
+      column: $table.periodLength,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get reoccurrence => $composableBuilder(
+      column: $table.reoccurrence,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get pinned => $composableBuilder(
+      column: $table.pinned, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get budgetTransactionFilters => $composableBuilder(
+      column: $table.budgetTransactionFilters,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get memberTransactionFilters => $composableBuilder(
+      column: $table.memberTransactionFilters,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedKey => $composableBuilder(
+      column: $table.sharedKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sharedOwnerMember => $composableBuilder(
+      column: $table.sharedOwnerMember,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedMembers => $composableBuilder(
+      column: $table.sharedMembers,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedAllMembersEver => $composableBuilder(
+      column: $table.sharedAllMembersEver,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isAbsoluteSpendingLimit => $composableBuilder(
+      column: $table.isAbsoluteSpendingLimit,
+      builder: (column) => ColumnOrderings(column));
+
+  $$WalletsTableOrderingComposer get walletFk {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$BudgetsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $BudgetsTable> {
+  $$BudgetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get budgetPk =>
+      $composableBuilder(column: $table.budgetPk, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get colour =>
+      $composableBuilder(column: $table.colour, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String> get walletFks =>
+      $composableBuilder(column: $table.walletFks, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String> get categoryFks =>
+      $composableBuilder(
+          column: $table.categoryFks, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String>
+      get categoryFksExclude => $composableBuilder(
+          column: $table.categoryFksExclude, builder: (column) => column);
+
+  GeneratedColumn<bool> get income =>
+      $composableBuilder(column: $table.income, builder: (column) => column);
+
+  GeneratedColumn<bool> get archived =>
+      $composableBuilder(column: $table.archived, builder: (column) => column);
+
+  GeneratedColumn<bool> get addedTransactionsOnly => $composableBuilder(
+      column: $table.addedTransactionsOnly, builder: (column) => column);
+
+  GeneratedColumn<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BudgetReoccurence?, int> get reoccurrence =>
+      $composableBuilder(
+          column: $table.reoccurrence, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<bool> get pinned =>
+      $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<BudgetTransactionFilters>?, String>
+      get budgetTransactionFilters => $composableBuilder(
+          column: $table.budgetTransactionFilters, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String>
+      get memberTransactionFilters => $composableBuilder(
+          column: $table.memberTransactionFilters, builder: (column) => column);
+
+  GeneratedColumn<String> get sharedKey =>
+      $composableBuilder(column: $table.sharedKey, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SharedOwnerMember?, int>
+      get sharedOwnerMember => $composableBuilder(
+          column: $table.sharedOwnerMember, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get sharedDateUpdated => $composableBuilder(
+      column: $table.sharedDateUpdated, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String> get sharedMembers =>
+      $composableBuilder(
+          column: $table.sharedMembers, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>?, String>
+      get sharedAllMembersEver => $composableBuilder(
+          column: $table.sharedAllMembersEver, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAbsoluteSpendingLimit => $composableBuilder(
+      column: $table.isAbsoluteSpendingLimit, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletFk {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<T> categoryBudgetLimitsRefs<T extends Object>(
+      Expression<T> Function($$CategoryBudgetLimitsTableAnnotationComposer a)
+          f) {
+    final $$CategoryBudgetLimitsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.budgetPk,
+            referencedTable: $db.categoryBudgetLimits,
+            getReferencedColumn: (t) => t.budgetFk,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CategoryBudgetLimitsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.categoryBudgetLimits,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$BudgetsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $BudgetsTable,
+    Budget,
+    $$BudgetsTableFilterComposer,
+    $$BudgetsTableOrderingComposer,
+    $$BudgetsTableAnnotationComposer,
+    $$BudgetsTableCreateCompanionBuilder,
+    $$BudgetsTableUpdateCompanionBuilder,
+    (Budget, $$BudgetsTableReferences),
+    Budget,
+    PrefetchHooks Function({bool walletFk, bool categoryBudgetLimitsRefs})> {
+  $$BudgetsTableTableManager(_$FinanceDatabase db, $BudgetsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BudgetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BudgetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BudgetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> budgetPk = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<String?> colour = const Value.absent(),
+            Value<DateTime> startDate = const Value.absent(),
+            Value<DateTime> endDate = const Value.absent(),
+            Value<List<String>?> walletFks = const Value.absent(),
+            Value<List<String>?> categoryFks = const Value.absent(),
+            Value<List<String>?> categoryFksExclude = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<bool> archived = const Value.absent(),
+            Value<bool> addedTransactionsOnly = const Value.absent(),
+            Value<int> periodLength = const Value.absent(),
+            Value<BudgetReoccurence?> reoccurrence = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<bool> pinned = const Value.absent(),
+            Value<int> order = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<List<BudgetTransactionFilters>?> budgetTransactionFilters =
+                const Value.absent(),
+            Value<List<String>?> memberTransactionFilters =
+                const Value.absent(),
+            Value<String?> sharedKey = const Value.absent(),
+            Value<SharedOwnerMember?> sharedOwnerMember = const Value.absent(),
+            Value<DateTime?> sharedDateUpdated = const Value.absent(),
+            Value<List<String>?> sharedMembers = const Value.absent(),
+            Value<List<String>?> sharedAllMembersEver = const Value.absent(),
+            Value<bool> isAbsoluteSpendingLimit = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              BudgetsCompanion(
+            budgetPk: budgetPk,
+            name: name,
+            amount: amount,
+            colour: colour,
+            startDate: startDate,
+            endDate: endDate,
+            walletFks: walletFks,
+            categoryFks: categoryFks,
+            categoryFksExclude: categoryFksExclude,
+            income: income,
+            archived: archived,
+            addedTransactionsOnly: addedTransactionsOnly,
+            periodLength: periodLength,
+            reoccurrence: reoccurrence,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            pinned: pinned,
+            order: order,
+            walletFk: walletFk,
+            budgetTransactionFilters: budgetTransactionFilters,
+            memberTransactionFilters: memberTransactionFilters,
+            sharedKey: sharedKey,
+            sharedOwnerMember: sharedOwnerMember,
+            sharedDateUpdated: sharedDateUpdated,
+            sharedMembers: sharedMembers,
+            sharedAllMembersEver: sharedAllMembersEver,
+            isAbsoluteSpendingLimit: isAbsoluteSpendingLimit,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> budgetPk = const Value.absent(),
+            required String name,
+            required double amount,
+            Value<String?> colour = const Value.absent(),
+            required DateTime startDate,
+            required DateTime endDate,
+            Value<List<String>?> walletFks = const Value.absent(),
+            Value<List<String>?> categoryFks = const Value.absent(),
+            Value<List<String>?> categoryFksExclude = const Value.absent(),
+            Value<bool> income = const Value.absent(),
+            Value<bool> archived = const Value.absent(),
+            Value<bool> addedTransactionsOnly = const Value.absent(),
+            required int periodLength,
+            Value<BudgetReoccurence?> reoccurrence = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<bool> pinned = const Value.absent(),
+            required int order,
+            Value<String> walletFk = const Value.absent(),
+            Value<List<BudgetTransactionFilters>?> budgetTransactionFilters =
+                const Value.absent(),
+            Value<List<String>?> memberTransactionFilters =
+                const Value.absent(),
+            Value<String?> sharedKey = const Value.absent(),
+            Value<SharedOwnerMember?> sharedOwnerMember = const Value.absent(),
+            Value<DateTime?> sharedDateUpdated = const Value.absent(),
+            Value<List<String>?> sharedMembers = const Value.absent(),
+            Value<List<String>?> sharedAllMembersEver = const Value.absent(),
+            Value<bool> isAbsoluteSpendingLimit = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              BudgetsCompanion.insert(
+            budgetPk: budgetPk,
+            name: name,
+            amount: amount,
+            colour: colour,
+            startDate: startDate,
+            endDate: endDate,
+            walletFks: walletFks,
+            categoryFks: categoryFks,
+            categoryFksExclude: categoryFksExclude,
+            income: income,
+            archived: archived,
+            addedTransactionsOnly: addedTransactionsOnly,
+            periodLength: periodLength,
+            reoccurrence: reoccurrence,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            pinned: pinned,
+            order: order,
+            walletFk: walletFk,
+            budgetTransactionFilters: budgetTransactionFilters,
+            memberTransactionFilters: memberTransactionFilters,
+            sharedKey: sharedKey,
+            sharedOwnerMember: sharedOwnerMember,
+            sharedDateUpdated: sharedDateUpdated,
+            sharedMembers: sharedMembers,
+            sharedAllMembersEver: sharedAllMembersEver,
+            isAbsoluteSpendingLimit: isAbsoluteSpendingLimit,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$BudgetsTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {walletFk = false, categoryBudgetLimitsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (categoryBudgetLimitsRefs) db.categoryBudgetLimits
+              ],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (walletFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletFk,
+                    referencedTable:
+                        $$BudgetsTableReferences._walletFkTable(db),
+                    referencedColumn:
+                        $$BudgetsTableReferences._walletFkTable(db).walletPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (categoryBudgetLimitsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$BudgetsTableReferences
+                            ._categoryBudgetLimitsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BudgetsTableReferences(db, table, p0)
+                                .categoryBudgetLimitsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.budgetFk == item.budgetPk),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$BudgetsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $BudgetsTable,
+    Budget,
+    $$BudgetsTableFilterComposer,
+    $$BudgetsTableOrderingComposer,
+    $$BudgetsTableAnnotationComposer,
+    $$BudgetsTableCreateCompanionBuilder,
+    $$BudgetsTableUpdateCompanionBuilder,
+    (Budget, $$BudgetsTableReferences),
+    Budget,
+    PrefetchHooks Function({bool walletFk, bool categoryBudgetLimitsRefs})>;
+typedef $$CategoryBudgetLimitsTableCreateCompanionBuilder
+    = CategoryBudgetLimitsCompanion Function({
+  Value<String> categoryLimitPk,
+  required String categoryFk,
+  required String budgetFk,
+  required double amount,
+  Value<DateTime?> dateTimeModified,
+  Value<String> walletFk,
+  Value<int> rowid,
+});
+typedef $$CategoryBudgetLimitsTableUpdateCompanionBuilder
+    = CategoryBudgetLimitsCompanion Function({
+  Value<String> categoryLimitPk,
+  Value<String> categoryFk,
+  Value<String> budgetFk,
+  Value<double> amount,
+  Value<DateTime?> dateTimeModified,
+  Value<String> walletFk,
+  Value<int> rowid,
+});
+
+final class $$CategoryBudgetLimitsTableReferences extends BaseReferences<
+    _$FinanceDatabase, $CategoryBudgetLimitsTable, CategoryBudgetLimit> {
+  $$CategoryBudgetLimitsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CategoriesTable _categoryFkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.categoryBudgetLimits.categoryFk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get categoryFk {
+    if ($_item.categoryFk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.categoryFk!));
+    final item = $_typedResult.readTableOrNull(_categoryFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $BudgetsTable _budgetFkTable(_$FinanceDatabase db) =>
+      db.budgets.createAlias($_aliasNameGenerator(
+          db.categoryBudgetLimits.budgetFk, db.budgets.budgetPk));
+
+  $$BudgetsTableProcessedTableManager? get budgetFk {
+    if ($_item.budgetFk == null) return null;
+    final manager = $$BudgetsTableTableManager($_db, $_db.budgets)
+        .filter((f) => f.budgetPk($_item.budgetFk!));
+    final item = $_typedResult.readTableOrNull(_budgetFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $WalletsTable _walletFkTable(_$FinanceDatabase db) =>
+      db.wallets.createAlias($_aliasNameGenerator(
+          db.categoryBudgetLimits.walletFk, db.wallets.walletPk));
+
+  $$WalletsTableProcessedTableManager? get walletFk {
+    if ($_item.walletFk == null) return null;
+    final manager = $$WalletsTableTableManager($_db, $_db.wallets)
+        .filter((f) => f.walletPk($_item.walletFk!));
+    final item = $_typedResult.readTableOrNull(_walletFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$CategoryBudgetLimitsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $CategoryBudgetLimitsTable> {
+  $$CategoryBudgetLimitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get categoryLimitPk => $composableBuilder(
+      column: $table.categoryLimitPk,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  $$CategoriesTableFilterComposer get categoryFk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BudgetsTableFilterComposer get budgetFk {
+    final $$BudgetsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.budgetFk,
+        referencedTable: $db.budgets,
+        getReferencedColumn: (t) => t.budgetPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BudgetsTableFilterComposer(
+              $db: $db,
+              $table: $db.budgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableFilterComposer get walletFk {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CategoryBudgetLimitsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $CategoryBudgetLimitsTable> {
+  $$CategoryBudgetLimitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get categoryLimitPk => $composableBuilder(
+      column: $table.categoryLimitPk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  $$CategoriesTableOrderingComposer get categoryFk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BudgetsTableOrderingComposer get budgetFk {
+    final $$BudgetsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.budgetFk,
+        referencedTable: $db.budgets,
+        getReferencedColumn: (t) => t.budgetPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BudgetsTableOrderingComposer(
+              $db: $db,
+              $table: $db.budgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableOrderingComposer get walletFk {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CategoryBudgetLimitsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $CategoryBudgetLimitsTable> {
+  $$CategoryBudgetLimitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get categoryLimitPk => $composableBuilder(
+      column: $table.categoryLimitPk, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  $$CategoriesTableAnnotationComposer get categoryFk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BudgetsTableAnnotationComposer get budgetFk {
+    final $$BudgetsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.budgetFk,
+        referencedTable: $db.budgets,
+        getReferencedColumn: (t) => t.budgetPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BudgetsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.budgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableAnnotationComposer get walletFk {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CategoryBudgetLimitsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $CategoryBudgetLimitsTable,
+    CategoryBudgetLimit,
+    $$CategoryBudgetLimitsTableFilterComposer,
+    $$CategoryBudgetLimitsTableOrderingComposer,
+    $$CategoryBudgetLimitsTableAnnotationComposer,
+    $$CategoryBudgetLimitsTableCreateCompanionBuilder,
+    $$CategoryBudgetLimitsTableUpdateCompanionBuilder,
+    (CategoryBudgetLimit, $$CategoryBudgetLimitsTableReferences),
+    CategoryBudgetLimit,
+    PrefetchHooks Function({bool categoryFk, bool budgetFk, bool walletFk})> {
+  $$CategoryBudgetLimitsTableTableManager(
+      _$FinanceDatabase db, $CategoryBudgetLimitsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoryBudgetLimitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoryBudgetLimitsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoryBudgetLimitsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> categoryLimitPk = const Value.absent(),
+            Value<String> categoryFk = const Value.absent(),
+            Value<String> budgetFk = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryBudgetLimitsCompanion(
+            categoryLimitPk: categoryLimitPk,
+            categoryFk: categoryFk,
+            budgetFk: budgetFk,
+            amount: amount,
+            dateTimeModified: dateTimeModified,
+            walletFk: walletFk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> categoryLimitPk = const Value.absent(),
+            required String categoryFk,
+            required String budgetFk,
+            required double amount,
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryBudgetLimitsCompanion.insert(
+            categoryLimitPk: categoryLimitPk,
+            categoryFk: categoryFk,
+            budgetFk: budgetFk,
+            amount: amount,
+            dateTimeModified: dateTimeModified,
+            walletFk: walletFk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CategoryBudgetLimitsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {categoryFk = false, budgetFk = false, walletFk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (categoryFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.categoryFk,
+                    referencedTable: $$CategoryBudgetLimitsTableReferences
+                        ._categoryFkTable(db),
+                    referencedColumn: $$CategoryBudgetLimitsTableReferences
+                        ._categoryFkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+                if (budgetFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.budgetFk,
+                    referencedTable: $$CategoryBudgetLimitsTableReferences
+                        ._budgetFkTable(db),
+                    referencedColumn: $$CategoryBudgetLimitsTableReferences
+                        ._budgetFkTable(db)
+                        .budgetPk,
+                  ) as T;
+                }
+                if (walletFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletFk,
+                    referencedTable: $$CategoryBudgetLimitsTableReferences
+                        ._walletFkTable(db),
+                    referencedColumn: $$CategoryBudgetLimitsTableReferences
+                        ._walletFkTable(db)
+                        .walletPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CategoryBudgetLimitsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FinanceDatabase,
+        $CategoryBudgetLimitsTable,
+        CategoryBudgetLimit,
+        $$CategoryBudgetLimitsTableFilterComposer,
+        $$CategoryBudgetLimitsTableOrderingComposer,
+        $$CategoryBudgetLimitsTableAnnotationComposer,
+        $$CategoryBudgetLimitsTableCreateCompanionBuilder,
+        $$CategoryBudgetLimitsTableUpdateCompanionBuilder,
+        (CategoryBudgetLimit, $$CategoryBudgetLimitsTableReferences),
+        CategoryBudgetLimit,
+        PrefetchHooks Function(
+            {bool categoryFk, bool budgetFk, bool walletFk})>;
+typedef $$AssociatedTitlesTableCreateCompanionBuilder
+    = AssociatedTitlesCompanion Function({
+  Value<String> associatedTitlePk,
+  required String categoryFk,
+  required String title,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  required int order,
+  Value<bool> isExactMatch,
+  Value<int> rowid,
+});
+typedef $$AssociatedTitlesTableUpdateCompanionBuilder
+    = AssociatedTitlesCompanion Function({
+  Value<String> associatedTitlePk,
+  Value<String> categoryFk,
+  Value<String> title,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<int> order,
+  Value<bool> isExactMatch,
+  Value<int> rowid,
+});
+
+final class $$AssociatedTitlesTableReferences extends BaseReferences<
+    _$FinanceDatabase, $AssociatedTitlesTable, TransactionAssociatedTitle> {
+  $$AssociatedTitlesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CategoriesTable _categoryFkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.associatedTitles.categoryFk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get categoryFk {
+    if ($_item.categoryFk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.categoryFk!));
+    final item = $_typedResult.readTableOrNull(_categoryFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$AssociatedTitlesTableFilterComposer
+    extends Composer<_$FinanceDatabase, $AssociatedTitlesTable> {
+  $$AssociatedTitlesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get associatedTitlePk => $composableBuilder(
+      column: $table.associatedTitlePk,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isExactMatch => $composableBuilder(
+      column: $table.isExactMatch, builder: (column) => ColumnFilters(column));
+
+  $$CategoriesTableFilterComposer get categoryFk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$AssociatedTitlesTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $AssociatedTitlesTable> {
+  $$AssociatedTitlesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get associatedTitlePk => $composableBuilder(
+      column: $table.associatedTitlePk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get order => $composableBuilder(
+      column: $table.order, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isExactMatch => $composableBuilder(
+      column: $table.isExactMatch,
+      builder: (column) => ColumnOrderings(column));
+
+  $$CategoriesTableOrderingComposer get categoryFk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$AssociatedTitlesTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $AssociatedTitlesTable> {
+  $$AssociatedTitlesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get associatedTitlePk => $composableBuilder(
+      column: $table.associatedTitlePk, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<bool> get isExactMatch => $composableBuilder(
+      column: $table.isExactMatch, builder: (column) => column);
+
+  $$CategoriesTableAnnotationComposer get categoryFk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.categoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$AssociatedTitlesTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $AssociatedTitlesTable,
+    TransactionAssociatedTitle,
+    $$AssociatedTitlesTableFilterComposer,
+    $$AssociatedTitlesTableOrderingComposer,
+    $$AssociatedTitlesTableAnnotationComposer,
+    $$AssociatedTitlesTableCreateCompanionBuilder,
+    $$AssociatedTitlesTableUpdateCompanionBuilder,
+    (TransactionAssociatedTitle, $$AssociatedTitlesTableReferences),
+    TransactionAssociatedTitle,
+    PrefetchHooks Function({bool categoryFk})> {
+  $$AssociatedTitlesTableTableManager(
+      _$FinanceDatabase db, $AssociatedTitlesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AssociatedTitlesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AssociatedTitlesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AssociatedTitlesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> associatedTitlePk = const Value.absent(),
+            Value<String> categoryFk = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<int> order = const Value.absent(),
+            Value<bool> isExactMatch = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AssociatedTitlesCompanion(
+            associatedTitlePk: associatedTitlePk,
+            categoryFk: categoryFk,
+            title: title,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            isExactMatch: isExactMatch,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> associatedTitlePk = const Value.absent(),
+            required String categoryFk,
+            required String title,
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            required int order,
+            Value<bool> isExactMatch = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AssociatedTitlesCompanion.insert(
+            associatedTitlePk: associatedTitlePk,
+            categoryFk: categoryFk,
+            title: title,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            order: order,
+            isExactMatch: isExactMatch,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$AssociatedTitlesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({categoryFk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (categoryFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.categoryFk,
+                    referencedTable:
+                        $$AssociatedTitlesTableReferences._categoryFkTable(db),
+                    referencedColumn: $$AssociatedTitlesTableReferences
+                        ._categoryFkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$AssociatedTitlesTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $AssociatedTitlesTable,
+    TransactionAssociatedTitle,
+    $$AssociatedTitlesTableFilterComposer,
+    $$AssociatedTitlesTableOrderingComposer,
+    $$AssociatedTitlesTableAnnotationComposer,
+    $$AssociatedTitlesTableCreateCompanionBuilder,
+    $$AssociatedTitlesTableUpdateCompanionBuilder,
+    (TransactionAssociatedTitle, $$AssociatedTitlesTableReferences),
+    TransactionAssociatedTitle,
+    PrefetchHooks Function({bool categoryFk})>;
+typedef $$AppSettingsTableCreateCompanionBuilder = AppSettingsCompanion
+    Function({
+  Value<int> settingsPk,
+  required String settingsJSON,
+  Value<DateTime> dateUpdated,
+});
+typedef $$AppSettingsTableUpdateCompanionBuilder = AppSettingsCompanion
+    Function({
+  Value<int> settingsPk,
+  Value<String> settingsJSON,
+  Value<DateTime> dateUpdated,
+});
+
+class $$AppSettingsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $AppSettingsTable> {
+  $$AppSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get settingsPk => $composableBuilder(
+      column: $table.settingsPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get settingsJSON => $composableBuilder(
+      column: $table.settingsJSON, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateUpdated => $composableBuilder(
+      column: $table.dateUpdated, builder: (column) => ColumnFilters(column));
+}
+
+class $$AppSettingsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $AppSettingsTable> {
+  $$AppSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get settingsPk => $composableBuilder(
+      column: $table.settingsPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get settingsJSON => $composableBuilder(
+      column: $table.settingsJSON,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateUpdated => $composableBuilder(
+      column: $table.dateUpdated, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AppSettingsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $AppSettingsTable> {
+  $$AppSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get settingsPk => $composableBuilder(
+      column: $table.settingsPk, builder: (column) => column);
+
+  GeneratedColumn<String> get settingsJSON => $composableBuilder(
+      column: $table.settingsJSON, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateUpdated => $composableBuilder(
+      column: $table.dateUpdated, builder: (column) => column);
+}
+
+class $$AppSettingsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $AppSettingsTable,
+    AppSetting,
+    $$AppSettingsTableFilterComposer,
+    $$AppSettingsTableOrderingComposer,
+    $$AppSettingsTableAnnotationComposer,
+    $$AppSettingsTableCreateCompanionBuilder,
+    $$AppSettingsTableUpdateCompanionBuilder,
+    (
+      AppSetting,
+      BaseReferences<_$FinanceDatabase, $AppSettingsTable, AppSetting>
+    ),
+    AppSetting,
+    PrefetchHooks Function()> {
+  $$AppSettingsTableTableManager(_$FinanceDatabase db, $AppSettingsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> settingsPk = const Value.absent(),
+            Value<String> settingsJSON = const Value.absent(),
+            Value<DateTime> dateUpdated = const Value.absent(),
+          }) =>
+              AppSettingsCompanion(
+            settingsPk: settingsPk,
+            settingsJSON: settingsJSON,
+            dateUpdated: dateUpdated,
+          ),
+          createCompanionCallback: ({
+            Value<int> settingsPk = const Value.absent(),
+            required String settingsJSON,
+            Value<DateTime> dateUpdated = const Value.absent(),
+          }) =>
+              AppSettingsCompanion.insert(
+            settingsPk: settingsPk,
+            settingsJSON: settingsJSON,
+            dateUpdated: dateUpdated,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AppSettingsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $AppSettingsTable,
+    AppSetting,
+    $$AppSettingsTableFilterComposer,
+    $$AppSettingsTableOrderingComposer,
+    $$AppSettingsTableAnnotationComposer,
+    $$AppSettingsTableCreateCompanionBuilder,
+    $$AppSettingsTableUpdateCompanionBuilder,
+    (
+      AppSetting,
+      BaseReferences<_$FinanceDatabase, $AppSettingsTable, AppSetting>
+    ),
+    AppSetting,
+    PrefetchHooks Function()>;
+typedef $$ScannerTemplatesTableCreateCompanionBuilder
+    = ScannerTemplatesCompanion Function({
+  Value<String> scannerTemplatePk,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  required String templateName,
+  required String contains,
+  required String titleTransactionBefore,
+  required String titleTransactionAfter,
+  required String amountTransactionBefore,
+  required String amountTransactionAfter,
+  required String defaultCategoryFk,
+  Value<String> walletFk,
+  Value<bool> ignore,
+  Value<int> rowid,
+});
+typedef $$ScannerTemplatesTableUpdateCompanionBuilder
+    = ScannerTemplatesCompanion Function({
+  Value<String> scannerTemplatePk,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<String> templateName,
+  Value<String> contains,
+  Value<String> titleTransactionBefore,
+  Value<String> titleTransactionAfter,
+  Value<String> amountTransactionBefore,
+  Value<String> amountTransactionAfter,
+  Value<String> defaultCategoryFk,
+  Value<String> walletFk,
+  Value<bool> ignore,
+  Value<int> rowid,
+});
+
+final class $$ScannerTemplatesTableReferences extends BaseReferences<
+    _$FinanceDatabase, $ScannerTemplatesTable, ScannerTemplate> {
+  $$ScannerTemplatesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CategoriesTable _defaultCategoryFkTable(_$FinanceDatabase db) =>
+      db.categories.createAlias($_aliasNameGenerator(
+          db.scannerTemplates.defaultCategoryFk, db.categories.categoryPk));
+
+  $$CategoriesTableProcessedTableManager? get defaultCategoryFk {
+    if ($_item.defaultCategoryFk == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.categoryPk($_item.defaultCategoryFk!));
+    final item = $_typedResult.readTableOrNull(_defaultCategoryFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $WalletsTable _walletFkTable(_$FinanceDatabase db) =>
+      db.wallets.createAlias($_aliasNameGenerator(
+          db.scannerTemplates.walletFk, db.wallets.walletPk));
+
+  $$WalletsTableProcessedTableManager? get walletFk {
+    if ($_item.walletFk == null) return null;
+    final manager = $$WalletsTableTableManager($_db, $_db.wallets)
+        .filter((f) => f.walletPk($_item.walletFk!));
+    final item = $_typedResult.readTableOrNull(_walletFkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ScannerTemplatesTableFilterComposer
+    extends Composer<_$FinanceDatabase, $ScannerTemplatesTable> {
+  $$ScannerTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get scannerTemplatePk => $composableBuilder(
+      column: $table.scannerTemplatePk,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get contains => $composableBuilder(
+      column: $table.contains, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get titleTransactionBefore => $composableBuilder(
+      column: $table.titleTransactionBefore,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get titleTransactionAfter => $composableBuilder(
+      column: $table.titleTransactionAfter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amountTransactionBefore => $composableBuilder(
+      column: $table.amountTransactionBefore,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amountTransactionAfter => $composableBuilder(
+      column: $table.amountTransactionAfter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get ignore => $composableBuilder(
+      column: $table.ignore, builder: (column) => ColumnFilters(column));
+
+  $$CategoriesTableFilterComposer get defaultCategoryFk {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.defaultCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableFilterComposer get walletFk {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ScannerTemplatesTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $ScannerTemplatesTable> {
+  $$ScannerTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get scannerTemplatePk => $composableBuilder(
+      column: $table.scannerTemplatePk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateName => $composableBuilder(
+      column: $table.templateName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get contains => $composableBuilder(
+      column: $table.contains, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get titleTransactionBefore => $composableBuilder(
+      column: $table.titleTransactionBefore,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get titleTransactionAfter => $composableBuilder(
+      column: $table.titleTransactionAfter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amountTransactionBefore => $composableBuilder(
+      column: $table.amountTransactionBefore,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amountTransactionAfter => $composableBuilder(
+      column: $table.amountTransactionAfter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get ignore => $composableBuilder(
+      column: $table.ignore, builder: (column) => ColumnOrderings(column));
+
+  $$CategoriesTableOrderingComposer get defaultCategoryFk {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.defaultCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableOrderingComposer get walletFk {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ScannerTemplatesTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $ScannerTemplatesTable> {
+  $$ScannerTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get scannerTemplatePk => $composableBuilder(
+      column: $table.scannerTemplatePk, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+
+  GeneratedColumn<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => column);
+
+  GeneratedColumn<String> get contains =>
+      $composableBuilder(column: $table.contains, builder: (column) => column);
+
+  GeneratedColumn<String> get titleTransactionBefore => $composableBuilder(
+      column: $table.titleTransactionBefore, builder: (column) => column);
+
+  GeneratedColumn<String> get titleTransactionAfter => $composableBuilder(
+      column: $table.titleTransactionAfter, builder: (column) => column);
+
+  GeneratedColumn<String> get amountTransactionBefore => $composableBuilder(
+      column: $table.amountTransactionBefore, builder: (column) => column);
+
+  GeneratedColumn<String> get amountTransactionAfter => $composableBuilder(
+      column: $table.amountTransactionAfter, builder: (column) => column);
+
+  GeneratedColumn<bool> get ignore =>
+      $composableBuilder(column: $table.ignore, builder: (column) => column);
+
+  $$CategoriesTableAnnotationComposer get defaultCategoryFk {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.defaultCategoryFk,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.categoryPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WalletsTableAnnotationComposer get walletFk {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletFk,
+        referencedTable: $db.wallets,
+        getReferencedColumn: (t) => t.walletPk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.wallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ScannerTemplatesTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $ScannerTemplatesTable,
+    ScannerTemplate,
+    $$ScannerTemplatesTableFilterComposer,
+    $$ScannerTemplatesTableOrderingComposer,
+    $$ScannerTemplatesTableAnnotationComposer,
+    $$ScannerTemplatesTableCreateCompanionBuilder,
+    $$ScannerTemplatesTableUpdateCompanionBuilder,
+    (ScannerTemplate, $$ScannerTemplatesTableReferences),
+    ScannerTemplate,
+    PrefetchHooks Function({bool defaultCategoryFk, bool walletFk})> {
+  $$ScannerTemplatesTableTableManager(
+      _$FinanceDatabase db, $ScannerTemplatesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScannerTemplatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScannerTemplatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScannerTemplatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> scannerTemplatePk = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<String> templateName = const Value.absent(),
+            Value<String> contains = const Value.absent(),
+            Value<String> titleTransactionBefore = const Value.absent(),
+            Value<String> titleTransactionAfter = const Value.absent(),
+            Value<String> amountTransactionBefore = const Value.absent(),
+            Value<String> amountTransactionAfter = const Value.absent(),
+            Value<String> defaultCategoryFk = const Value.absent(),
+            Value<String> walletFk = const Value.absent(),
+            Value<bool> ignore = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ScannerTemplatesCompanion(
+            scannerTemplatePk: scannerTemplatePk,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            templateName: templateName,
+            contains: contains,
+            titleTransactionBefore: titleTransactionBefore,
+            titleTransactionAfter: titleTransactionAfter,
+            amountTransactionBefore: amountTransactionBefore,
+            amountTransactionAfter: amountTransactionAfter,
+            defaultCategoryFk: defaultCategoryFk,
+            walletFk: walletFk,
+            ignore: ignore,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> scannerTemplatePk = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            required String templateName,
+            required String contains,
+            required String titleTransactionBefore,
+            required String titleTransactionAfter,
+            required String amountTransactionBefore,
+            required String amountTransactionAfter,
+            required String defaultCategoryFk,
+            Value<String> walletFk = const Value.absent(),
+            Value<bool> ignore = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ScannerTemplatesCompanion.insert(
+            scannerTemplatePk: scannerTemplatePk,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            templateName: templateName,
+            contains: contains,
+            titleTransactionBefore: titleTransactionBefore,
+            titleTransactionAfter: titleTransactionAfter,
+            amountTransactionBefore: amountTransactionBefore,
+            amountTransactionAfter: amountTransactionAfter,
+            defaultCategoryFk: defaultCategoryFk,
+            walletFk: walletFk,
+            ignore: ignore,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ScannerTemplatesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {defaultCategoryFk = false, walletFk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (defaultCategoryFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.defaultCategoryFk,
+                    referencedTable: $$ScannerTemplatesTableReferences
+                        ._defaultCategoryFkTable(db),
+                    referencedColumn: $$ScannerTemplatesTableReferences
+                        ._defaultCategoryFkTable(db)
+                        .categoryPk,
+                  ) as T;
+                }
+                if (walletFk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletFk,
+                    referencedTable:
+                        $$ScannerTemplatesTableReferences._walletFkTable(db),
+                    referencedColumn: $$ScannerTemplatesTableReferences
+                        ._walletFkTable(db)
+                        .walletPk,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ScannerTemplatesTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $ScannerTemplatesTable,
+    ScannerTemplate,
+    $$ScannerTemplatesTableFilterComposer,
+    $$ScannerTemplatesTableOrderingComposer,
+    $$ScannerTemplatesTableAnnotationComposer,
+    $$ScannerTemplatesTableCreateCompanionBuilder,
+    $$ScannerTemplatesTableUpdateCompanionBuilder,
+    (ScannerTemplate, $$ScannerTemplatesTableReferences),
+    ScannerTemplate,
+    PrefetchHooks Function({bool defaultCategoryFk, bool walletFk})>;
+typedef $$DeleteLogsTableCreateCompanionBuilder = DeleteLogsCompanion Function({
+  Value<String> deleteLogPk,
+  required String entryPk,
+  required DeleteLogType type,
+  Value<DateTime> dateTimeModified,
+  Value<int> rowid,
+});
+typedef $$DeleteLogsTableUpdateCompanionBuilder = DeleteLogsCompanion Function({
+  Value<String> deleteLogPk,
+  Value<String> entryPk,
+  Value<DeleteLogType> type,
+  Value<DateTime> dateTimeModified,
+  Value<int> rowid,
+});
+
+class $$DeleteLogsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $DeleteLogsTable> {
+  $$DeleteLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get deleteLogPk => $composableBuilder(
+      column: $table.deleteLogPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entryPk => $composableBuilder(
+      column: $table.entryPk, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<DeleteLogType, DeleteLogType, int> get type =>
+      $composableBuilder(
+          column: $table.type,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$DeleteLogsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $DeleteLogsTable> {
+  $$DeleteLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get deleteLogPk => $composableBuilder(
+      column: $table.deleteLogPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entryPk => $composableBuilder(
+      column: $table.entryPk, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$DeleteLogsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $DeleteLogsTable> {
+  $$DeleteLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get deleteLogPk => $composableBuilder(
+      column: $table.deleteLogPk, builder: (column) => column);
+
+  GeneratedColumn<String> get entryPk =>
+      $composableBuilder(column: $table.entryPk, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<DeleteLogType, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+}
+
+class $$DeleteLogsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $DeleteLogsTable,
+    DeleteLog,
+    $$DeleteLogsTableFilterComposer,
+    $$DeleteLogsTableOrderingComposer,
+    $$DeleteLogsTableAnnotationComposer,
+    $$DeleteLogsTableCreateCompanionBuilder,
+    $$DeleteLogsTableUpdateCompanionBuilder,
+    (DeleteLog, BaseReferences<_$FinanceDatabase, $DeleteLogsTable, DeleteLog>),
+    DeleteLog,
+    PrefetchHooks Function()> {
+  $$DeleteLogsTableTableManager(_$FinanceDatabase db, $DeleteLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DeleteLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DeleteLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DeleteLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> deleteLogPk = const Value.absent(),
+            Value<String> entryPk = const Value.absent(),
+            Value<DeleteLogType> type = const Value.absent(),
+            Value<DateTime> dateTimeModified = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DeleteLogsCompanion(
+            deleteLogPk: deleteLogPk,
+            entryPk: entryPk,
+            type: type,
+            dateTimeModified: dateTimeModified,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> deleteLogPk = const Value.absent(),
+            required String entryPk,
+            required DeleteLogType type,
+            Value<DateTime> dateTimeModified = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DeleteLogsCompanion.insert(
+            deleteLogPk: deleteLogPk,
+            entryPk: entryPk,
+            type: type,
+            dateTimeModified: dateTimeModified,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DeleteLogsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $DeleteLogsTable,
+    DeleteLog,
+    $$DeleteLogsTableFilterComposer,
+    $$DeleteLogsTableOrderingComposer,
+    $$DeleteLogsTableAnnotationComposer,
+    $$DeleteLogsTableCreateCompanionBuilder,
+    $$DeleteLogsTableUpdateCompanionBuilder,
+    (DeleteLog, BaseReferences<_$FinanceDatabase, $DeleteLogsTable, DeleteLog>),
+    DeleteLog,
+    PrefetchHooks Function()>;
+typedef $$AttachmentsTableCreateCompanionBuilder = AttachmentsCompanion
+    Function({
+  Value<String> attachmentPk,
+  required String transactionFk,
+  required String originalName,
+  Value<String?> mimeType,
+  Value<int?> fileSize,
+  Value<String?> localFileName,
+  Value<String?> remoteRecordId,
+  Value<String?> remoteFileName,
+  Value<bool> isUploaded,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<int> rowid,
+});
+typedef $$AttachmentsTableUpdateCompanionBuilder = AttachmentsCompanion
+    Function({
+  Value<String> attachmentPk,
+  Value<String> transactionFk,
+  Value<String> originalName,
+  Value<String?> mimeType,
+  Value<int?> fileSize,
+  Value<String?> localFileName,
+  Value<String?> remoteRecordId,
+  Value<String?> remoteFileName,
+  Value<bool> isUploaded,
+  Value<DateTime> dateCreated,
+  Value<DateTime?> dateTimeModified,
+  Value<int> rowid,
+});
+
+class $$AttachmentsTableFilterComposer
+    extends Composer<_$FinanceDatabase, $AttachmentsTable> {
+  $$AttachmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get attachmentPk => $composableBuilder(
+      column: $table.attachmentPk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get transactionFk => $composableBuilder(
+      column: $table.transactionFk, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get originalName => $composableBuilder(
+      column: $table.originalName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+      column: $table.mimeType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get fileSize => $composableBuilder(
+      column: $table.fileSize, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localFileName => $composableBuilder(
+      column: $table.localFileName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteRecordId => $composableBuilder(
+      column: $table.remoteRecordId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteFileName => $composableBuilder(
+      column: $table.remoteFileName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$AttachmentsTableOrderingComposer
+    extends Composer<_$FinanceDatabase, $AttachmentsTable> {
+  $$AttachmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get attachmentPk => $composableBuilder(
+      column: $table.attachmentPk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get transactionFk => $composableBuilder(
+      column: $table.transactionFk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get originalName => $composableBuilder(
+      column: $table.originalName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+      column: $table.mimeType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get fileSize => $composableBuilder(
+      column: $table.fileSize, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localFileName => $composableBuilder(
+      column: $table.localFileName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteRecordId => $composableBuilder(
+      column: $table.remoteRecordId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteFileName => $composableBuilder(
+      column: $table.remoteFileName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AttachmentsTableAnnotationComposer
+    extends Composer<_$FinanceDatabase, $AttachmentsTable> {
+  $$AttachmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get attachmentPk => $composableBuilder(
+      column: $table.attachmentPk, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionFk => $composableBuilder(
+      column: $table.transactionFk, builder: (column) => column);
+
+  GeneratedColumn<String> get originalName => $composableBuilder(
+      column: $table.originalName, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSize =>
+      $composableBuilder(column: $table.fileSize, builder: (column) => column);
+
+  GeneratedColumn<String> get localFileName => $composableBuilder(
+      column: $table.localFileName, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteRecordId => $composableBuilder(
+      column: $table.remoteRecordId, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteFileName => $composableBuilder(
+      column: $table.remoteFileName, builder: (column) => column);
+
+  GeneratedColumn<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreated => $composableBuilder(
+      column: $table.dateCreated, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTimeModified => $composableBuilder(
+      column: $table.dateTimeModified, builder: (column) => column);
+}
+
+class $$AttachmentsTableTableManager extends RootTableManager<
+    _$FinanceDatabase,
+    $AttachmentsTable,
+    TransactionAttachment,
+    $$AttachmentsTableFilterComposer,
+    $$AttachmentsTableOrderingComposer,
+    $$AttachmentsTableAnnotationComposer,
+    $$AttachmentsTableCreateCompanionBuilder,
+    $$AttachmentsTableUpdateCompanionBuilder,
+    (
+      TransactionAttachment,
+      BaseReferences<_$FinanceDatabase, $AttachmentsTable,
+          TransactionAttachment>
+    ),
+    TransactionAttachment,
+    PrefetchHooks Function()> {
+  $$AttachmentsTableTableManager(_$FinanceDatabase db, $AttachmentsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AttachmentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AttachmentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AttachmentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> attachmentPk = const Value.absent(),
+            Value<String> transactionFk = const Value.absent(),
+            Value<String> originalName = const Value.absent(),
+            Value<String?> mimeType = const Value.absent(),
+            Value<int?> fileSize = const Value.absent(),
+            Value<String?> localFileName = const Value.absent(),
+            Value<String?> remoteRecordId = const Value.absent(),
+            Value<String?> remoteFileName = const Value.absent(),
+            Value<bool> isUploaded = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AttachmentsCompanion(
+            attachmentPk: attachmentPk,
+            transactionFk: transactionFk,
+            originalName: originalName,
+            mimeType: mimeType,
+            fileSize: fileSize,
+            localFileName: localFileName,
+            remoteRecordId: remoteRecordId,
+            remoteFileName: remoteFileName,
+            isUploaded: isUploaded,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<String> attachmentPk = const Value.absent(),
+            required String transactionFk,
+            required String originalName,
+            Value<String?> mimeType = const Value.absent(),
+            Value<int?> fileSize = const Value.absent(),
+            Value<String?> localFileName = const Value.absent(),
+            Value<String?> remoteRecordId = const Value.absent(),
+            Value<String?> remoteFileName = const Value.absent(),
+            Value<bool> isUploaded = const Value.absent(),
+            Value<DateTime> dateCreated = const Value.absent(),
+            Value<DateTime?> dateTimeModified = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AttachmentsCompanion.insert(
+            attachmentPk: attachmentPk,
+            transactionFk: transactionFk,
+            originalName: originalName,
+            mimeType: mimeType,
+            fileSize: fileSize,
+            localFileName: localFileName,
+            remoteRecordId: remoteRecordId,
+            remoteFileName: remoteFileName,
+            isUploaded: isUploaded,
+            dateCreated: dateCreated,
+            dateTimeModified: dateTimeModified,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AttachmentsTableProcessedTableManager = ProcessedTableManager<
+    _$FinanceDatabase,
+    $AttachmentsTable,
+    TransactionAttachment,
+    $$AttachmentsTableFilterComposer,
+    $$AttachmentsTableOrderingComposer,
+    $$AttachmentsTableAnnotationComposer,
+    $$AttachmentsTableCreateCompanionBuilder,
+    $$AttachmentsTableUpdateCompanionBuilder,
+    (
+      TransactionAttachment,
+      BaseReferences<_$FinanceDatabase, $AttachmentsTable,
+          TransactionAttachment>
+    ),
+    TransactionAttachment,
+    PrefetchHooks Function()>;
+
+class $FinanceDatabaseManager {
+  final _$FinanceDatabase _db;
+  $FinanceDatabaseManager(this._db);
+  $$WalletsTableTableManager get wallets =>
+      $$WalletsTableTableManager(_db, _db.wallets);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db, _db.categories);
+  $$ObjectivesTableTableManager get objectives =>
+      $$ObjectivesTableTableManager(_db, _db.objectives);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db, _db.transactions);
+  $$BudgetsTableTableManager get budgets =>
+      $$BudgetsTableTableManager(_db, _db.budgets);
+  $$CategoryBudgetLimitsTableTableManager get categoryBudgetLimits =>
+      $$CategoryBudgetLimitsTableTableManager(_db, _db.categoryBudgetLimits);
+  $$AssociatedTitlesTableTableManager get associatedTitles =>
+      $$AssociatedTitlesTableTableManager(_db, _db.associatedTitles);
+  $$AppSettingsTableTableManager get appSettings =>
+      $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$ScannerTemplatesTableTableManager get scannerTemplates =>
+      $$ScannerTemplatesTableTableManager(_db, _db.scannerTemplates);
+  $$DeleteLogsTableTableManager get deleteLogs =>
+      $$DeleteLogsTableTableManager(_db, _db.deleteLogs);
+  $$AttachmentsTableTableManager get attachments =>
+      $$AttachmentsTableTableManager(_db, _db.attachments);
 }
