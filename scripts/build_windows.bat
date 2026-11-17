@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 echo ========================================================
 echo   Building Cashew for Windows (Release Mode)
 echo ========================================================
@@ -37,7 +38,7 @@ if %ERRORLEVEL% EQU 0 (
 if defined ISCC_PATH (
     echo Compiling Installer with Inno Setup...
     "%ISCC_PATH%" "windows\installer\inno_setup.iss"
-    if %ERRORLEVEL% EQU 0 (
+    if !ERRORLEVEL! EQU 0 (
         echo.
         echo [SUCCESS] Windows Setup Installer created!
         echo Opening installer directory...
