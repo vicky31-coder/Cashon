@@ -50,14 +50,15 @@ class OpenContainerNavigation extends StatelessWidget {
       },
       transitionType: ContainerTransitionType.fade,
       openBuilder: (BuildContext context, VoidCallback _) {
-        return openPage;
+        return RepaintBoundary(child: openPage);
       },
       tappable: false,
       transitionDuration: getPlatform() == PlatformOS.isIOS
           ? Duration(milliseconds: 475)
           : Duration(milliseconds: 400),
       closedElevation: closedElevation ?? 0,
-      openColor: closedColor ?? Colors.transparent,
+      openColor: closedColor ?? Theme.of(context).scaffoldBackgroundColor,
+      middleColor: closedColor ?? Theme.of(context).scaffoldBackgroundColor,
       closedColor: closedColor ?? Colors.transparent,
       openElevation: 0,
       closedBuilder: (BuildContext context, VoidCallback openContainer) {

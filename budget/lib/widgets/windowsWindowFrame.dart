@@ -78,7 +78,7 @@ class WindowsWindowFrame extends StatelessWidget {
       color: outerBgColor,
       child: Column(
         children: [
-          const WindowsTitleBar(),
+          const RepaintBoundary(child: WindowsTitleBar()),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(
@@ -92,13 +92,6 @@ class WindowsWindowFrame extends StatelessWidget {
                   color: cardBgColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: borderColor, width: 1.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: LayoutBuilder(

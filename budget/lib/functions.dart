@@ -1045,7 +1045,10 @@ Future<dynamic> pushRoute(BuildContext? context, Widget page,
             .chain(CurveTween(curve: Curves.easeOut));
         return SlideTransition(
           position: animation.drive(tween),
-          child: FadeTransition(opacity: animation, child: child),
+          child: FadeTransition(
+            opacity: animation,
+            child: RepaintBoundary(child: child),
+          ),
         );
       },
       pageBuilder: (context, animation, secondaryAnimation) {

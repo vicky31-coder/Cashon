@@ -796,6 +796,12 @@ class PocketBaseSyncEngine {
     return pushed;
   }
 
+  DateTime? _parseLocalDate(RecordModel r, String field) {
+    final raw = r.getStringValue(field);
+    if (raw.isEmpty) return null;
+    return DateTime.tryParse(raw)?.toLocal();
+  }
+
   Future<int> _executePull({
     required PocketBase pb,
     required bool forceFullSync,
@@ -843,7 +849,7 @@ class PocketBaseSyncEngine {
               iconName: r.getStringValue("icon_name").isEmpty
                   ? null
                   : r.getStringValue("icon_name"),
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
@@ -903,7 +909,7 @@ class PocketBaseSyncEngine {
               emojiIconName: r.getStringValue("emoji_icon_name").isEmpty
                   ? null
                   : r.getStringValue("emoji_icon_name"),
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
@@ -960,9 +966,9 @@ class PocketBaseSyncEngine {
               colour: r.getStringValue("colour").isEmpty
                   ? null
                   : r.getStringValue("colour"),
-              startDate: DateTime.tryParse(r.getStringValue("start_date")) ??
+              startDate: _parseLocalDate(r, "start_date") ??
                   DateTime.now(),
-              endDate: DateTime.tryParse(r.getStringValue("end_date")) ??
+              endDate: _parseLocalDate(r, "end_date") ??
                   DateTime.now(),
               income: r.getBoolValue("income"),
               archived: r.getBoolValue("archived"),
@@ -974,7 +980,7 @@ class PocketBaseSyncEngine {
                       reocIdx < BudgetReoccurence.values.length
                   ? BudgetReoccurence.values[reocIdx]
                   : null,
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
               pinned: r.getBoolValue("pinned"),
@@ -1040,9 +1046,9 @@ class PocketBaseSyncEngine {
               colour: r.getStringValue("colour").isEmpty
                   ? null
                   : r.getStringValue("colour"),
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
-              endDate: DateTime.tryParse(r.getStringValue("end_date")),
+              endDate: _parseLocalDate(r, "end_date"),
               dateTimeModified: remoteDate?.toLocal(),
               iconName: r.getStringValue("icon_name").isEmpty
                   ? null
@@ -1113,11 +1119,10 @@ class PocketBaseSyncEngine {
                   ? null
                   : r.getStringValue("sub_category_fk"),
               walletFk: r.getStringValue("wallet_fk", "0"),
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
-              originalDateDue:
-                  DateTime.tryParse(r.getStringValue("original_date_due")),
+              originalDateDue: _parseLocalDate(r, "original_date_due"),
               income: r.getBoolValue("income"),
               periodLength: r.data["period_length"] == null
                   ? null
@@ -1127,7 +1132,7 @@ class PocketBaseSyncEngine {
                       reocIdx < BudgetReoccurence.values.length
                   ? BudgetReoccurence.values[reocIdx]
                   : null,
-              endDate: DateTime.tryParse(r.getStringValue("end_date")),
+              endDate: _parseLocalDate(r, "end_date"),
               upcomingTransactionNotification:
                   r.getBoolValue("upcoming_transaction_notification", true),
               type: typeIdx != null &&
@@ -1243,7 +1248,7 @@ class PocketBaseSyncEngine {
               associatedTitlePk: associatedTitlePk,
               categoryFk: r.getStringValue("category_fk"),
               title: r.getStringValue("title"),
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
               order: r.getIntValue("order"),
@@ -1283,7 +1288,7 @@ class PocketBaseSyncEngine {
           await database.createOrUpdateScannerTemplate(
             ScannerTemplate(
               scannerTemplatePk: scannerTemplatePk,
-              dateCreated: DateTime.tryParse(r.getStringValue("date_created")) ??
+              dateCreated: _parseLocalDate(r, "date_created") ??
                   DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
               templateName: r.getStringValue("template_name"),
@@ -1350,7 +1355,7 @@ class PocketBaseSyncEngine {
                   remoteFile.isEmpty ? existing?.remoteFileName : remoteFile,
               isUploaded: true,
               dateCreated:
-                  DateTime.tryParse(r.getStringValue("date_created")) ??
+                  _parseLocalDate(r, "date_created") ??
                       DateTime.now(),
               dateTimeModified: remoteDate?.toLocal(),
             ),

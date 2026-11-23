@@ -100,6 +100,9 @@ class GlobalLoadingIndeterminateState
 
   @override
   Widget build(BuildContext context) {
+    if (!visible && opacity == 0) {
+      return const SizedBox.shrink();
+    }
     return Opacity(
       opacity: opacity,
       child: SizedBox(
@@ -126,7 +129,10 @@ class GlobalLoadingIndeterminateState
                 bottomEnd: Radius.circular(5),
                 topEnd: Radius.circular(5),
               ),
-              child: IndeterminateProgressBar(),
+              child: TickerMode(
+                enabled: visible,
+                child: IndeterminateProgressBar(),
+              ),
             ),
           ),
         ),

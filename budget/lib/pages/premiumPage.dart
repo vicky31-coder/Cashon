@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
@@ -1352,7 +1353,11 @@ class PremiumBackground extends StatelessWidget {
                 amountDark: 0,
                 amountLight: 0.4),
           ],
-          stops: disableAnimation
+          stops: (disableAnimation ||
+                  (!kIsWeb &&
+                      (Platform.isLinux ||
+                          Platform.isWindows ||
+                          Platform.isMacOS)))
               ? [0, 0.4, 2.5]
               : [
                   0,
@@ -1362,7 +1367,9 @@ class PremiumBackground extends StatelessWidget {
         ),
         backgroundBlendMode: BlendMode.srcOver,
       ),
-      child: disableAnimation
+      child: (disableAnimation ||
+              (!kIsWeb &&
+                  (Platform.isLinux || Platform.isWindows || Platform.isMacOS)))
           ? Container()
           : PlasmaRenderer(
               type: PlasmaType.infinity,

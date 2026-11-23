@@ -1126,7 +1126,7 @@ class FadeIndexedStackState extends State<FadeIndexedStack>
 
   @override
   void didUpdateWidget(FadeIndexedStack oldWidget) {
-    if (widget.index != oldWidget.index) {
+    if (widget.index != oldWidget.index && widget.duration > Duration.zero) {
       _controller.forward(from: 0.0);
     }
     super.didUpdateWidget(oldWidget);
@@ -1134,7 +1134,11 @@ class FadeIndexedStackState extends State<FadeIndexedStack>
 
   @override
   void initState() {
-    _controller.forward();
+    if (widget.duration == Duration.zero) {
+      _controller.value = 1.0;
+    } else {
+      _controller.forward();
+    }
     super.initState();
   }
 
@@ -1146,8 +1150,7 @@ class FadeIndexedStackState extends State<FadeIndexedStack>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _controller,
+    final Widget stack = RepaintBoundary(
       child: LazyIndexedStack(
         index: (widget.index >= 0 && widget.index < widget.children.length)
             ? widget.index
@@ -1157,6 +1160,13 @@ class FadeIndexedStackState extends State<FadeIndexedStack>
         sizing: widget.sizing,
         children: widget.children,
       ),
+    );
+    if (widget.duration == Duration.zero) {
+      return stack;
+    }
+    return FadeTransition(
+      opacity: _controller,
+      child: stack,
     );
   }
 }

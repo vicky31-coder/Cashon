@@ -47,11 +47,13 @@ class BudgetPage extends StatelessWidget {
   const BudgetPage({
     super.key,
     required this.budgetPk,
+    this.initialBudget,
     this.dateForRange,
     this.dateForRangeIndex = 0,
     this.openedFromHistory = false,
   });
   final String budgetPk;
+  final Budget? initialBudget;
   final DateTime? dateForRange;
   final int dateForRangeIndex;
   final bool openedFromHistory;
@@ -60,6 +62,7 @@ class BudgetPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<Budget>(
         stream: database.getBudget(budgetPk),
+        initialData: initialBudget,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             Color? accentColor = HexColor(snapshot.data?.colour);
@@ -73,7 +76,7 @@ class BudgetPage extends StatelessWidget {
               ),
             );
           }
-          return SizedBox.shrink();
+          return const SizedBox.expand();
         });
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:budget/database/tables.dart';
 import 'package:budget/pages/sharedBudgetSettings.dart';
 import 'package:budget/pages/transactionFilters.dart';
@@ -396,6 +397,7 @@ class BudgetContainer extends StatelessWidget {
         },
         openPage: BudgetPage(
           budgetPk: budget.budgetPk,
+          initialBudget: budget,
           dateForRange: dateForRangeLocal,
         ),
       ),
@@ -522,8 +524,11 @@ class AnimatedGooBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop =
+        !kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
     if (appStateSettings["batterySaver"] ||
         kIsWeb ||
+        isDesktop ||
         (getPlatform() == PlatformOS.isIOS &&
             appStateSettings["iOSAnimatedGoo"] != true) ||
         appStateSettings["appAnimations"] != AppAnimations.all.index) {
