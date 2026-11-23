@@ -1,14 +1,16 @@
-; Inno Setup Script for Cashew (Windows 64-bit)
+; Inno Setup Script for Cashon (Windows 64-bit)
 ; Generated for Flutter Windows Desktop Application
 
-#define MyAppName "Cashew"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "Cashew"
-#define MyAppURL "https://github.com/vigneshbalaji/Cashon"
+#define MyAppName "Cashon"
+#ifndef MyAppVersion
+  #define MyAppVersion "1.0.0"
+#endif
+#define MyAppPublisher "Vignesh Balaji"
+#define MyAppURL "https://github.com/vicky31-coder/Cashon"
 #define MyAppExeName "budget.exe"
 
 [Setup]
-; Unique GUID for Cashew installation identity
+; Unique GUID for Cashon installation identity
 AppId={{C47A2219-3E04-4B2E-8E7B-0A8610EF60F4}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -22,8 +24,8 @@ DisableProgramGroupPage=yes
 ArchitecturesInstallIn64BitMode=x64compatible
 ArchitecturesAllowed=x64compatible
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=..\..\build\windows\installer
-OutputBaseFilename=Cashew-Windows-Setup-v{#MyAppVersion}
+OutputDir=..\..\dist
+OutputBaseFilename=Cashon-{#MyAppVersion}-Windows-Setup
 SetupIconFile=..\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64

@@ -13,7 +13,7 @@ RED="\033[1;31m"
 RESET="\033[0m"
 
 APP_NAME="cashon-bin"
-VERSION="1.0.0"
+VERSION="${VERSION:-1.0.0}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -56,6 +56,7 @@ cp "$ROOT_DIR/packaging/flatpak/icon-512.png" "$AUR_DIR/"
 (
     cd "$AUR_DIR"
     rm -rf pkg src *.pkg.tar.zst
+    sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
     makepkg -f --nodeps
     makepkg --printsrcinfo > .SRCINFO
     mv *.pkg.tar.zst "$DIST_DIR/"

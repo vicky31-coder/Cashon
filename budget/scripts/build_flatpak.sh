@@ -15,8 +15,8 @@ RESET="\033[0m"
 
 APP_ID="com.budget.tracker_app"
 APP_NAME="Cashon"
-VERSION="1.0.0"
-RUNTIME_VER="26.08"
+VERSION="${VERSION:-1.0.0}"
+RUNTIME_VER="${RUNTIME_VER:-24.08}"
 
 # Locate workspace root
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

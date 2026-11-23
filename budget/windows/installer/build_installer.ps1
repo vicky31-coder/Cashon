@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds the Inno Setup .exe installer for Cashew.
+    Builds the Inno Setup .exe installer for Cashon.
 .DESCRIPTION
     1. Verifies that the Flutter Windows release build exists.
     2. Locates the Inno Setup compiler (ISCC.exe).
@@ -13,10 +13,10 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $budgetDir = Resolve-Path "$scriptDir\..\.."
 $releaseExe = "$budgetDir\build\windows\x64\runner\Release\budget.exe"
 $issPath = "$scriptDir\inno_setup.iss"
-$outputDir = "$budgetDir\build\windows\installer"
+$outputDir = "$budgetDir\dist"
 
 Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host " Cashew Windows Installer Generator (Inno Setup)" -ForegroundColor Cyan
+Write-Host " Cashon Windows Installer Generator (Inno Setup)" -ForegroundColor Cyan
 Write-Host "===============================================" -ForegroundColor Cyan
 
 # 1. Check if release build exists
@@ -58,7 +58,11 @@ if (-not (Test-Path $outputDir)) {
 
 # 4. Compile installer
 Write-Host "Compiling installer from: $issPath..." -ForegroundColor Green
-& "$isccPath" "$issPath"
+if ($env:VERSION) {
+    & "$isccPath" "/DMyAppVersion=$($env:VERSION)" "$issPath"
+} else {
+    & "$isccPath" "$issPath"
+}
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nInstaller built successfully!" -ForegroundColor Green

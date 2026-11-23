@@ -13,7 +13,7 @@ RED="\033[1;31m"
 RESET="\033[0m"
 
 APP_NAME="cashon"
-VERSION="1.0.0"
+VERSION="${VERSION:-1.0.0}"
 ARCH="amd64"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -57,7 +57,7 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: ${ARCH}
-Depends: libgtk-3-0, libc6
+Depends: libgtk-3-0t64 | libgtk-3-0, libc6
 Maintainer: Vignesh Balaji <0836balaji@gmail.com>
 Description: Cashon - Personal finance and budget manager
  Cashon is an easy-to-use personal finance manager that helps you

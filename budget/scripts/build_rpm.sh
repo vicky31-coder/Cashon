@@ -13,7 +13,7 @@ RED="\033[1;31m"
 RESET="\033[0m"
 
 APP_NAME="cashon"
-VERSION="1.0.0"
+VERSION="${VERSION:-1.0.0}"
 RELEASE="1"
 ARCH="x86_64"
 
