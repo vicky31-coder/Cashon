@@ -1,4 +1,4 @@
-name: Build Windows Inno Setup
+name: Build Windows
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  build-windows-inno:
+  build-windows:
     runs-on: windows-latest
     defaults:
       run:
@@ -51,7 +51,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cashon-windows-inno
+          name: cashon-windows
           path: budget/dist/*.exe
           if-no-files-found: error
 

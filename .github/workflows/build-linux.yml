@@ -1,4 +1,4 @@
-name: Build Linux Arch / Pacman Repo
+name: Build Linux
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  build-linux-aur:
+  build-linux:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,12 +30,13 @@ jobs:
           RAW="${{ github.event.inputs.version || github.ref_name }}"
           echo "version=${RAW#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Install Linux build dependencies
+      - name: Install Linux build and packaging dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             clang cmake ninja-build pkg-config \
-            libgtk-3-dev liblzma-dev libstdc++-12-dev libsqlite3-dev
+            libgtk-3-dev liblzma-dev libstdc++-12-dev libsqlite3-dev \
+            binutils rpm curl desktop-file-utils
 
       - uses: subosito/flutter-action@v2
         with:
@@ -47,7 +48,17 @@ jobs:
       - name: Build Linux release bundle
         run: flutter build linux --release --build-name="${{ steps.ver.outputs.version }}" --build-number="${{ github.run_number }}"
 
-      - name: Build Arch Linux package in Arch container
+      - name: Package portable tar.gz, .deb, .AppImage, and .rpm
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          mkdir -p dist
+          tar -czf "dist/cashon-${VERSION}-linux-x64.tar.gz" -C build/linux/x64/release/bundle .
+          ./scripts/build_deb.sh --skip-flutter
+          ./scripts/build_appimage.sh --skip-flutter
+          ./scripts/build_rpm.sh --skip-flutter
+
+      - name: Package Arch Linux (.pkg.tar.zst)
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
@@ -61,17 +72,15 @@ jobs:
               set -e
               useradd -m -u "$HOST_UID" builder || useradd -m builder
               chown -R builder /work/packaging/aur /work/dist || true
-              mkdir -p /work/dist
-              chown -R builder /work/dist
               su - builder -c "cd /work && VERSION=$VERSION ./scripts/build_aur.sh --skip-flutter"
               rm -f /work/dist/*-debug-*.pkg.tar.zst
             '
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cashon-linux-arch
+          name: cashon-linux
           path: |
-            budget/dist/*.pkg.tar.zst
+            budget/dist/*
             budget/packaging/aur/PKGBUILD
             budget/packaging/aur/.SRCINFO
           if-no-files-found: error
@@ -83,18 +92,18 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes || true
-          gh release upload "$TAG" dist/*.pkg.tar.zst packaging/aur/PKGBUILD packaging/aur/.SRCINFO --clobber
+          gh release upload "$TAG" dist/*.deb dist/*.AppImage dist/*.tar.gz dist/*.rpm dist/*.pkg.tar.zst packaging/aur/PKGBUILD packaging/aur/.SRCINFO --clobber
 
   publish-pacman-repo:
-    needs: [build-linux-aur]
+    needs: [build-linux]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: cashon-linux-arch
-          path: arch-dist
+          name: cashon-linux
+          path: linux-dist
 
       - name: Checkout or initialize gh-pages branch
         run: |
@@ -110,7 +119,7 @@ jobs:
       - name: Update Pacman repository index (repo-add)
         run: |
           mkdir -p repo-pages/arch/x86_64
-          cp arch-dist/*.pkg.tar.zst repo-pages/arch/x86_64/
+          cp linux-dist/*.pkg.tar.zst repo-pages/arch/x86_64/
           docker run --rm -v "$PWD/repo-pages/arch/x86_64:/repo" archlinux:base-devel bash -lc '
             set -e
             cd /repo
