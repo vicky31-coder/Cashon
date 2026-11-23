@@ -1,10 +1,18 @@
 name: Build Linux Flatpak
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without v prefix (e.g. 1.0.1)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
 
 jobs:
   build-linux-flatpak:
@@ -14,8 +22,13 @@ jobs:
         working-directory: budget
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          RAW="${{ github.event.inputs.version || github.ref_name }}"
+          echo "version=${RAW#v}" >> "$GITHUB_OUTPUT"
 
       - name: Install Linux build and Flatpak dependencies
         run: |
@@ -25,26 +38,38 @@ jobs:
             libgtk-3-dev liblzma-dev libstdc++-12-dev libsqlite3-dev \
             flatpak
 
-      - name: Install Freedesktop Platform runtime from Flathub
+      - name: Install Freedesktop Platform runtime
         run: |
           flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user -y flathub org.freedesktop.Platform//24.08
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - run: flutter pub get
 
-      - name: Build Flatpak bundle
-        run: ./scripts/build_flatpak.sh --no-install
+      - name: Build Linux release bundle
+        run: flutter build linux --release --build-name="${{ steps.ver.outputs.version }}" --build-number="${{ github.run_number }}"
 
-      - name: Upload Flatpak artifact
-        uses: actions/upload-artifact@v4
+      - name: Package Flatpak
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+          RUNTIME_VER: "24.08"
+        run: ./scripts/build_flatpak.sh --skip-flutter --no-install
+
+      - uses: actions/upload-artifact@v4
         with:
           name: cashon-linux-flatpak
           path: budget/dist/*.flatpak
           if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes || true
+          gh release upload "$TAG" dist/*.flatpak --clobber

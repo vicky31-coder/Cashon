@@ -1,10 +1,18 @@
 name: Build Android Split APKs
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without v prefix (e.g. 1.0.1)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
 
 jobs:
   build-android:
@@ -14,17 +22,20 @@ jobs:
         working-directory: budget
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
+      - name: Resolve version
+        id: ver
+        run: |
+          RAW="${{ github.event.inputs.version || github.ref_name }}"
+          echo "version=${RAW#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
@@ -45,15 +56,22 @@ jobs:
           storeFile=upload-keystore.jks
           EOF
 
-      - name: Install dependencies
-        run: flutter pub get
+      - run: flutter pub get
 
       - name: Build Android Split APKs
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --build-name="${{ steps.ver.outputs.version }}" --build-number="${{ github.run_number }}"
 
-      - name: Upload Split APKs
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: cashon-android-split-apks
           path: budget/build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes || true
+          gh release upload "$TAG" build/app/outputs/flutter-apk/app-*-release.apk --clobber

@@ -1,0 +1,67 @@
+name: Build Windows Inno Setup
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without v prefix (e.g. 1.0.1)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-inno:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: budget
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          $raw = "${{ github.event.inputs.version || github.ref_name }}"
+          echo "version=$($raw.TrimStart('v'))" >> $env:GITHUB_OUTPUT
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build Windows release binary
+        run: flutter build windows --release --build-name=${{ steps.ver.outputs.version }} --build-number=${{ github.run_number }}
+
+      - name: Build Inno Setup installer (.exe)
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: .\windows\installer\build_installer.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cashon-windows-inno
+          path: budget/dist/*.exe
+          if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -ne 0) { gh release create $env:TAG --generate-notes *>$null }
+          $exes = (Get-Item dist\*.exe).FullName
+          gh release upload $env:TAG $exes --clobber
