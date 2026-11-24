@@ -119,7 +119,8 @@ jobs:
       - name: Update Pacman repository index (repo-add)
         run: |
           mkdir -p repo-pages/arch/x86_64
-          cp linux-dist/*.pkg.tar.zst repo-pages/arch/x86_64/
+          find linux-dist -name '*.pkg.tar.zst' -exec cp {} repo-pages/arch/x86_64/ \;
+          ls -lh repo-pages/arch/x86_64/*.pkg.tar.zst
           docker run --rm -v "$PWD/repo-pages/arch/x86_64:/repo" archlinux:base-devel bash -lc '
             set -e
             cd /repo
