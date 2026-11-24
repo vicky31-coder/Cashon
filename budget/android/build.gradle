@@ -27,7 +27,7 @@ subprojects { subproject ->
                 }
                 try {
                     subproject.android {
-                        compileSdkVersion 35
+                        compileSdkVersion 36
                     }
                 } catch (Exception ignored) {}
             }
