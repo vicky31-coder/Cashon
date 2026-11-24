@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.budget" "\0"
-            VALUE "FileDescription", "budget" "\0"
+            VALUE "CompanyName", "Vignesh Balaji" "\0"
+            VALUE "FileDescription", "Cashon" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "budget" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.budget. All rights reserved." "\0"
+            VALUE "InternalName", "Cashon" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Vignesh Balaji. All rights reserved." "\0"
             VALUE "OriginalFilename", "budget.exe" "\0"
-            VALUE "ProductName", "budget" "\0"
+            VALUE "ProductName", "Cashon" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

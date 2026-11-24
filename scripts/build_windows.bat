@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 echo ========================================================
-echo   Building Cashew for Windows (Release Mode)
+echo   Building Cashon for Windows (Release Mode)
 echo ========================================================
 cd /d "%~dp0..\budget"
 
